@@ -10,6 +10,7 @@ from rasterio.crs import CRS
 
 
 def _surface_distance_m(a: dict[str, Any], b: dict[str, Any]) -> float:
+    """Approximate short surface distance using a local equirectangular metric."""
     radius = 6_371_000 if a["body"] == "earth" else 3_396_190
     lon_a, lat_a = math.radians(float(a["longitude"])), math.radians(float(a["latitude"]))
     lon_b, lat_b = math.radians(float(b["longitude"])), math.radians(float(b["latitude"]))
@@ -45,6 +46,7 @@ def overlap_pairs(rows: Sequence[dict[str, Any]]) -> list[tuple[str, str]]:
                     < half_first + half_second
                 )
             else:
+                # Without a shared map plane, reject possible overlap conservatively.
                 conservative_radius = math.hypot(half_first + half_second, half_first + half_second)
                 overlaps = _surface_distance_m(first, second) < conservative_radius
             if overlaps:
@@ -53,6 +55,7 @@ def overlap_pairs(rows: Sequence[dict[str, Any]]) -> list[tuple[str, str]]:
 
 
 def ensure_no_overlaps(rows: Sequence[dict[str, Any]]) -> None:
+    """Raise when any pair of records may share ground footprint area."""
     pairs = overlap_pairs(rows)
     if pairs:
         sample = ", ".join(f"{first} / {second}" for first, second in pairs[:8])

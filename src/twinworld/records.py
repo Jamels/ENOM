@@ -21,6 +21,8 @@ Landform = Literal[
 
 @dataclass(frozen=True, slots=True)
 class PatchRecord:
+    """Provenance and geometry metadata for one locally indexed image patch."""
+
     image_id: str
     body: Body
     path: str
@@ -42,9 +44,11 @@ class PatchRecord:
 
     @classmethod
     def from_dict(cls, value: dict[str, object]) -> PatchRecord:
+        """Build a typed record from one decoded manifest object."""
         return cls(**value)  # type: ignore[arg-type]
 
     def validate(self, root: Path, *, check_file: bool = True) -> list[str]:
+        """Return all field and optional local-asset validation errors."""
         errors: list[str] = []
         if not self.image_id.strip():
             errors.append("image_id is empty")
@@ -74,6 +78,7 @@ class PatchRecord:
 
 
 def read_jsonl(path: Path) -> list[PatchRecord]:
+    """Read non-empty JSONL rows and report malformed input with its line number."""
     records: list[PatchRecord] = []
     with path.open(encoding="utf-8") as stream:
         for line_number, line in enumerate(stream, start=1):
@@ -88,6 +93,7 @@ def read_jsonl(path: Path) -> list[PatchRecord]:
 
 
 def write_jsonl(path: Path, records: list[PatchRecord]) -> None:
+    """Write records as stable, sorted-key JSONL for reviewable diffs."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as stream:
         for record in records:
@@ -97,6 +103,7 @@ def write_jsonl(path: Path, records: list[PatchRecord]) -> None:
 def validate_records(
     records: list[PatchRecord], root: Path, *, check_file: bool = True
 ) -> list[str]:
+    """Validate each record and enforce unique observation identifiers."""
     errors: list[str] = []
     seen: set[str] = set()
     for record in records:

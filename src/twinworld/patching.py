@@ -17,6 +17,8 @@ from rasterio.warp import Resampling, reproject
 
 @dataclass(frozen=True, slots=True)
 class PatchGeometry:
+    """Measured output grid geometry and valid-source coverage for a patch."""
+
     width_pixels: int
     height_pixels: int
     width_m: float

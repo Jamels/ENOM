@@ -12,6 +12,7 @@ def mars_projection_longitude(longitude: float) -> float:
 
 
 def _ring_contains(ring: list[tuple[float, float]], x: float, y: float) -> bool:
+    """Apply the ray-crossing point-in-ring test to one polygon ring."""
     inside = False
     for index, (x2, y2) in enumerate(ring):
         x1, y1 = ring[index - 1]

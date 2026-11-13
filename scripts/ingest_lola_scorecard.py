@@ -92,6 +92,7 @@ def ingest(
     *,
     output_id: str = "moon_mare_tranquillitatis_01",
 ) -> dict[str, object]:
+    """Create a source-traceable LOLA terrain context for a catalogue site."""
     if not output_id.replace("_", "").isalnum():
         raise ValueError("output_id may contain only letters, numbers and underscores")
     source, first_col, first_row = fetch_lola_crop(longitude_east_deg, latitude_deg)

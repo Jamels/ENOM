@@ -14,6 +14,7 @@ from twinworld.records import PatchRecord
 
 
 def file_sha256(path: Path) -> str:
+    """Hash a source image incrementally so large rasters stay memory bounded."""
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for block in iter(lambda: stream.read(1024 * 1024), b""):

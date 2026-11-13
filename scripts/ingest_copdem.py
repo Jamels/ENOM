@@ -31,6 +31,7 @@ def ingest(
     context_size_m: float = DEFAULT_CONTEXT_SIZE_M,
     target_pixel_m: float = DEFAULT_TARGET_PIXEL_M,
 ) -> dict[str, object]:
+    """Fetch a bounded Copernicus DEM window and write its measurements and provenance."""
     manifest = read_jsonl(ROOT / "data/manifests/pilot-100.jsonl")
     record = next((item for item in manifest if item.image_id == observation_id), None)
     if record is None or record.body != "earth":

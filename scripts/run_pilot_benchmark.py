@@ -417,6 +417,7 @@ renderPairs('#promising',promising,'Category agreement');renderPairs('#misleadin
 
 
 def run(device: str, model_profile: str = "dinov2_small") -> Path:
+    """Run the configured retrieval benchmark and write its local HTML report."""
     model_profiles = MODEL_CONFIG["models"]
     if model_profile not in model_profiles:
         raise ValueError(f"Unknown model profile: {model_profile}")
@@ -463,9 +464,7 @@ def run(device: str, model_profile: str = "dinov2_small") -> Path:
     )
     expected_ids = [record.image_id for record in records]
     if dino.shape != (100, expected_dimension):
-        raise ValueError(
-            f"expected 100x{expected_dimension} DINOv2 embeddings, found {dino.shape}"
-        )
+        raise ValueError(f"expected 100x{expected_dimension} DINOv2 embeddings, found {dino.shape}")
     if not np.isfinite(dino).all() or dino_meta.get("image_ids") != expected_ids:
         raise ValueError("DINOv2 embeddings are nonfinite or misaligned with manifest image IDs")
     if dino_meta.get("revision") != revision or dino_meta.get("model_id") != model_id:

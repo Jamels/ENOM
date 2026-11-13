@@ -8,6 +8,7 @@ from twinworld.records import PatchRecord
 
 
 def normalize_rows(vectors: np.ndarray) -> np.ndarray:
+    """Return unit-length float32 vectors for cosine similarity via dot product."""
     matrix = np.asarray(vectors, dtype=np.float32)
     if matrix.ndim != 2 or not np.isfinite(matrix).all():
         raise ValueError("vectors must be a finite 2D matrix")
@@ -26,6 +27,7 @@ def search(
     class_filter: str | None = None,
     exclude_groups: set[str] | None = None,
 ) -> list[tuple[int, float]]:
+    """Rank opposite-body records, optionally filtering labels and geographic groups."""
     if len(vectors) != len(records):
         raise ValueError("vector order/count must exactly match records")
     if not 0 <= query_index < len(records):

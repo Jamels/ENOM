@@ -71,6 +71,5 @@ def polar_stereographic_crs(hemisphere: str, *, radius_m: float = MOON_REFERENCE
         raise ValueError("radius_m must be positive")
     latitude = 90 if hemisphere == "north" else -90
     return CRS.from_proj4(
-        f"+proj=stere +lat_0={latitude} +lon_0=0 +k=1 "
-        f"+R={radius_m:g} +units=m +no_defs"
+        f"+proj=stere +lat_0={latitude} +lon_0=0 +k=1 +R={radius_m:g} +units=m +no_defs"
     )

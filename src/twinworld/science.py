@@ -10,12 +10,16 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PlanetaryBody(StrEnum):
+    """Supported planetary bodies, using lowercase API and manifest values."""
+
     EARTH = "earth"
     MARS = "mars"
     MOON = "moon"
 
 
 class Availability(StrEnum):
+    """States that distinguish missing evidence from a negative measurement."""
+
     AVAILABLE = "available"
     NOT_OBSERVED = "not_observed"
     OUTSIDE_COVERAGE = "outside_coverage"
@@ -25,12 +29,16 @@ class Availability(StrEnum):
 
 
 class Uncertainty(BaseModel):
+    """Uncertainty value and human-readable context for a measurement."""
+
     value: float | None = None
     units: str | None = None
     description: str | None = None
 
 
 class ProvenanceRecord(BaseModel):
+    """Source and processing details needed to trace evidence to its origin."""
+
     source_product_id: str
     source_url: str
     provider: str
@@ -39,6 +47,8 @@ class ProvenanceRecord(BaseModel):
 
 
 class SourceDataset(BaseModel):
+    """Registry entry describing a planetary dataset and its known limits."""
+
     id: str
     provider: str
     name: str
@@ -59,6 +69,8 @@ class SourceDataset(BaseModel):
 
 
 class PhysicalMeasurement(BaseModel):
+    """A measured or derived value with units, scale, availability, and provenance."""
+
     name: str
     value: float | None
     units: str
@@ -69,12 +81,16 @@ class PhysicalMeasurement(BaseModel):
 
 
 class FeatureVector(BaseModel):
+    """Measurements derived from one source observation."""
+
     body: PlanetaryBody
     measurements: list[PhysicalMeasurement]
     source_observation_id: str
 
 
 class EvidenceRecord(BaseModel):
+    """Evidence group attached to a candidate or scientific comparison."""
+
     category: str
     status: Availability
     summary: str
@@ -83,6 +99,8 @@ class EvidenceRecord(BaseModel):
 
 
 class DataCoverage(BaseModel):
+    """Coverage summary for a dataset across a set of observations."""
+
     dataset_id: str
     observation_ids: list[str]
     coverage_count: int
@@ -91,6 +109,8 @@ class DataCoverage(BaseModel):
 
 
 class RegionOfInterest(BaseModel):
+    """Planetary surface region described in east-positive geographic coordinates."""
+
     id: str
     body: PlanetaryBody
     longitude_east_deg: float
@@ -101,6 +121,8 @@ class RegionOfInterest(BaseModel):
 
 
 class Observation(BaseModel):
+    """Source-backed observation with its original spatial reference metadata."""
+
     id: str
     body: PlanetaryBody
     dataset_id: str
@@ -113,12 +135,16 @@ class Observation(BaseModel):
 
 
 class RasterObservation(Observation):
+    """Raster observation with local asset, band, and nodata details."""
+
     bands: list[str]
     nodata: float | None
     asset_path: str
 
 
 class GeologicalUnit(BaseModel):
+    """Mapped geologic interpretation together with its source provenance."""
+
     unit_id: str
     name: str | None
     lithology: str | None
@@ -129,6 +155,8 @@ class GeologicalUnit(BaseModel):
 
 
 class AnalogueCandidate(BaseModel):
+    """Ranked retrieval result with an explicit score interpretation."""
+
     observation_id: str
     retrieval_method: str
     rank: int
@@ -138,6 +166,8 @@ class AnalogueCandidate(BaseModel):
 
 
 class ScientificComparison(BaseModel):
+    """Evidence and data gaps for a query-to-candidate comparison."""
+
     query_observation_id: str
     candidate_observation_id: str
     supporting_evidence: list[EvidenceRecord]
@@ -147,4 +177,6 @@ class ScientificComparison(BaseModel):
 
 
 class DomainModel(BaseModel):
+    """Base configuration for domain models that reject undeclared fields."""
+
     model_config = ConfigDict(extra="forbid")

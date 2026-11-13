@@ -8,6 +8,7 @@ import numpy as np
 
 
 def precision_at_k(ranked_ids: Sequence[str], relevant_ids: set[str], k: int) -> float:
+    """Compute the fraction of the first *k* returned items judged relevant."""
     if k < 1:
         raise ValueError("k must be positive")
     if len(ranked_ids) < k:
@@ -29,6 +30,7 @@ def average_precision(ranked_ids: Sequence[str], relevant_ids: set[str]) -> floa
 
 
 def reciprocal_rank(ranked_ids: Sequence[str], relevant_ids: set[str]) -> float:
+    """Return the inverse rank of the first relevant item, or zero when absent."""
     for rank, item_id in enumerate(ranked_ids, start=1):
         if item_id in relevant_ids:
             return 1.0 / rank
@@ -36,6 +38,7 @@ def reciprocal_rank(ranked_ids: Sequence[str], relevant_ids: set[str]) -> float:
 
 
 def random_precision_expectation(relevant_count: int, gallery_size: int, k: int) -> float:
+    """Return expected precision for a uniformly random ranking without replacement."""
     if not 0 <= relevant_count <= gallery_size or not 0 < k <= gallery_size:
         raise ValueError("invalid relevant_count, gallery_size, or k")
     return relevant_count / gallery_size

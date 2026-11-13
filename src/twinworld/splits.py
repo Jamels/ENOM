@@ -11,6 +11,8 @@ from twinworld.records import PatchRecord
 
 @dataclass(frozen=True, slots=True)
 class Split:
+    """Record indices and group identities for a geographic holdout split."""
+
     development_indices: tuple[int, ...]
     test_indices: tuple[int, ...]
     development_groups: tuple[str, ...]

@@ -90,6 +90,7 @@ def _read_crop(
 
 
 def ingest(observation_id: str, output: Path, *, context_cells: int = 22) -> dict[str, object]:
+    """Fetch and process a bounded MOLA context for one pilot Mars observation."""
     if context_cells < 5 or context_cells > 256:
         raise ValueError("context_cells must be between 5 and 256")
     manifest = read_jsonl(ROOT / "data/manifests/pilot-100.jsonl")
