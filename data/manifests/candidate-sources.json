@@ -1,0 +1,464 @@
+{
+  "discovered_at": "2026-11-04T08:04:48.175599+00:00",
+  "earth_bbox_wgs84": [
+    14,
+    -25,
+    16,
+    -23
+  ],
+  "mars_bbox_east_lon_lat": [
+    65,
+    7,
+    70,
+    10
+  ],
+  "earth_date_range": [
+    "2024-01-01",
+    "2024-12-31"
+  ],
+  "limit_per_source": 5,
+  "downloaded": false,
+  "candidates": [
+    {
+      "body": "earth",
+      "provider": "Microsoft Planetary Computer / ESA Copernicus",
+      "collection": "sentinel-2-l2a",
+      "source_id": "S2B_MSIL2A_20241231T084259_R064_T33KXQ_20241231T122915",
+      "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20241231T084259_R064_T33KXQ_20241231T122915",
+      "asset_keys_rgb": [
+        "B02",
+        "B03",
+        "B04"
+      ],
+      "asset_hrefs_rgb": {
+        "B02": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/XQ/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KXQ_20241231T122915.SAFE/GRANULE/L2A_T33KXQ_A040845_20241231T090324/IMG_DATA/R10m/T33KXQ_20241231T084259_B02_10m.tif",
+        "B03": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/XQ/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KXQ_20241231T122915.SAFE/GRANULE/L2A_T33KXQ_A040845_20241231T090324/IMG_DATA/R10m/T33KXQ_20241231T084259_B03_10m.tif",
+        "B04": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/XQ/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KXQ_20241231T122915.SAFE/GRANULE/L2A_T33KXQ_A040845_20241231T090324/IMG_DATA/R10m/T33KXQ_20241231T084259_B04_10m.tif"
+      },
+      "rendered_preview_href": "https://planetarycomputer.microsoft.com/api/data/v1/item/preview.png?collection=sentinel-2-l2a&item=S2B_MSIL2A_20241231T084259_R064_T33KXQ_20241231T122915&assets=visual&asset_bidx=visual%7C1,2,3&nodata=0&format=png",
+      "datetime": "2024-12-31T08:42:59.024000Z",
+      "platform": "Sentinel-2B",
+      "cloud_cover_percent": 0.152942,
+      "bbox": [
+        15.9729342,
+        -23.5952623,
+        17.0558598,
+        -22.5935234
+      ],
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              15.9729342,
+              -22.6035472
+            ],
+            [
+              17.0408315,
+              -22.5935234
+            ],
+            [
+              17.0558598,
+              -23.5847478
+            ],
+            [
+              15.9801034,
+              -23.5952623
+            ],
+            [
+              15.9729342,
+              -22.6035472
+            ]
+          ]
+        ]
+      },
+      "crs": 32733,
+      "native_gsd_m": 10,
+      "selection_note": "AOI/time/cloud filter; landform label remains unreviewed"
+    },
+    {
+      "body": "earth",
+      "provider": "Microsoft Planetary Computer / ESA Copernicus",
+      "collection": "sentinel-2-l2a",
+      "source_id": "S2B_MSIL2A_20241231T084259_R064_T33KXP_20241231T122915",
+      "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20241231T084259_R064_T33KXP_20241231T122915",
+      "asset_keys_rgb": [
+        "B02",
+        "B03",
+        "B04"
+      ],
+      "asset_hrefs_rgb": {
+        "B02": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/XP/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KXP_20241231T122915.SAFE/GRANULE/L2A_T33KXP_A040845_20241231T090324/IMG_DATA/R10m/T33KXP_20241231T084259_B02_10m.tif",
+        "B03": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/XP/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KXP_20241231T122915.SAFE/GRANULE/L2A_T33KXP_A040845_20241231T090324/IMG_DATA/R10m/T33KXP_20241231T084259_B03_10m.tif",
+        "B04": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/XP/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KXP_20241231T122915.SAFE/GRANULE/L2A_T33KXP_A040845_20241231T090324/IMG_DATA/R10m/T33KXP_20241231T084259_B04_10m.tif"
+      },
+      "rendered_preview_href": "https://planetarycomputer.microsoft.com/api/data/v1/item/preview.png?collection=sentinel-2-l2a&item=S2B_MSIL2A_20241231T084259_R064_T33KXP_20241231T122915&assets=visual&asset_bidx=visual%7C1,2,3&nodata=0&format=png",
+      "datetime": "2024-12-31T08:42:59.024000Z",
+      "platform": "Sentinel-2B",
+      "cloud_cover_percent": 0.0,
+      "bbox": [
+        15.9794487,
+        -24.4985324,
+        17.0702835,
+        -23.4964638
+      ],
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              15.9794487,
+              -23.5069344
+            ],
+            [
+              17.0544873,
+              -23.4964638
+            ],
+            [
+              17.0702835,
+              -24.4875646
+            ],
+            [
+              15.9869844,
+              -24.4985324
+            ],
+            [
+              15.9794487,
+              -23.5069344
+            ]
+          ]
+        ]
+      },
+      "crs": 32733,
+      "native_gsd_m": 10,
+      "selection_note": "AOI/time/cloud filter; landform label remains unreviewed"
+    },
+    {
+      "body": "earth",
+      "provider": "Microsoft Planetary Computer / ESA Copernicus",
+      "collection": "sentinel-2-l2a",
+      "source_id": "S2B_MSIL2A_20241231T084259_R064_T33KWQ_20241231T122915",
+      "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20241231T084259_R064_T33KWQ_20241231T122915",
+      "asset_keys_rgb": [
+        "B02",
+        "B03",
+        "B04"
+      ],
+      "asset_hrefs_rgb": {
+        "B02": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/WQ/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KWQ_20241231T122915.SAFE/GRANULE/L2A_T33KWQ_A040845_20241231T090324/IMG_DATA/R10m/T33KWQ_20241231T084259_B02_10m.tif",
+        "B03": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/WQ/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KWQ_20241231T122915.SAFE/GRANULE/L2A_T33KWQ_A040845_20241231T090324/IMG_DATA/R10m/T33KWQ_20241231T084259_B03_10m.tif",
+        "B04": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/WQ/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KWQ_20241231T122915.SAFE/GRANULE/L2A_T33KWQ_A040845_20241231T090324/IMG_DATA/R10m/T33KWQ_20241231T084259_B04_10m.tif"
+      },
+      "rendered_preview_href": "https://planetarycomputer.microsoft.com/api/data/v1/item/preview.png?collection=sentinel-2-l2a&item=S2B_MSIL2A_20241231T084259_R064_T33KWQ_20241231T122915&assets=visual&asset_bidx=visual%7C1,2,3&nodata=0&format=png",
+      "datetime": "2024-12-31T08:42:59.024000Z",
+      "platform": "Sentinel-2B",
+      "cloud_cover_percent": 0.0,
+      "bbox": [
+        15.5159302,
+        -23.5965674,
+        16.075945,
+        -22.6029424
+      ],
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              15.5159302,
+              -23.5965674
+            ],
+            [
+              15.5201656,
+              -23.5804679
+            ],
+            [
+              15.5588629,
+              -23.4328955
+            ],
+            [
+              15.5974956,
+              -23.2853319
+            ],
+            [
+              15.6360829,
+              -23.1377981
+            ],
+            [
+              15.6747178,
+              -22.9902326
+            ],
+            [
+              15.7130181,
+              -22.8425292
+            ],
+            [
+              15.7518375,
+              -22.6949904
+            ],
+            [
+              15.7748903,
+              -22.6039175
+            ],
+            [
+              16.068075,
+              -22.6029424
+            ],
+            [
+              16.075945,
+              -23.5946279
+            ],
+            [
+              15.5159302,
+              -23.5965674
+            ]
+          ]
+        ]
+      },
+      "crs": 32733,
+      "native_gsd_m": 10,
+      "selection_note": "AOI/time/cloud filter; landform label remains unreviewed"
+    },
+    {
+      "body": "earth",
+      "provider": "Microsoft Planetary Computer / ESA Copernicus",
+      "collection": "sentinel-2-l2a",
+      "source_id": "S2B_MSIL2A_20241231T084259_R064_T33KWP_20241231T122915",
+      "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20241231T084259_R064_T33KWP_20241231T122915",
+      "asset_keys_rgb": [
+        "B02",
+        "B03",
+        "B04"
+      ],
+      "asset_hrefs_rgb": {
+        "B02": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/WP/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KWP_20241231T122915.SAFE/GRANULE/L2A_T33KWP_A040845_20241231T090324/IMG_DATA/R10m/T33KWP_20241231T084259_B02_10m.tif",
+        "B03": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/WP/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KWP_20241231T122915.SAFE/GRANULE/L2A_T33KWP_A040845_20241231T090324/IMG_DATA/R10m/T33KWP_20241231T084259_B03_10m.tif",
+        "B04": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/K/WP/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33KWP_20241231T122915.SAFE/GRANULE/L2A_T33KWP_A040845_20241231T090324/IMG_DATA/R10m/T33KWP_20241231T084259_B04_10m.tif"
+      },
+      "rendered_preview_href": "https://planetarycomputer.microsoft.com/api/data/v1/item/preview.png?collection=sentinel-2-l2a&item=S2B_MSIL2A_20241231T084259_R064_T33KWP_20241231T122915&assets=visual&asset_bidx=visual%7C1,2,3&nodata=0&format=png",
+      "datetime": "2024-12-31T08:42:59.024000Z",
+      "platform": "Sentinel-2B",
+      "cloud_cover_percent": 5.4e-05,
+      "bbox": [
+        15.2776608,
+        -24.5007616,
+        16.0834985,
+        -23.5063026
+      ],
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              15.2776608,
+              -24.5007616
+            ],
+            [
+              15.2868819,
+              -24.4660208
+            ],
+            [
+              15.3260912,
+              -24.3184767
+            ],
+            [
+              15.3649469,
+              -24.1708147
+            ],
+            [
+              15.4037384,
+              -24.0231311
+            ],
+            [
+              15.4426184,
+              -23.8755425
+            ],
+            [
+              15.4813577,
+              -23.727985
+            ],
+            [
+              15.5201656,
+              -23.5804679
+            ],
+            [
+              15.5391285,
+              -23.5081528
+            ],
+            [
+              16.0752263,
+              -23.5063026
+            ],
+            [
+              16.0834985,
+              -24.4978707
+            ],
+            [
+              15.2776608,
+              -24.5007616
+            ]
+          ]
+        ]
+      },
+      "crs": 32733,
+      "native_gsd_m": 10,
+      "selection_note": "AOI/time/cloud filter; landform label remains unreviewed"
+    },
+    {
+      "body": "earth",
+      "provider": "Microsoft Planetary Computer / ESA Copernicus",
+      "collection": "sentinel-2-l2a",
+      "source_id": "S2B_MSIL2A_20241231T084259_R064_T33JXN_20241231T122915",
+      "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20241231T084259_R064_T33JXN_20241231T122915",
+      "asset_keys_rgb": [
+        "B02",
+        "B03",
+        "B04"
+      ],
+      "asset_hrefs_rgb": {
+        "B02": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/J/XN/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33JXN_20241231T122915.SAFE/GRANULE/L2A_T33JXN_A040845_20241231T090324/IMG_DATA/R10m/T33JXN_20241231T084259_B02_10m.tif",
+        "B03": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/J/XN/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33JXN_20241231T122915.SAFE/GRANULE/L2A_T33JXN_A040845_20241231T090324/IMG_DATA/R10m/T33JXN_20241231T084259_B03_10m.tif",
+        "B04": "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/33/J/XN/2024/12/31/S2B_MSIL2A_20241231T084259_N0511_R064_T33JXN_20241231T122915.SAFE/GRANULE/L2A_T33JXN_A040845_20241231T090324/IMG_DATA/R10m/T33JXN_20241231T084259_B04_10m.tif"
+      },
+      "rendered_preview_href": "https://planetarycomputer.microsoft.com/api/data/v1/item/preview.png?collection=sentinel-2-l2a&item=S2B_MSIL2A_20241231T084259_R064_T33JXN_20241231T122915&assets=visual&asset_bidx=visual%7C1,2,3&nodata=0&format=png",
+      "datetime": "2024-12-31T08:42:59.024000Z",
+      "platform": "Sentinel-2B",
+      "cloud_cover_percent": 0.0,
+      "bbox": [
+        15.9862965,
+        -25.4016926,
+        17.0854296,
+        -24.3992918
+      ],
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              15.9862965,
+              -24.4102151
+            ],
+            [
+              17.0688416,
+              -24.3992918
+            ],
+            [
+              17.0854296,
+              -25.3902651
+            ],
+            [
+              15.99421,
+              -25.4016926
+            ],
+            [
+              15.9862965,
+              -24.4102151
+            ]
+          ]
+        ]
+      },
+      "crs": 32733,
+      "native_gsd_m": 10,
+      "selection_note": "AOI/time/cloud filter; landform label remains unreviewed"
+    },
+    {
+      "body": "mars",
+      "provider": "NASA PDS Geosciences Node Mars ODE / MRO CTX",
+      "source_id": "P02_002005_1865_XN_06N291W",
+      "source_url": "https://ode.rsl.wustl.edu/mars/indexproductpage.aspx?product_id=P02_002005_1865_XN_06N291W&product_idGeo=9034664",
+      "label_url": "https://planetarydata.jpl.nasa.gov/img/data/mro/ctx/mrox_0032/data/P02_002005_1865_XN_06N291W.IMG",
+      "datetime": "2006-12-30T16:22:36.487",
+      "center_latitude": "6.5233",
+      "center_longitude": "68.0954",
+      "native_gsd_m": null,
+      "ode_map_scale_m_per_px": 5.41,
+      "bbox": {
+        "west": "67.78",
+        "south": "5.7818",
+        "east": "68.41",
+        "north": "7.2647"
+      },
+      "comment": "Dune field west of Meroe Patera",
+      "selection_note": "ODE footprint/time query; landform label remains unreviewed"
+    },
+    {
+      "body": "mars",
+      "provider": "NASA PDS Geosciences Node Mars ODE / MRO CTX",
+      "source_id": "P04_002427_1888_XI_08N292W",
+      "source_url": "https://ode.rsl.wustl.edu/mars/indexproductpage.aspx?product_id=P04_002427_1888_XI_08N292W&product_idGeo=9036628",
+      "label_url": "https://planetarydata.jpl.nasa.gov/img/data/mro/ctx/mrox_0049/data/P04_002427_1888_XI_08N292W.IMG",
+      "datetime": "2007-02-01T13:34:29.169",
+      "center_latitude": "8.7777",
+      "center_longitude": "67.326",
+      "native_gsd_m": null,
+      "ode_map_scale_m_per_px": 5.54,
+      "bbox": {
+        "west": "66.96",
+        "south": "7.7293",
+        "east": "67.69",
+        "north": "9.8256"
+      },
+      "comment": "Nili Patera",
+      "selection_note": "ODE footprint/time query; landform label remains unreviewed"
+    },
+    {
+      "body": "mars",
+      "provider": "NASA PDS Geosciences Node Mars ODE / MRO CTX",
+      "source_id": "P05_002783_1871_XN_07N292W",
+      "source_url": "https://ode.rsl.wustl.edu/mars/indexproductpage.aspx?product_id=P05_002783_1871_XN_07N292W&product_idGeo=9038310",
+      "label_url": "https://planetarydata.jpl.nasa.gov/img/data/mro/ctx/mrox_0064/data/P05_002783_1871_XN_07N292W.IMG",
+      "datetime": "2007-03-01T07:20:12.811",
+      "center_latitude": "7.0769",
+      "center_longitude": "67.5953",
+      "native_gsd_m": null,
+      "ode_map_scale_m_per_px": 5.41,
+      "bbox": {
+        "west": "67.31",
+        "south": "6.5924",
+        "east": "67.88",
+        "north": "7.5613"
+      },
+      "comment": "Dune field west Meroe Patera",
+      "selection_note": "ODE footprint/time query; landform label remains unreviewed"
+    },
+    {
+      "body": "mars",
+      "provider": "NASA PDS Geosciences Node Mars ODE / MRO CTX",
+      "source_id": "P05_003139_1887_XI_08N292W",
+      "source_url": "https://ode.rsl.wustl.edu/mars/indexproductpage.aspx?product_id=P05_003139_1887_XI_08N292W&product_idGeo=9039428",
+      "label_url": "https://planetarydata.jpl.nasa.gov/img/data/mro/ctx/mrox_0076/data/P05_003139_1887_XI_08N292W.IMG",
+      "datetime": "2007-03-29T01:05:54.510",
+      "center_latitude": "8.5158",
+      "center_longitude": "67.6657",
+      "native_gsd_m": null,
+      "ode_map_scale_m_per_px": 5.57,
+      "bbox": {
+        "west": "67.09",
+        "south": "5.8807",
+        "east": "68.22",
+        "north": "11.1509"
+      },
+      "comment": "Nili Patera region",
+      "selection_note": "ODE footprint/time query; landform label remains unreviewed"
+    },
+    {
+      "body": "mars",
+      "provider": "NASA PDS Geosciences Node Mars ODE / MRO CTX",
+      "source_id": "P08_004339_1888_XI_08N292W",
+      "source_url": "https://ode.rsl.wustl.edu/mars/indexproductpage.aspx?product_id=P08_004339_1888_XI_08N292W&product_idGeo=9047189",
+      "label_url": "https://planetarydata.jpl.nasa.gov/img/data/mro/ctx/mrox_0148/data/P08_004339_1888_XI_08N292W.IMG",
+      "datetime": "2007-06-30T13:12:47.405",
+      "center_latitude": "8.7581",
+      "center_longitude": "67.3307",
+      "native_gsd_m": null,
+      "ode_map_scale_m_per_px": 5.45,
+      "bbox": {
+        "west": "66.76",
+        "south": "6.1179",
+        "east": "67.88",
+        "north": "11.3982"
+      },
+      "comment": "Terrain in and near Nili Patera",
+      "selection_note": "ODE footprint/time query; landform label remains unreviewed"
+    }
+  ]
+}

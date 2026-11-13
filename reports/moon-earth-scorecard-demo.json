@@ -1,0 +1,1079 @@
+{
+  "site": {
+    "id": "moon_mare_tranquillitatis_01",
+    "name": "Mare Tranquillitatis (scorecard terrain window)",
+    "body": "moon",
+    "longitude_east_deg": 31.4,
+    "latitude_deg": 8.5,
+    "measurements": [
+      {
+        "name": "elevation_range",
+        "value": 532.9190673828125,
+        "units": "m",
+        "availability": "available",
+        "spatial_scale_m": 10187.268677734402,
+        "uncertainty": {
+          "value": null,
+          "units": null,
+          "description": "Input DEM uncertainty not supplied by adapter"
+        },
+        "provenance": {
+          "source_product_id": "LDEM_64",
+          "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
+          "provider": "NASA LRO LOLA / PDS Geosciences Node",
+          "processing_method": "Bounded PDS3 LDEM_64 range read; DN × 0.5 m; bilinear reprojection to 22×22 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+          "software_version": null
+        }
+      },
+      {
+        "name": "mean_slope",
+        "value": 1.985014869536044,
+        "units": "degree",
+        "availability": "available",
+        "spatial_scale_m": 926.1153343394911,
+        "uncertainty": {
+          "value": null,
+          "units": null,
+          "description": "Derived from neighbouring DEM elevations"
+        },
+        "provenance": {
+          "source_product_id": "LDEM_64",
+          "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
+          "provider": "NASA LRO LOLA / PDS Geosciences Node",
+          "processing_method": "Bounded PDS3 LDEM_64 range read; DN × 0.5 m; bilinear reprojection to 22×22 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+          "software_version": null
+        }
+      },
+      {
+        "name": "median_local_relief_3x3",
+        "value": 26.363189697265625,
+        "units": "m",
+        "availability": "available",
+        "spatial_scale_m": 1389.1730015092367,
+        "uncertainty": {
+          "value": null,
+          "units": null,
+          "description": "Derived from a 3x3 pixel moving window"
+        },
+        "provenance": {
+          "source_product_id": "LDEM_64",
+          "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
+          "provider": "NASA LRO LOLA / PDS Geosciences Node",
+          "processing_method": "Bounded PDS3 LDEM_64 range read; DN × 0.5 m; bilinear reprojection to 22×22 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+          "software_version": null
+        }
+      },
+      {
+        "name": "slope_p90",
+        "value": 4.55569905530959,
+        "units": "degree",
+        "availability": "available",
+        "spatial_scale_m": 926.1153343394911,
+        "uncertainty": {
+          "value": null,
+          "units": null,
+          "description": "90th percentile of central-difference slope"
+        },
+        "provenance": {
+          "source_product_id": "LDEM_64",
+          "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
+          "provider": "NASA LRO LOLA / PDS Geosciences Node",
+          "processing_method": "Bounded PDS3 LDEM_64 range read; DN × 0.5 m; bilinear reprojection to 22×22 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+          "software_version": null
+        }
+      },
+      {
+        "name": "median_roughness_3x3",
+        "value": 2.3209092881942297,
+        "units": "m",
+        "availability": "available",
+        "spatial_scale_m": 1389.1730015092367,
+        "uncertainty": {
+          "value": null,
+          "units": null,
+          "description": "Median absolute deviation from the 3x3 mean"
+        },
+        "provenance": {
+          "source_product_id": "LDEM_64",
+          "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
+          "provider": "NASA LRO LOLA / PDS Geosciences Node",
+          "processing_method": "Bounded PDS3 LDEM_64 range read; DN × 0.5 m; bilinear reprojection to 22×22 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+          "software_version": null
+        }
+      },
+      {
+        "name": "median_curvature",
+        "value": 7.561918337448936e-06,
+        "units": "m^-1",
+        "availability": "available",
+        "spatial_scale_m": 1389.1730015092367,
+        "uncertainty": {
+          "value": null,
+          "units": null,
+          "description": "Finite-difference Laplacian; grid-scale dependent"
+        },
+        "provenance": {
+          "source_product_id": "LDEM_64",
+          "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
+          "provider": "NASA LRO LOLA / PDS Geosciences Node",
+          "processing_method": "Bounded PDS3 LDEM_64 range read; DN × 0.5 m; bilinear reprojection to 22×22 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+          "software_version": null
+        }
+      }
+    ],
+    "data_quality": "LOLA GDR is a shape/radius map. Its label states gridding used surface interpolation in higher-resolution regions. Product does not supply a per-pixel confidence layer; measurement uncertainty is therefore unquantified.",
+    "source": {
+      "dataset_id": "lro-lola-gdr-ldem-64",
+      "product_id": "LDEM_64",
+      "url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
+      "label_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.lbl",
+      "retrieved_at": "2026-11-14",
+      "observation_period": "2009-07-13 through 2016-11-29"
+    },
+    "mission_suitability": {
+      "status": "provisional_pass",
+      "checks": [
+        {
+          "name": "slope_p90",
+          "value": 4.55569905530959,
+          "units": "degree",
+          "maximum": 10.0,
+          "status": "within_screen"
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "value": 26.363189697265625,
+          "units": "m",
+          "maximum": 60.0,
+          "status": "within_screen"
+        }
+      ],
+      "qualification": "Provisional terrain-only screening; criteria are configurable research assumptions, not validated vehicle or site-certification limits."
+    }
+  },
+  "mission_objective": "landing",
+  "mission_objective_name": "Landing-site terrain screening",
+  "weights": {
+    "mean_slope": 0.35,
+    "slope_p90": 0.3,
+    "median_local_relief_3x3": 0.2,
+    "median_roughness_3x3": 0.15
+  },
+  "ranking_method": "Weighted mean of exp(-absolute difference / variable tolerance), normalized across available same-unit variables at matching scales.",
+  "candidates": [
+    {
+      "observation_id": "earth_reykjanes_nondune-01",
+      "name": "earth reykjanes nondune",
+      "longitude_east_deg": -22.42038166641898,
+      "latitude_deg": 63.86296579174918,
+      "similarity_score": 0.9252806979294347,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 1.474293839363449,
+          "difference": -0.5107210301725948,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.9028993387471475
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 4.063604461059693,
+          "difference": -0.4920945942498971,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.9519817072727745
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 18.51831817626953,
+          "difference": -7.844871520996094,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.8774389851227496
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 2.5645715395609505,
+          "difference": 0.24366225136672082,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.9878908010770044
+        }
+      ],
+      "why_ranked": [
+        "Mean slope matched with a normalized score of 0.903",
+        "90th percentile slope matched with a normalized score of 0.952"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N63_00_W023_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 1
+    },
+    {
+      "observation_id": "earth_namib_barchan-01",
+      "name": "earth namib barchan",
+      "longitude_east_deg": 15.140724982692975,
+      "latitude_deg": -24.736192943213656,
+      "similarity_score": 0.7581838908536538,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 2.8593574109714988,
+          "difference": 0.8743425414354549,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.8395674096682355
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 5.250810753401879,
+          "difference": 0.6951116980922887,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.9328497135730226
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 65.07785034179688,
+          "difference": 38.71466064453125,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.5245343595837392
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 14.99998982747394,
+          "difference": 12.67908053927971,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.530490076540777
+        }
+      ],
+      "why_ranked": [
+        "Mean slope matched with a normalized score of 0.840",
+        "90th percentile slope matched with a normalized score of 0.933"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 2
+    },
+    {
+      "observation_id": "earth_taklamakan_barchan-01",
+      "name": "earth taklamakan barchan",
+      "longitude_east_deg": 82.92977102810873,
+      "latitude_deg": 38.9651419330448,
+      "similarity_score": 0.7460339896684512,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 5.3466957642717565,
+          "difference": 3.361680894735713,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.5105145302774375
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 2.6222814205606357,
+          "difference": -1.9334176347489547,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.8242002444598371
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 20.5098876953125,
+          "difference": -5.853302001953125,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.9070524220343756
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 3.8897501627604925,
+          "difference": 1.5688408745662628,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.9245556421768122
+        }
+      ],
+      "why_ranked": [
+        "90th percentile slope matched with a normalized score of 0.824",
+        "Median 3×3 local relief matched with a normalized score of 0.907"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N38_00_E082_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 3
+    },
+    {
+      "observation_id": "earth_simpson_linear-01",
+      "name": "earth simpson linear",
+      "longitude_east_deg": 136.94114388529664,
+      "latitude_deg": -25.036890811545092,
+      "similarity_score": 0.7406696563617458,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 0.74876575296433,
+          "difference": -1.236249116571714,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.7809455707484754
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 0.7424683567261441,
+          "difference": -3.813230698583446,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.6829572110850869
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 0.0,
+          "difference": -26.363189697265625,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.644431661905731
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 0.0,
+          "difference": -2.3209092881942297,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.8904347392873805
+        }
+      ],
+      "why_ranked": [
+        "Mean slope matched with a normalized score of 0.781",
+        "90th percentile slope matched with a normalized score of 0.683"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_S25_00_E136_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 4
+    },
+    {
+      "observation_id": "earth_whitesands_otherdune-01",
+      "name": "earth whitesands otherdune",
+      "longitude_east_deg": -106.36351669351404,
+      "latitude_deg": 32.76324591672003,
+      "similarity_score": 0.7279057805349987,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 0.2924646980924488,
+          "difference": -1.692550171443595,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.7128316265946519
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 0.7934345847060786,
+          "difference": -3.7622644706035118,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.6864468715649149
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 3.46954345703125,
+          "difference": -22.893646240234375,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.6827948908938798
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 0.34977891710082076,
+          "difference": -1.971130371093409,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.9061444771908002
+        }
+      ],
+      "why_ranked": [
+        "Mean slope matched with a normalized score of 0.713",
+        "90th percentile slope matched with a normalized score of 0.686"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N32_00_W107_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 5
+    },
+    {
+      "observation_id": "earth_rubalkhali_linear-01",
+      "name": "earth rubalkhali linear",
+      "longitude_east_deg": 53.55868737488894,
+      "latitude_deg": 20.57137897160008,
+      "similarity_score": 0.702497243654633,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 3.336104144474932,
+          "difference": 1.3510892749388883,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.7632132064204283
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 6.117723640744699,
+          "difference": 1.5620245854351085,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.8553859926367208
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 72.47210693359375,
+          "difference": 46.108917236328125,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.4637164772443596
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 13.443523406982429,
+          "difference": 11.1226141187882,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.5734235211172987
+        }
+      ],
+      "why_ranked": [
+        "Mean slope matched with a normalized score of 0.763",
+        "90th percentile slope matched with a normalized score of 0.855"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N20_00_E053_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 6
+    },
+    {
+      "observation_id": "earth_uyuni_nondune-01",
+      "name": "earth uyuni nondune",
+      "longitude_east_deg": -67.55707924217872,
+      "latitude_deg": -20.236615046490215,
+      "similarity_score": 0.6879937011024312,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 0.0,
+          "difference": -1.985014869536044,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.6723320261766248
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 0.0,
+          "difference": -4.55569905530959,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.6340864955545306
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 0.0,
+          "difference": -26.363189697265625,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.644431661905731
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 0.0,
+          "difference": -2.3209092881942297,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.8904347392873805
+        }
+      ],
+      "why_ranked": [
+        "Mean slope matched with a normalized score of 0.672",
+        "90th percentile slope matched with a normalized score of 0.634"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_S21_00_W068_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 7
+    },
+    {
+      "observation_id": "earth_grandcanyon_layered-01",
+      "name": "earth grandcanyon layered",
+      "longitude_east_deg": -112.1660693993286,
+      "latitude_deg": 36.01331426893455,
+      "similarity_score": 0.6696116285619403,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 6.408091381242432,
+          "difference": 4.423076511706388,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.41287297399840567
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 3.226270801933721,
+          "difference": -1.3294282533758692,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.8755151479608165
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 0.0,
+          "difference": -26.363189697265625,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.644431661905731
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 0.0,
+          "difference": -2.3209092881942297,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.8904347392873805
+        }
+      ],
+      "why_ranked": [
+        "90th percentile slope matched with a normalized score of 0.876",
+        "Mean slope matched with a normalized score of 0.413"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N35_00_W113_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 8
+    },
+    {
+      "observation_id": "earth_capitolreef_layered-01",
+      "name": "earth capitolreef layered",
+      "longitude_east_deg": -111.26839280903192,
+      "latitude_deg": 38.16381318751373,
+      "similarity_score": 0.3578306512101632,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 6.87874855337884,
+          "difference": 4.893733683842797,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.37578175731981406
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 12.68541261766872,
+          "difference": 8.129713562359129,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.44353819630671604
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 137.3917236328125,
+          "difference": 111.02853393554688,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.15716240750524232
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 20.05131022135447,
+          "difference": 17.73040093316024,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.41208730503443325
+        }
+      ],
+      "why_ranked": [
+        "90th percentile slope matched with a normalized score of 0.444",
+        "Mean slope matched with a normalized score of 0.376"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 9
+    },
+    {
+      "observation_id": "earth_badain_otherdune-01",
+      "name": "earth badain otherdune",
+      "longitude_east_deg": 102.42825266323918,
+      "latitude_deg": 39.76611566143402,
+      "similarity_score": 0.31380903217034734,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 1.0,
+      "matched_variable_count": 4,
+      "requested_variable_count": 4,
+      "variables": [
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "available",
+          "lunar_value": 1.985014869536044,
+          "earth_value": 7.847944266252464,
+          "difference": 5.86292939671642,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.35,
+          "tolerance": 5.0,
+          "score": 0.3095654065858538
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "available",
+          "lunar_value": 4.55569905530959,
+          "earth_value": 13.384072816417776,
+          "difference": 8.828373761108185,
+          "units": "degree",
+          "lunar_spatial_scale_m": 926.1153343394911,
+          "earth_spatial_scale_m": 926.1153343394911,
+          "scale_match": true,
+          "weight": 0.3,
+          "tolerance": 10.0,
+          "score": 0.4136076846258369
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "available",
+          "lunar_value": 26.363189697265625,
+          "earth_value": 174.0404052734375,
+          "difference": 147.67721557617188,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 60.0,
+          "score": 0.08532507320204133
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "available",
+          "lunar_value": 2.3209092881942297,
+          "earth_value": 19.258124457465442,
+          "difference": 16.937215169271212,
+          "units": "m",
+          "lunar_spatial_scale_m": 1389.1730015092367,
+          "earth_spatial_scale_m": 1389.1730015092367,
+          "scale_match": true,
+          "weight": 0.15,
+          "tolerance": 20.0,
+          "score": 0.428758798914261
+        }
+      ],
+      "why_ranked": [
+        "90th percentile slope matched with a normalized score of 0.414",
+        "Mean slope matched with a normalized score of 0.310"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N39_00_E102_00_DEM",
+        "url": null,
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting"
+      },
+      "rank": 10
+    }
+  ],
+  "candidate_coverage": {
+    "indexed_earth_dem_contexts": 10,
+    "dataset_id": "cop-dem-glo-30",
+    "status": "partial_catalogue",
+    "note": "Ranks only Earth DEM contexts ingested here; this is not global search or a new-analogue determination."
+  },
+  "limitations": [
+    "Terrain similarity is not probability, analogue validation, or site suitability.",
+    "LOLA LDEM_64 is a gridded shape/radius product; interpolation was used, and direct-observation coverage is not quantified in this crop.",
+    "Copernicus GLO-30 is a surface model with different acquisition and processing characteristics.",
+    "Contexts are resampled to 463.06 m cells over about 10.19 km, but scales and uncertainties still differ.",
+    "Mission thresholds are provisional research-screening assumptions documented in the methodology; they are not validated against a specific vehicle or engineering design.",
+    "Geology, thermal environment, radiation, illumination, and volatiles are not included."
+  ]
+}

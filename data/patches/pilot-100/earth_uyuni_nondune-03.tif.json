@@ -1,0 +1,17 @@
+{
+  "width_pixels": 200,
+  "height_pixels": 200,
+  "width_m": 2000.0,
+  "height_m": 2000.0,
+  "pixel_size_m": 10.0,
+  "valid_pixel_fraction": 1.0,
+  "crs": "EPSG:32719",
+  "transform": [
+    10.0,
+    0.0,
+    661722.4448625181,
+    0.0,
+    -10.0,
+    7762677.951101994
+  ]
+}

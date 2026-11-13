@@ -1,0 +1,14 @@
+{
+  "evaluation_id": "cross-body-analogue-review-set-v1",
+  "status": "proposed_pairs_pending_independent_blinded_review",
+  "usage": "Reviewers should judge image morphology without seeing model ranks; terrain/evidence quality and mission suitability must be recorded separately.",
+  "relevance_labels_are_adjudicated": false,
+  "pairs": [
+    {"query_id":"earth_namib_barchan-01","candidate_id":"mars-dune-barchan_crescent_dune-0443+417","relationship_hypothesis":"positive_candidate","basis":"Both source labels indicate barchan/crescent dune morphology; patch-level labels are not independently verified.","review_status":"pending"},
+    {"query_id":"earth_taklamakan_barchan-01","candidate_id":"mars-dune-barchan_crescent_dune-0791+202","relationship_hypothesis":"positive_candidate","basis":"Both source labels indicate barchan/crescent dune morphology; image-level review remains required.","review_status":"pending"},
+    {"query_id":"earth_simpson_linear-01","candidate_id":"mars-dune-linear-2886-131-01","relationship_hypothesis":"positive_candidate","basis":"Both source labels indicate linear dune morphology; form/process equivalence is unestablished.","review_status":"pending"},
+    {"query_id":"earth_reykjanes_nondune-01","candidate_id":"mars_mawrth_layered-01","relationship_hypothesis":"negative_candidate","basis":"Pilot labels identify basaltic non-dune terrain versus layered terrain; visual texture may still confound this contrast.","review_status":"pending"},
+    {"query_id":"earth_capitolreef_layered-01","candidate_id":"mars-dune-barchan_crescent_dune-0443+417","relationship_hypothesis":"negative_candidate","basis":"Pilot labels identify layered terrain versus dune morphology; both labels remain unreviewed.","review_status":"pending"},
+    {"query_id":"earth_uyuni_nondune-01","candidate_id":"mars-dune-linear-2886-131-01","relationship_hypothesis":"negative_candidate","basis":"Pilot labels identify a salt flat versus dune morphology; image-level appearance is not a physical assessment.","review_status":"pending"}
+  ]
+}

@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "twinworld"
+version = "0.1.0"
+description = "Reproducible cross-planetary geological image retrieval experiments"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "numpy>=2.1",
+  "pandas>=2.2",
+  "Pillow>=10",
+  "pyarrow>=18",
+  "pyshp>=2.3",
+  "PyYAML>=6.0",
+  "rasterio>=1.4",
+  "requests>=2.32",
+  "scikit-image>=0.24",
+  "scikit-learn>=1.5",
+  "typer>=0.15",
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.34",
+]
+
+[project.optional-dependencies]
+vision = ["torch>=2.5", "torchvision>=0.20", "transformers>=4.46"]
+earthdata = ["pystac-client>=0.8", "planetary-computer>=1.0"]
+dev = ["httpx2>=2.16", "pytest>=8.3", "ruff>=0.8", "mypy>=1.13"]
+
+[project.scripts]
+twinworld = "twinworld.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/twinworld"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+
+[[tool.mypy.overrides]]
+module = [
+  "planetary_computer",
+  "pystac_client.*",
+  "rasterio.*",
+  "sklearn.*",
+  "scipy.*",
+  "torch",
+  "transformers",
+]
+ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.0",
+]

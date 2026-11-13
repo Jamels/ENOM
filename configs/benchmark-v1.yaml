@@ -1,0 +1,26 @@
+benchmark_id: benchmark-v1
+random_seed: 20261104
+target_scale_m: 2000
+patch_pixels: 224
+target_counts:
+  barchan_crescent_dune: {earth: 100, mars: 100}
+  linear_dune: {earth: 100, mars: 100}
+  other_dune: {earth: 100, mars: 100}
+  rocky_ridge_layered: {earth: 100, mars: 100}
+  other_non_dune: {earth: 100, mars: 100}
+split:
+  grouping_fields: [geographic_group, source_id]
+  development_fraction: 0.7
+  final_test_fraction: 0.3
+  strategy: geographic_holdout
+models:
+  dinov2:
+    model_id: facebook/dinov2-small
+    revision: ed25f3a31f01632728cabb09d1542f84ab7b0056 # immutable HF commit, pinned 2026-11-04
+    device: auto
+    batch_size: 16
+  classical:
+    descriptors: [hog, lbp]
+preprocessing:
+  variants: [rendered, grayscale, contrast_normalized]
+  grayscale_percentiles: [2, 98]

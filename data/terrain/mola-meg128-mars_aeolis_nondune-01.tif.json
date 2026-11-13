@@ -1,0 +1,46 @@
+{
+  "observation_id": "mars_aeolis_nondune-01",
+  "dataset_id": "mola-meg128",
+  "provider": "NASA Planetary Data System Geosciences Node / MGS MOLA",
+  "source_product_id": "urn:nasa:pds:mgs_mola_topography_derived:data_meg128:megt00n090hb",
+  "counts_product_id": "urn:nasa:pds:mgs_mola_topography_derived:data_meg128:megc00n090hb",
+  "source_url": "https://pds-geosciences.wustl.edu/mgs/urn-nasa-pds-mgs_mola_topography_derived/meg128/megt00n090hb.img",
+  "counts_source_url": "https://pds-geosciences.wustl.edu/mgs/urn-nasa-pds-mgs_mola_topography_derived/meg128/megc00n090hb.img",
+  "dataset_reference_url": "https://pds-geosciences.wustl.edu/missions/mgs/megdr.html",
+  "dataset_version": "PDS4 bundle label 1.1; MEGDR final topography product",
+  "observation_period": "MGS MOLA mapping data, 1999-03-08 through 2001-06-30",
+  "native_resolution_m_at_equator": 463.05766716974557,
+  "grid_crs": "PROJCS[\"unknown\",GEOGCS[\"unknown\",DATUM[\"unknown\",SPHEROID[\"unknown\",3396000,0]],PRIMEM[\"Reference meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"standard_parallel_1\",0],PARAMETER[\"central_meridian\",180],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+  "grid_convention": "Mars equirectangular, east longitude, central meridian 180 degrees, areocentric latitude",
+  "context_size_m": 10187.268677734402,
+  "context_cells": 22,
+  "observed_cell_count": 153,
+  "grid_cell_count": 484,
+  "observed_cell_fraction": 0.31611570247933884,
+  "zero_count_bins": 331,
+  "missing_data_semantics": "PDS documentation says bins without observations contain interpolated topography; these bins are masked from terrain metrics",
+  "processing_method": "Bounded PDS4 MEG128 topography and count window; no local CUDA",
+  "terrain_raster": "data/terrain/mola-meg128-mars_aeolis_nondune-01.tif",
+  "count_raster": "data/terrain/mola-meg128-mars_aeolis_nondune-01-counts.tif",
+  "measurements": [
+    {
+      "name": "elevation_range",
+      "value": 202.0,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 10187.268677734402,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Range uses observed MOLA bins only; 153/484 bins (31.6%) contain altimetry. Empty-bin interpolations are excluded; this sampled range does not estimate unsampled local extrema."
+      },
+      "provenance": {
+        "source_product_id": "megt00n090hb",
+        "source_url": "https://pds-geosciences.wustl.edu/mgs/urn-nasa-pds-mgs_mola_topography_derived/meg128/megt00n090hb.img",
+        "provider": "NASA Planetary Data System Geosciences Node / MGS MOLA",
+        "processing_method": "PDS4 MEG128 byte-range crop; count-grid mask excludes interpolated bins; range over observed median-topography cells",
+        "software_version": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "width_pixels": 87,
+  "height_pixels": 87,
+  "width_m": 1999.9999999999998,
+  "height_m": 1999.9999999999998,
+  "pixel_size_m": 22.988505747126435,
+  "valid_pixel_fraction": 0.9976218787158145,
+  "crs": "PROJCS[\"Mars (2015) - Sphere / Ocentric / Equirectangular, clon = 0\",GEOGCS[\"Mars (2015) - Sphere / Ocentric\",DATUM[\"Mars (2015) - Sphere\",SPHEROID[\"Mars (2015) - Sphere\",3396190,0,AUTHORITY[\"IAU\",\"49900\"]],AUTHORITY[\"IAU\",\"49900\"]],PRIMEM[\"Reference Meridian\",0,AUTHORITY[\"IAU\",\"49900\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"IAU\",\"49900\"]],PROJECTION[\"Equirectangular\"],PARAMETER[\"standard_parallel_1\",0],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH],AUTHORITY[\"IAU\",\"49910\"]]",
+  "transform": [
+    22.988505747126435,
+    0.0,
+    10072614.106522933,
+    0.0,
+    -22.988505747126435,
+    -3633047.079622573
+  ]
+}

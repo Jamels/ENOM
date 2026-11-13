@@ -1,0 +1,139 @@
+{
+  "observation_id": "earth_capitolreef_layered-01",
+  "dataset_id": "cop-dem-glo-30",
+  "provider": "Copernicus / Microsoft Planetary Computer",
+  "source_product_id": "Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+  "source_catalog_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+  "source_asset": "data",
+  "source_resolution_m": 30,
+  "output_pixel_size_m": [
+    463.05766716974557,
+    463.05766716974557
+  ],
+  "context_size_m": 10187.268677734402,
+  "source_crs": "EPSG:4326",
+  "processing_crs": "EPSG:32612",
+  "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+  "missing_data_semantics": "Raster nodata preserved; no-data pixels excluded from feature calculations",
+  "licence": "Copernicus DEM licence; see linked product metadata",
+  "output": "data/terrain/cop-dem-glo-30-earth_capitolreef_layered-01.tif",
+  "measurements": [
+    {
+      "name": "elevation_range",
+      "value": 896.9296875,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 10187.268677734402,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Input DEM uncertainty not supplied by adapter"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Central finite differences on projected DEM grid",
+        "software_version": null
+      }
+    },
+    {
+      "name": "mean_slope",
+      "value": 6.87874855337884,
+      "units": "degree",
+      "availability": "available",
+      "spatial_scale_m": 926.1153343394911,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Derived from neighbouring DEM elevations"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Central finite differences on projected DEM grid",
+        "software_version": null
+      }
+    },
+    {
+      "name": "median_local_relief_3x3",
+      "value": 137.3917236328125,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 1389.1730015092367,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Derived from a 3x3 pixel moving window"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Central finite differences on projected DEM grid",
+        "software_version": null
+      }
+    },
+    {
+      "name": "slope_p90",
+      "value": 12.68541261766872,
+      "units": "degree",
+      "availability": "available",
+      "spatial_scale_m": 926.1153343394911,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "90th percentile of central-difference slope"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Central finite differences on projected DEM grid",
+        "software_version": null
+      }
+    },
+    {
+      "name": "median_roughness_3x3",
+      "value": 20.05131022135447,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 1389.1730015092367,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Median absolute deviation from the 3x3 mean"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Central finite differences on projected DEM grid",
+        "software_version": null
+      }
+    },
+    {
+      "name": "median_curvature",
+      "value": 1.803779009313243e-05,
+      "units": "m^-1",
+      "availability": "available",
+      "spatial_scale_m": 1389.1730015092367,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Finite-difference Laplacian; grid-scale dependent"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Central finite differences on projected DEM grid",
+        "software_version": null
+      }
+    }
+  ],
+  "valid_pixel_count": 484,
+  "grid_cell_count": 484,
+  "valid_pixel_fraction": 1.0
+}

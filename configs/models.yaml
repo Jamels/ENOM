@@ -1,0 +1,20 @@
+# Immutable model identity is part of the embedding-space identity.
+models:
+  dinov2_small:
+    model_id: facebook/dinov2-small
+    revision: ed25f3a31f01632728cabb09d1542f84ab7b0056
+    embedding_dimension: 384
+    artifact_stem: embeddings_dinov2
+    active_pilot_index: true
+  dinov2_base:
+    model_id: facebook/dinov2-base
+    revision: fed69336d31be0ed1883be4cd5ea0456fa3fdbac
+    embedding_dimension: 768
+    artifact_stem: embeddings_dinov2_base
+    active_pilot_index: false
+preprocessing:
+  id: grayscale-p02-p98-rgb224-maskfill-v2
+  size_px: 224
+  grayscale_percentiles: [2, 98]
+  channels: 3
+  pooling: cls_token

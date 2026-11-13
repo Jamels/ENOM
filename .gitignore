@@ -158,6 +158,17 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+**/.env
+**/.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.json
+*token*.txt
 
 # Spyder project settings
 .spyderproject
@@ -207,6 +218,8 @@ tempCodeRunnerFile.py
 
 # Ruff stuff:
 .ruff_cache/
+.mypy_cache/
+.pytest_cache/
 
 # PyPI configuration file
 .pypirc
@@ -215,6 +228,54 @@ tempCodeRunnerFile.py
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# TwinWorld derived imagery and model artifacts (keep manifests and reports)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.*
+data/raw/
+data/downloads/
+data/patches/**/*.tif
+data/patches/**/*.tiff
+data/terrain/**/*.tif
+data/terrain/**/*.tiff
+data/**/*.vrt
+data/**/*.img
+data/**/*.cub
+artifacts/**/*.npy
+artifacts/**/*.pt
+artifacts/**/*.bin
+artifacts/**/*.safetensors
+artifacts/**/*.onnx
+artifacts/**/*.pth
+artifacts/**/*.ckpt
+models/
+checkpoints/
+apps/twinworld/node_modules/
+apps/twinworld/dist/
+apps/twinworld/*.tsbuildinfo
+*.tsbuildinfo
+*.log
+*.tmp
+*.part
+*.bak
+*.swp
+*~
+pilot-evaluation.html
+reports/pilot-evaluation.html
+.DS_Store
+.idea/
+.vscode/
+.coverage
+htmlcov/
+playwright-report/
+test-results/
 
 # Streamlit
 .streamlit/secrets.toml

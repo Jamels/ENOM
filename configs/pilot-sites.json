@@ -1,0 +1,38 @@
+{
+  "benchmark_id": "pilot-100-v1",
+  "target_extent_m": 2000,
+  "earth_cloud_cover_max": 30,
+  "earth_date_range": ["2018-01-01", "2026-10-31"],
+  "earth_sites": [
+    {"site_id": "earth_namib_barchan", "name": "Namib Sand Sea", "longitude": 15.2, "latitude": -24.7, "proposed_label": "barchan_crescent_dune", "basis": "regional dune morphology; verify each crop"},
+    {"site_id": "earth_taklamakan_barchan", "name": "Taklamakan Desert", "longitude": 83.0, "latitude": 39.0, "proposed_label": "barchan_crescent_dune", "basis": "regional dune morphology; verify each crop"},
+    {"site_id": "earth_simpson_linear", "name": "Simpson Desert", "longitude": 137.0, "latitude": -25.0, "proposed_label": "linear_dune", "basis": "regional longitudinal dune field; verify each crop"},
+    {"site_id": "earth_rubalkhali_linear", "name": "Rub al Khali", "longitude": 53.5, "latitude": 20.5, "proposed_label": "linear_dune", "basis": "regional dune morphology; verify each crop"},
+    {"site_id": "earth_badain_otherdune", "name": "Badain Jaran", "longitude": 102.5, "latitude": 39.8, "proposed_label": "other_dune", "basis": "star dune field; verify each crop"},
+    {"site_id": "earth_whitesands_otherdune", "name": "White Sands", "longitude": -106.3, "latitude": 32.8, "proposed_label": "other_dune", "basis": "gypsum dune field; verify each crop"},
+    {"site_id": "earth_grandcanyon_layered", "name": "Grand Canyon", "longitude": -112.1, "latitude": 36.05, "proposed_label": "rocky_ridge_layered", "basis": "exposed sedimentary strata; verify each crop"},
+    {"site_id": "earth_capitolreef_layered", "name": "Capitol Reef", "longitude": -111.2, "latitude": 38.2, "proposed_label": "rocky_ridge_layered", "basis": "exposed layered sedimentary terrain; verify each crop"},
+    {"site_id": "earth_uyuni_nondune", "name": "Salar de Uyuni", "longitude": -67.5, "latitude": -20.2, "proposed_label": "other_non_dune", "basis": "salt flat; verify each crop"},
+    {"site_id": "earth_reykjanes_nondune", "name": "Reykjanes Peninsula", "longitude": -22.3, "latitude": 63.9, "proposed_label": "other_non_dune", "basis": "basaltic lava terrain; verify each crop"}
+  ],
+  "earth_patch_offsets_m": [[-6000, -4000], [0, -4000], [6000, -4000], [-3000, 4000], [3000, 4000]],
+  "mars_context_sites": [
+    {"site_id": "mars_mawrth_layered", "name": "Mawrth Vallis", "longitude": 342.5, "latitude": 22.3, "proposed_label": "rocky_ridge_layered", "ambiguity_notes": "layered altered terrain at regional scale; crop morphology requires review", "patch_offsets_m": [[-4500, -3000], [0, -3000], [4500, -3000], [0, 3500]]},
+    {"site_id": "mars_eberswalde_layered", "name": "Eberswalde crater delta", "longitude": 326.0, "latitude": -24.0, "proposed_label": "rocky_ridge_layered", "ambiguity_notes": "deltaic/layered deposits; not all crop pixels are bedrock", "patch_offsets_m": [[-3000, 0], [3000, 0], [0, 3500]]},
+    {"site_id": "mars_valles_layered", "name": "Valles Marineris", "longitude": 290.0, "latitude": -10.0, "proposed_label": "rocky_ridge_layered", "ambiguity_notes": "chasma wall and layered deposits; crop morphology requires review", "patch_offsets_m": [[-3000, 0], [3000, 0], [0, 3500]]},
+    {"site_id": "mars_elysium_nondune", "name": "Elysium Planitia", "longitude": 147.0, "latitude": 24.0, "proposed_label": "other_non_dune", "ambiguity_notes": "volcanic plains; confirm absence of dune forms in each crop", "patch_offsets_m": [[-1500, 0], [1500, 0]]},
+    {"site_id": "mars_hecates_nondune", "name": "Hecates Tholus", "longitude": 150.0, "latitude": 32.0, "proposed_label": "other_non_dune", "ambiguity_notes": "volcanic edifice and plains; confirm visible morphology", "patch_offsets_m": [[-1500, 0], [1500, 0]]},
+    {"site_id": "mars_memnonia_nondune", "name": "Memnonia region", "longitude": 150.0, "latitude": -15.0, "proposed_label": "other_non_dune", "ambiguity_notes": "mixed cratered terrain; confirm no aeolian landform dominates", "patch_offsets_m": [[-1500, 0], [1500, 0]]},
+    {"site_id": "mars_medusae_nondune", "name": "Medusae Fossae region", "longitude": 210.0, "latitude": -5.0, "proposed_label": "other_non_dune", "ambiguity_notes": "yardangs and layered deposits; dune contamination possible", "patch_offsets_m": [[-1500, 0], [1500, 0]]},
+    {"site_id": "mars_aeolis_nondune", "name": "Aeolis region", "longitude": 150.0, "latitude": -3.0, "proposed_label": "other_non_dune", "ambiguity_notes": "mixed sedimentary and aeolian terrain; review required", "patch_offsets_m": [[-1500, 0], [1500, 0]]}
+  ],
+  "mars_dune_database": {
+    "provider": "U.S. Geological Survey Mars Global Digital Dune Database (MGD3)",
+    "url": "https://doi.org/10.5066/P9ORPZKL",
+    "source_url": "https://pubs.usgs.gov/of/2007/1158/Shapefiles.zip",
+    "shapefile_member": "Shapefiles/Geocentric/Dune_Field.shp",
+    "patches_per_category": 10,
+    "minimum_field_area_km2": 20,
+    "linear_field_patch_allocation": [3, 3, 2, 2]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "image_ids": [
+    "earth-namib-s2b-20241231-15.7e-24.0s-2km",
+    "mars-meroe-ctx-v01-68.0360e-6.8121n-2km"
+  ],
+  "source_sha256": [
+    "43d0e58a31a69bc9850542647fe0c3b3e920579a7729c80e7b6502a06485639a",
+    "8f27a34afc1c9c46279ac7447d1af5b86441e64a27c14f0eefb07df24fe98b35"
+  ],
+  "model_id": "facebook/dinov2-small",
+  "revision": "ed25f3a31f01632728cabb09d1542f84ab7b0056",
+  "preprocessing_id": "grayscale-p02-p98-rgb224-v1",
+  "device": "cuda",
+  "batch_size": 2,
+  "embedding_dimension": 384,
+  "elapsed_seconds": 0.4297400620002918,
+  "images_per_second": 4.653976151747849,
+  "torch_version": "2.15.0+cu132",
+  "transformers_version": "5.22.1",
+  "gpu_name": "NVIDIA GeForce RTX 3080",
+  "peak_memory_bytes": 99797504
+}
