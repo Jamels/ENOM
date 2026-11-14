@@ -1,0 +1,145 @@
+{
+  "observation_id": "candidate_earth_earth_haughton_crater",
+  "place_id": "earth-haughton-crater",
+  "body": "earth",
+  "name": "Haughton crater, Devon Island",
+  "longitude_east_deg": 270.32,
+  "latitude_deg": 75.37,
+  "dataset_id": "cop-dem-glo-30",
+  "provider": "Copernicus / Microsoft Planetary Computer",
+  "source_product_id": "Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+  "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+  "source_catalog_urls": [
+    "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N75_00_W090_00_DEM"
+  ],
+  "retrieved_at": "2026-11-14T03:23:38.617786+00:00",
+  "source_resolution_m": 30,
+  "output_pixel_size_m": [
+    463.05766716974557,
+    463.05766716974557
+  ],
+  "context_size_m": 10187.268677734402,
+  "processing_crs": "EPSG:32616",
+  "processing_method": "Candidate place coordinate is an approximate regional locator; 10.19 km Copernicus DEM window sampled to the MOLA posting.",
+  "observed_cell_fraction": 1.0,
+  "valid_pixel_fraction": 1.0,
+  "missing_data_semantics": "Copernicus nodata preserved; missing cells are excluded from measurement calculations.",
+  "uncertainty_note": "DEM-derived terrain metrics; source vertical uncertainty and cross-product terrain bias are not propagated.",
+  "output": "data/terrain/cop-dem-candidate-earth_haughton_crater.tif",
+  "measurements": [
+    {
+      "name": "elevation_range",
+      "value": 175.6326446533203,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 10187.268677734402,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Input DEM uncertainty not supplied by adapter"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Candidate-region locator centred metric grid; Copernicus DEM GLO-30 warped to 22\u00d722 at the Mars MOLA equatorial posting for exploratory cross-body comparison.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "mean_slope",
+      "value": 1.7362186166923725,
+      "units": "degree",
+      "availability": "available",
+      "spatial_scale_m": 926.1153343394911,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Derived from neighbouring DEM elevations"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Candidate-region locator centred metric grid; Copernicus DEM GLO-30 warped to 22\u00d722 at the Mars MOLA equatorial posting for exploratory cross-body comparison.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "median_local_relief_3x3",
+      "value": 32.42323303222656,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 1389.1730015092367,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Derived from a 3x3 pixel moving window"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Candidate-region locator centred metric grid; Copernicus DEM GLO-30 warped to 22\u00d722 at the Mars MOLA equatorial posting for exploratory cross-body comparison.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "slope_p90",
+      "value": 3.388578232749868,
+      "units": "degree",
+      "availability": "available",
+      "spatial_scale_m": 926.1153343394911,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "90th percentile of central-difference slope"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Candidate-region locator centred metric grid; Copernicus DEM GLO-30 warped to 22\u00d722 at the Mars MOLA equatorial posting for exploratory cross-body comparison.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "median_roughness_3x3",
+      "value": 4.72949812147354,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 1389.1730015092367,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Median absolute deviation from the 3x3 mean"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Candidate-region locator centred metric grid; Copernicus DEM GLO-30 warped to 22\u00d722 at the Mars MOLA equatorial posting for exploratory cross-body comparison.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "median_curvature",
+      "value": 1.1004954480612591e-05,
+      "units": "m^-1",
+      "availability": "available",
+      "spatial_scale_m": 1389.1730015092367,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Finite-difference Laplacian; grid-scale dependent"
+      },
+      "provenance": {
+        "source_product_id": "Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N75_00_W090_00_DEM",
+        "provider": "Copernicus / Microsoft Planetary Computer",
+        "processing_method": "Candidate-region locator centred metric grid; Copernicus DEM GLO-30 warped to 22\u00d722 at the Mars MOLA equatorial posting for exploratory cross-body comparison.",
+        "software_version": null
+      }
+    }
+  ]
+}

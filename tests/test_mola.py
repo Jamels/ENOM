@@ -37,8 +37,8 @@ def test_mola_window_decoder_respects_big_endian_full_row_stride(monkeypatch):
 
 def test_mola_metadata_is_exposed_without_claiming_full_coverage():
     coverage = dataset_coverage("mola-meg128")
-    assert coverage["coverage_count"] == 10
-    assert len(coverage["observations"]) == 10
+    assert coverage["coverage_count"] == 13
+    assert len(coverage["observations"]) == 13
     mars = region("mars-dune-barchan_crescent_dune-0067+071")
     assert mars["terrain_contexts"][0]["observed_cell_count"] == 148
     mola = next(item for item in datasets() if item["id"] == "mola-meg128")

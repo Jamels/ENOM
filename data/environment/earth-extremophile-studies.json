@@ -1,0 +1,92 @@
+{
+  "dataset_id": "earth-extremophile-studies",
+  "provider": "Peer-reviewed field research",
+  "records": [
+    {
+      "observation_id": "earth-atacama-yungay:azua-bustos-2020",
+      "place_id": "earth-atacama-yungay",
+      "body": "earth",
+      "latitude_deg": -24.0848,
+      "longitude_east_deg": 290.08493,
+      "location_precision": "study_coordinates",
+      "study_region": "Yungay, Atacama Desert, Chile",
+      "dataset_id": "earth-extremophile-studies",
+      "provider": "Scientific Reports",
+      "source_product_id": "Azua-Bustos et al. (2020), Inhabited subsurface wet smectites in the hyperarid core of the Atacama Desert",
+      "source_url": "https://doi.org/10.1038/s41598-020-76302-z",
+      "published_year": 2020,
+      "temporal_coverage": "Field measurements reported for 2018–2019",
+      "dimensions": ["biology_habitability", "water_resources"],
+      "evidence_kind": "measured",
+      "summary": "The study reports active microbial communities in wet smectite-rich soil layers about 30–40 cm below the surface. Sensors in one studied pit recorded about 78% relative humidity (water activity 0.780) in the clay layer during measurement periods in 2018–2019.",
+      "measurements": [
+        {
+          "name": "Relative humidity in a subsurface clay layer",
+          "value": 78.0,
+          "units": "%",
+          "availability": "available",
+          "temporal_coverage": "Field measurements reported for 2018–2019",
+          "uncertainty": "One instrumented pit is described; this is not a regional average or a current measurement."
+        },
+        {
+          "name": "Water activity in a subsurface clay layer",
+          "value": 0.780,
+          "units": "dimensionless",
+          "availability": "available",
+          "temporal_coverage": "Field measurements reported for 2018–2019",
+          "uncertainty": "Study-specific sampled layer; water activity does not mean water is recoverable or usable as a resource."
+        }
+      ],
+      "spatial_relation": "The paper gives a study coordinate near Yungay; the ENOM candidate is a broad regional point about 60 km away. Treat this as nearby regional context, not an observation at the candidate coordinate.",
+      "use_limit": "Earth microbial and moisture context only. It is not evidence of life or biosignatures on Mars."
+    },
+    {
+      "observation_id": "earth-haughton-crater:fike-2003",
+      "place_id": "earth-haughton-crater",
+      "body": "earth",
+      "location_precision": "region_only",
+      "study_region": "Haughton impact structure, Devon Island, Canadian High Arctic",
+      "dataset_id": "earth-extremophile-studies",
+      "provider": "International Journal of Astrobiology",
+      "source_product_id": "Fike et al. (2003), Heterotrophic microbial colonization of impact-shocked rocks from Haughton impact structure",
+      "source_url": "https://doi.org/10.1017/S1473550403001290",
+      "published_year": 2003,
+      "temporal_coverage": null,
+      "dimensions": ["biology_habitability"],
+      "evidence_kind": "measured",
+      "summary": "The study reports 27 heterotrophic bacterial isolates from impact-shocked gneiss and host breccia samples collected in the Haughton impact structure.",
+      "measurements": [
+        {
+          "name": "Heterotrophic bacterial isolates reported from sampled rocks",
+          "value": 27,
+          "units": "isolates",
+          "availability": "available",
+          "uncertainty": "A count of isolates from the paper's rock samples; it is not a measure of abundance across the crater."
+        }
+      ],
+      "spatial_relation": "The article identifies the Haughton impact structure but does not provide a coordinate for the sampled rocks in its abstract. Link at crater-region level only.",
+      "use_limit": "Earth sample evidence only; it does not indicate life on Mars or elsewhere."
+    },
+    {
+      "observation_id": "earth-mcmurdo-dry-valleys:george-2021",
+      "place_id": "earth-mcmurdo-dry-valleys",
+      "body": "earth",
+      "latitude_deg": -77.6393,
+      "longitude_east_deg": 162.9406,
+      "location_precision": "sample_coordinates",
+      "study_region": "Taylor Valley water tracks, McMurdo Dry Valleys, Antarctica",
+      "dataset_id": "earth-extremophile-studies",
+      "provider": "Frontiers in Microbiology",
+      "source_product_id": "George et al. (2021), Antarctic Water Tracks: Microbial Community Responses to Variation in Soil Moisture, pH, and Salinity",
+      "source_url": "https://doi.org/10.3389/fmicb.2021.616730",
+      "published_year": 2021,
+      "temporal_coverage": "Taylor Valley samples collected during the 2012–2013 austral summer",
+      "dimensions": ["biology_habitability"],
+      "evidence_kind": "interpreted",
+      "summary": "The study compares microbial communities in seasonally wetted water tracks with nearby dry soils in Taylor Valley and reports differences in community composition associated with moisture, salinity, and pH.",
+      "measurements": [],
+      "spatial_relation": "Sample coordinates are within the broad McMurdo Dry Valleys candidate region; they do not represent every valley or soil type.",
+      "use_limit": "Published ecological context, not a standardized site-wide measurement or a score for planetary habitability."
+    }
+  ]
+}

@@ -12,13 +12,15 @@ from typing import Any, Literal
 import numpy as np
 import rasterio
 import yaml  # type: ignore[import-untyped]
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
-from PIL import Image
-from pydantic import BaseModel, Field
+from PIL import Image, ImageDraw
+from pydantic import BaseModel, Field, field_validator
 
 from twinworld.records import PatchRecord, read_jsonl
+from twinworld import analogue
+from twinworld import offline_imagery
 from twinworld.retrieval import search as visual_search
 from twinworld.science import Availability, EvidenceRecord, PhysicalMeasurement
 from twinworld.scorecards import (
@@ -50,6 +52,31 @@ def _metadata_for_dataset(dataset_id: str) -> list[dict[str, object]]:
         if metadata.get("dataset_id") == dataset_id:
             results.append(metadata)
     return results
+
+
+@lru_cache(maxsize=1)
+def _nasa_power_records() -> list[dict[str, Any]]:
+    path = ROOT / "data/environment/nasa-power-climatology.json"
+    if not path.is_file():
+        return []
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    rows = payload.get("records", [])
+    return rows if isinstance(rows, list) else []
+
+
+def _nasa_power_version() -> str:
+    rows = _nasa_power_records()
+    return str(rows[0].get("api_version", "POWER Climatology API")) if rows else "POWER Climatology API"
+
+
+@lru_cache(maxsize=1)
+def _meda_records() -> list[dict[str, Any]]:
+    path = ROOT / "data/environment/mars2020-meda-sol100.json"
+    if not path.is_file():
+        return []
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    rows = payload.get("records", [])
+    return rows if isinstance(rows, list) else []
 
 
 class SearchRequest(BaseModel):
@@ -103,6 +130,27 @@ class ScorecardRequest(BaseModel):
     mission_objective: Literal["landing", "base_construction", "rover_mobility"]
     weights: dict[str, float]
     limit: int = Field(default=20, ge=1, le=100)
+
+
+class AnalogueDiscoveryRequest(BaseModel):
+    """Rank unique Earth places against one indexed ENOM target place."""
+
+    target_site_id: str
+    profile_id: str
+    weights: dict[str, float] | None = None
+    limit: int = Field(default=10, ge=1, le=10)
+
+    @field_validator("weights", mode="before")
+    @classmethod
+    def weights_must_be_numeric(cls, value: object) -> object:
+        if value is None:
+            return value
+        if not isinstance(value, dict) or any(
+            isinstance(weight, bool) or not isinstance(weight, (int, float))
+            for weight in value.values()
+        ):
+            raise ValueError("Every dimension weight must be a number")
+        return value
 
 
 @lru_cache(maxsize=1)
@@ -334,7 +382,7 @@ app = FastAPI(title="TwinWorld research API", version="0.4.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -344,6 +392,53 @@ def health() -> dict[str, object]:
     """Report API readiness and whether the local visual index is available."""
     records, _, matrix = _load()
     return {"status": "ok", "records": len(records), "visual_index": bool(matrix.size)}
+
+
+@app.get("/api/imagery/offline/status")
+def offline_globe_map_status() -> dict[str, object]:
+    return offline_imagery.status()
+
+
+@app.post("/api/imagery/offline/start")
+def start_offline_globe_maps() -> dict[str, object]:
+    return offline_imagery.start()
+
+
+@app.post("/api/imagery/offline/pause")
+def pause_offline_globe_maps() -> dict[str, object]:
+    return offline_imagery.pause()
+
+
+@app.post("/api/imagery/offline/cancel")
+def cancel_offline_globe_maps() -> dict[str, object]:
+    return offline_imagery.cancel()
+
+
+@app.delete("/api/imagery/offline")
+def clear_offline_globe_maps() -> dict[str, object]:
+    try:
+        return offline_imagery.clear()
+    except RuntimeError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.get("/api/imagery/offline/tiles/{body}/{version}/{matrix_set}/{matrix_id}/{row}/{col}")
+def get_offline_globe_tile(body: str, version: str, matrix_set: str, matrix_id: str, row: int, col: int) -> Response:
+    if offline_imagery.tile_is_missing(body, version, matrix_set, matrix_id, row, col):
+        raise HTTPException(status_code=410, detail="NASA confirmed that this tile is unavailable")
+    path = offline_imagery.tile_file(body, version, matrix_set, matrix_id, row, col)
+    if path is None:
+        raise HTTPException(status_code=404, detail="Tile is not saved in the repository")
+    media_type = "image/jpeg"
+    return Response(path.read_bytes(), media_type=media_type, headers={"Cache-Control": "public, max-age=31536000, immutable"})
+
+
+@app.put("/api/imagery/offline/tiles/{body}/{version}/{matrix_set}/{matrix_id}/{row}/{col}")
+async def save_viewed_globe_tile(body: str, version: str, matrix_set: str, matrix_id: str, row: int, col: int, request: Request) -> dict[str, object]:
+    saved = offline_imagery.save_viewed_tile(body, version, matrix_set, matrix_id, row, col, await request.body())
+    if not saved:
+        raise HTTPException(status_code=400, detail="Invalid globe tile or imagery source version")
+    return {"saved": True}
 
 
 @app.get("/api/planets")
@@ -367,6 +462,262 @@ def catalogue() -> dict[str, object]:
     if not CATALOGUE.is_file():
         return {"catalogue_id": "planetary-targets-and-analogue-candidates-v1", "entries": []}
     return json.loads(CATALOGUE.read_text(encoding="utf-8"))
+
+
+@app.get("/api/places")
+def places() -> dict[str, object]:
+    """List unique places with their linked source observations and coverage."""
+    rows = analogue.build_places(ROOT)
+    return {
+        "places": [
+            {
+                **{key: value for key, value in place.items() if key != "observations"},
+                "observations": [
+                    {key: value for key, value in item.items() if key not in {"metadata", "measurements", "local_path"}}
+                    for item in place["observations"]
+                ],
+                "evidence": analogue._dimension_evidence(place),
+            }
+            for place in rows
+        ],
+        "scope": "Current candidate catalogue and reviewed, source-backed observation contexts.",
+    }
+
+
+def _render_place_layer(place_id: str, layer_type: Literal["elevation", "slope", "roughness", "coverage", "thermal"]) -> Response:
+    place_rows = analogue.build_places(ROOT)
+    place = next((row for row in place_rows if row["id"] == place_id or any(item["id"] == place_id for item in row["observations"])), None)
+    if place is None:
+        raise HTTPException(404, detail="Place is not indexed")
+    raster_path = None
+    coverage_is_count = False
+    terrain_datasets = {"cop-dem-glo-30", "nasadem-hgt", "mola-meg128", "lro-lola-gdr-ldem-64", "lro-lola-gdr-polar-ldem-120m"}
+    thermal_datasets = {"lro-diviner-gdr-level3-st-clc", "mgs-tes-derived-thermal-inertia"}
+    eligible_datasets = thermal_datasets if layer_type == "thermal" else terrain_datasets
+    for item in place["observations"]:
+        if item.get("dataset_id") not in eligible_datasets:
+            continue
+        metadata = item.get("metadata", {})
+        if layer_type == "coverage":
+            if metadata.get("count_raster") and (ROOT / str(metadata["count_raster"])).is_file():
+                candidate_path = metadata["count_raster"]
+                coverage_is_count = True
+            elif item.get("dataset_id") == "cop-dem-glo-30":
+                candidate_path = metadata.get("output") or metadata.get("terrain_raster")
+                coverage_is_count = False
+            else:
+                continue
+        else:
+            candidate_path = metadata.get("output") or metadata.get("terrain_raster")
+        if candidate_path and (ROOT / str(candidate_path)).is_file():
+            raster_path = ROOT / str(candidate_path)
+            break
+    if raster_path is None:
+        raise HTTPException(404, detail="No local elevation raster is available for this place")
+    with rasterio.open(raster_path) as dataset:
+        values = dataset.read(1, masked=True).astype(np.float32).filled(np.nan)
+        if layer_type == "coverage":
+            values = np.where(np.isfinite(values), values, np.nan)
+            if coverage_is_count:
+                values[values <= 0] = np.nan
+        elif layer_type == "slope":
+            valid_source = np.isfinite(values)
+            if not valid_source.any():
+                raise HTTPException(422, detail="Elevation layer has no valid cells")
+            filled = np.where(valid_source, values, float(np.nanmedian(values[valid_source])))
+            dx = float(np.hypot(dataset.transform.a, dataset.transform.d))
+            dy = float(np.hypot(dataset.transform.b, dataset.transform.e))
+            gy, gx = np.gradient(filled, dy, dx)
+            values = np.degrees(np.arctan(np.hypot(gx, gy))).astype(np.float32)
+            valid_source[[0, -1], :] = False
+            valid_source[:, [0, -1]] = False
+            values[~valid_source] = np.nan
+        elif layer_type == "roughness":
+            valid_source = np.isfinite(values)
+            if valid_source.sum() < 9:
+                raise HTTPException(422, detail="Elevation layer has fewer than nine valid cells")
+            from scipy.ndimage import minimum_filter, uniform_filter
+
+            filled = np.where(valid_source, values, float(np.nanmedian(values[valid_source])))
+            neighborhood_complete = minimum_filter(
+                valid_source.astype(np.uint8), size=3, mode="constant", cval=0
+            ) == 1
+            neighborhood_complete[[0, -1], :] = False
+            neighborhood_complete[:, [0, -1]] = False
+            values = np.abs(filled - uniform_filter(filled, size=3, mode="nearest"))
+            values[~neighborhood_complete] = np.nan
+            if not np.isfinite(values).any():
+                raise HTTPException(422, detail="Elevation layer has no complete 3×3 neighborhoods")
+    valid = np.isfinite(values)
+    if not valid.any():
+        raise HTTPException(422, detail="Elevation layer has no valid cells")
+    if layer_type == "slope":
+        low, high = 0.0, 30.0
+    else:
+        low, high = np.nanpercentile(values[valid], [2, 98])
+    scale = max(float(high - low), 1e-9)
+    normalized = np.clip((values - low) / scale, 0, 1)
+    normalized = np.where(valid, normalized, 0.0)
+    rgba = np.zeros((*values.shape, 4), dtype=np.uint8)
+    rgba[:, :, 0] = (35 + normalized * 210).astype(np.uint8)
+    rgba[:, :, 1] = (72 + normalized * 150).astype(np.uint8)
+    rgba[:, :, 2] = (125 - normalized * 80).astype(np.uint8)
+    rgba[:, :, 3] = np.where(valid, 255, 0).astype(np.uint8)
+    image = Image.fromarray(rgba).resize((256, 256), Image.Resampling.NEAREST)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG", optimize=True)
+    return Response(content=buffer.getvalue(), media_type="image/png", headers={"Cache-Control": "public, max-age=300"})
+
+
+@app.get("/api/places/{place_id}/layers/elevation.png")
+def place_elevation_preview(place_id: str) -> Response:
+    """Render a small local elevation preview in the source raster's map orientation."""
+    return _render_place_layer(place_id, "elevation")
+
+
+@app.get("/api/places/{place_id}/layers/slope.png")
+def place_slope_preview(place_id: str) -> Response:
+    """Render an on-demand slope layer derived from the local DEM."""
+    return _render_place_layer(place_id, "slope")
+
+
+@app.get("/api/places/{place_id}/layers/roughness.png")
+def place_roughness_preview(place_id: str) -> Response:
+    """Render median-deviation-from-3x3-mean roughness from a local DEM."""
+    return _render_place_layer(place_id, "roughness")
+
+
+@app.get("/api/places/{place_id}/layers/coverage.png")
+def place_coverage_preview(place_id: str) -> Response:
+    """Render observed MOLA count support or Copernicus valid-cell coverage."""
+    return _render_place_layer(place_id, "coverage")
+
+
+@app.get("/api/places/{place_id}/layers/thermal.png")
+def place_thermal_preview(place_id: str) -> Response:
+    """Render a local Diviner temperature or TES thermal-inertia context raster."""
+    return _render_place_layer(place_id, "thermal")
+
+
+@app.get("/api/places/{place_id}/layers/mini-rf-cpr.png")
+def place_minirf_cpr_preview(place_id: str) -> Response:
+    """Render a bounded Mini-RF CPR sample using a fixed 0–1.5 ratio scale."""
+    place = next((row for row in analogue.build_places(ROOT) if row["id"] == place_id), None)
+    if place is None:
+        raise HTTPException(404, detail="Place is not indexed")
+    observation = next((
+        item for item in place["observations"]
+        if item.get("dataset_id") == "lro-mini-rf-south-polar-cpr"
+        and item.get("metadata", {}).get("grid_values")
+    ), None)
+    if observation is None:
+        raise HTTPException(404, detail="No Mini-RF CPR sample is available for this place")
+    values = np.asarray(observation["metadata"]["grid_values"], dtype=np.float32)
+    valid = np.isfinite(values)
+    normalized = np.clip(values / 1.5, 0.0, 1.0)
+    rgba = np.zeros((*values.shape, 4), dtype=np.uint8)
+    rgba[:, :, 0] = (30 + normalized * 220).astype(np.uint8)
+    rgba[:, :, 1] = (45 + normalized * 170).astype(np.uint8)
+    rgba[:, :, 2] = (110 - normalized * 80).astype(np.uint8)
+    rgba[:, :, 3] = np.where(valid, 255, 0).astype(np.uint8)
+    image = Image.fromarray(rgba).resize((256, 256), Image.Resampling.NEAREST)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG", optimize=True)
+    return Response(content=buffer.getvalue(), media_type="image/png", headers={"Cache-Control": "public, max-age=300"})
+
+
+@app.get("/api/places/{place_id}/layers/rover-operations.png")
+def place_rover_operations_preview(place_id: str) -> Response:
+    """Render discrete Jezero rover position fixes on their local Mars DEM grid."""
+    place = next((row for row in analogue.build_places(ROOT) if row["id"] == place_id), None)
+    if place is None:
+        raise HTTPException(404, detail="Place is not indexed")
+    observation = next((
+        item for item in place["observations"]
+        if item.get("dataset_id") == "mars2020-rover-places-best-tactical"
+    ), None)
+    if observation is None:
+        raise HTTPException(404, detail="No Perseverance drive-position records are available for this place")
+    terrain = next((
+        item for item in place["observations"]
+        if item.get("dataset_id") == "mola-meg128"
+        and (item.get("metadata", {}).get("output") or item.get("metadata", {}).get("terrain_raster"))
+    ), None)
+    if terrain is None:
+        raise HTTPException(404, detail="No local Mars DEM is available to align rover positions")
+    metadata = terrain.get("metadata", {})
+    raster_path = metadata.get("output") or metadata.get("terrain_raster")
+    if not raster_path or not (ROOT / str(raster_path)).is_file():
+        raise HTTPException(404, detail="The indexed Mars DEM raster is not present")
+    waypoints = observation.get("metadata", {}).get("records", [])
+    with rasterio.open(ROOT / str(raster_path)) as dataset:
+        if dataset.width <= 0 or dataset.height <= 0:
+            raise HTTPException(422, detail="Mars DEM raster has no displayable cells")
+        render_size = 512
+        overlay = Image.new("RGBA", (render_size, render_size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+        plotted = 0
+        for point in waypoints:
+            latitude = float(point["latitude_deg"])
+            longitude = float(point["longitude_east_deg"])
+            # MOLA Jezero crops use simple equirectangular Mars coordinates,
+            # central meridian 180°, and a 3,396 km reference sphere.
+            x = 3_396_000.0 * np.deg2rad(longitude - 180.0)
+            y = 3_396_000.0 * np.deg2rad(latitude)
+            column, row = (~dataset.transform) @ (float(x), float(y))
+            if 0.0 <= row < dataset.height and 0.0 <= column < dataset.width:
+                render_column = column * render_size / dataset.width
+                render_row = row * render_size / dataset.height
+                draw.ellipse(
+                    (render_column - 2, render_row - 2, render_column + 2, render_row + 2),
+                    fill=(255, 211, 79, 255),
+                )
+                plotted += 1
+        if not plotted:
+            raise HTTPException(404, detail="No rover position falls inside the local DEM map window")
+        image = overlay.resize((256, 256), Image.Resampling.LANCZOS)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG", optimize=True)
+    return Response(
+        content=buffer.getvalue(),
+        media_type="image/png",
+        headers={
+            "Cache-Control": "public, max-age=300",
+            "X-ENOM-Displayed-Positions": str(plotted),
+            "X-ENOM-Total-Positions": str(len(waypoints)),
+        },
+    )
+
+
+@app.get("/api/analogue/profiles")
+def analogue_profiles() -> list[dict[str, object]]:
+    return [
+        {
+            "id": profile_id,
+            "name": profile["name"],
+            "description": profile["description"],
+            "weights": profile["weights"],
+            "dimensions": analogue.DIMENSIONS,
+        }
+        for profile_id, profile in analogue.PROFILES.items()
+    ]
+
+
+@app.get("/api/analogue/sources")
+def analogue_sources() -> list[dict[str, object]]:
+    """List source integrations with current local coverage and connection status."""
+    return analogue.source_inventory(ROOT)
+
+
+@app.post("/api/analogue/discover")
+def discover_analogues(request: AnalogueDiscoveryRequest) -> dict[str, object]:
+    """Return evidence-aware rankings for at most ten distinct Earth places."""
+    try:
+        return analogue.discover(ROOT, request.target_site_id, request.profile_id, request.weights, request.limit)
+    except ValueError as exc:
+        raise HTTPException(422, detail=str(exc)) from exc
+    except KeyError as exc:
+        raise HTTPException(404, detail={"code": "target_place_not_found", "message": f"No indexed place has ID '{request.target_site_id}'"}) from exc
 
 
 @app.get("/api/datasets")
@@ -401,8 +752,8 @@ def datasets() -> list[dict[str, object]]:
             "source_url": "https://planetarycomputer.microsoft.com/dataset/group/copernicus-dem",
             "coverage_count": len(_metadata_for_dataset("cop-dem-glo-30")),
             "missing_data_semantics": (
-                "Outside footprint or nodata; current coverage is one 10.2 km Namib context "
-                "around a 2 km image crop"
+                "Outside footprint or nodata; indexed coverage combines 10 pilot contexts and "
+                "eight candidate-place windows. Per-context coverage is recorded in sidecars."
             ),
         },
         {
@@ -464,7 +815,8 @@ def datasets() -> list[dict[str, object]]:
             "native_resolution_m": 473.802,
             "observation_period": "2009-07-13 through 2016-11-29",
             "spatial_coverage": (
-                "One bounded 22×22 cell scorecard crop; direct-shot coverage is not quantified"
+                "Four local 22×22 cylindrical contexts (two scorecard regions and two non-polar "
+                "candidate sites); south-polar candidate contexts use the separate 120 m polar product"
             ),
             "crs": (
                 "Simple cylindrical, east-positive, central meridian 180°, lunar radius 1,737,400 m"
@@ -483,6 +835,87 @@ def datasets() -> list[dict[str, object]]:
                 "operational" if _metadata_for_dataset("lro-lola-gdr-ldem-64") else "registered"
             ),
             "coverage_count": len(_metadata_for_dataset("lro-lola-gdr-ldem-64")),
+        },
+        {
+            "id": "lro-lola-gdr-polar-ldem-120m",
+            "provider": "NASA LRO LOLA / PDS Geosciences Node",
+            "name": "LOLA 75S polar elevation and direct-shot support crops",
+            "version": "LRO-L-LOLA-4-GDR-V1.0; LDEM/LDEC_75S_120M; PDS3 V2.1",
+            "bodies": ["moon"],
+            "variable": "lunar polar elevation plus paired direct-observation counts",
+            "units": "m relative to 1,737,400 m sphere; direct returns per 120 m source cell",
+            "native_resolution_m": 120,
+            "output_resolution_m": 463.057667,
+            "observation_period": "LOLA observations through 2017-02-02",
+            "spatial_coverage": "Bounded crops at Shackleton, Malapert, and de Gerlache when present",
+            "crs": "South-polar stereographic; mean Earth/polar axis of DE421; east-positive; 1,737,400 m sphere",
+            "access_method": "PDS3 IMG/LBL; bounded HTTP byte-range reads from DEM and paired count product",
+            "licence": "NASA PDS archive; cite the dataset/product and follow archive guidance",
+            "uncertainty": "Direct-shot counts describe support, not vertical uncertainty; no per-cell uncertainty layer is supplied.",
+            "missing_data_semantics": "Native zero-count cells are excluded; output cells require at least 25% directly sampled native support.",
+            "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_120m.lbl",
+            "status": "operational" if _metadata_for_dataset("lro-lola-gdr-polar-ldem-120m") else "registered",
+            "coverage_count": len(_metadata_for_dataset("lro-lola-gdr-polar-ldem-120m")),
+        },
+        {
+            "id": "lro-mini-rf-south-polar-cpr",
+            "provider": "NASA LRO Mini-RF / PDS Geosciences Node",
+            "name": "Mini-RF calibrated south-polar circular polarization ratio mosaic",
+            "version": "LRO-L-MRFLRO-5-CDR-MOSAIC-V1.0; product LSZ_XXXXX_3CP_PFU_90S000_V1",
+            "bodies": ["moon"],
+            "variable": "same-sense / opposite-sense circularly polarized radar return (CPR)",
+            "units": "dimensionless ratio",
+            "native_resolution_m": 947.60470075467,
+            "observation_period": "Combined acquisitions from 2009-07-19 through 2011-01-11",
+            "spatial_coverage": "5×5-pixel neighbourhoods at Shackleton, Malapert, and de Gerlache candidate-region centres",
+            "crs": "South-polar stereographic; planetocentric; east-positive; 1,737.4 km sphere",
+            "access_method": "PDS3 calibrated mosaic; HTTP byte-range reads for site neighbourhoods only",
+            "licence": "NASA PDS archive; cite the dataset/product and follow archive guidance",
+            "uncertainty": "No per-pixel uncertainty supplied. CPR can be elevated by roughness or blockiness as well as volume scattering; it is not unique evidence of ice.",
+            "missing_data_semantics": "PDS null and saturation sentinels are excluded from the sample statistic",
+            "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/lsz_xxxxx_3cp_pfu_90s000_v1.lbl",
+            "status": "operational" if next((item["status"] for item in analogue.source_inventory(ROOT) if item["id"] == "mini-rf-cpr"), "registered") == "operational" else "registered",
+            "coverage_count": next((item["coverage_count"] for item in analogue.source_inventory(ROOT) if item["id"] == "mini-rf-cpr"), 0),
+            "scorecard_role": "context clue only; excluded from analogue similarity and mission suitability",
+        },
+        {
+            "id": "lro-lend-south-polar-alds",
+            "provider": "NASA LRO Lunar Exploration Neutron Detector / PDS Geosciences Node",
+            "name": "LEND averaged south-polar CSETN neutron count rates",
+            "version": "LRO-L-LEND-4/5-RDR-V1.0; ALDS products 2009-09-15 and 2011-12-11",
+            "bodies": ["moon"],
+            "variable": "CSETN normalized neutron count rate and product statistical error",
+            "units": "counts/s",
+            "native_resolution_m": "0.5° map grid; physical cell size varies with latitude and is not the full instrument footprint",
+            "observation_period": "2009-09-15 through 2016-09-14 across two ALDS product periods; later RDR_DLD records are not connected",
+            "spatial_coverage": "Three south-polar candidate grid cells; missing CSETN values remain unavailable",
+            "access_method": "PDS3 ALDS fixed-record tables; HTTP byte-range reads of selected 310-byte map-cell rows",
+            "licence": "NASA PDS archive; cite the dataset/product and follow archive guidance",
+            "uncertainty": "CSETN_ERR is the supplied statistical error only; spatial footprint and systematic uncertainty are not combined.",
+            "source_url": "https://pds-geosciences.wustl.edu/missions/lro/lend.htm",
+            "status": "operational" if next((item["status"] for item in analogue.source_inventory(ROOT) if item["id"] == "lunar-lend"), "registered") == "operational" else "registered",
+            "coverage_count": next((item["coverage_count"] for item in analogue.source_inventory(ROOT) if item["id"] == "lunar-lend"), 0),
+            "scorecard_role": "indirect hydrogen context only; not water/ice confirmation and not scored",
+        },
+        {
+            "id": "lro-diviner-prp-south-polar",
+            "provider": "NASA LRO Diviner / PDS Geosciences Node",
+            "name": "Diviner south-polar Polar Resource Product (PRP)",
+            "version": "LRO-L-DLRE-5-PRP-V2.0; DLRE_PRP_SOUTH.TAB",
+            "bodies": ["moon"],
+            "variable": "modeled annual surface temperature and water-ice stability depth",
+            "units": "K; m",
+            "native_resolution_m": "about 0.5 km triangular mesh",
+            "observation_period": "Thermal-model fit to Diviner observations from the first mapping year",
+            "spatial_coverage": "Nearest triangle-centroid samples for Shackleton, Malapert, and de Gerlache candidates",
+            "access_method": "PDS3 fixed-length ASCII table; bounded HTTP byte-range reads for nearby mesh rows",
+            "licence": "NASA PDS archive; cite the dataset/product and follow archive guidance",
+            "uncertainty": "No per-triangle uncertainty field is supplied; model uncertainty is not quantified in ENOM.",
+            "missing_data_semantics": "PDS -999 ice_depth means the modeled threshold is beyond 2.8738 m; ENOM reports it as not_reported, not zero.",
+            "source_url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_prp/dlre_prp_south.lbl",
+            "status": "operational" if next((item["status"] for item in analogue.source_inventory(ROOT) if item["id"] == "diviner-prp"), "registered") == "operational" else "registered",
+            "coverage_count": next((item["coverage_count"] for item in analogue.source_inventory(ROOT) if item["id"] == "diviner-prp"), 0),
+            "scorecard_role": "lunar modeled context only; not direct ice detection, cross-body score, or mission-suitability input",
         },
         {
             "id": "lro-diviner-gdr-level3-st-clc",
@@ -540,6 +973,95 @@ def datasets() -> list[dict[str, object]]:
             "coverage_count": len(_metadata_for_dataset("mgs-tes-derived-thermal-inertia")),
         },
         {
+            "id": "nasa-power-climatology",
+            "provider": "NASA Langley Research Center POWER project",
+            "name": "POWER gridded annual and monthly point climatology",
+            "version": _nasa_power_version(),
+            "bodies": ["earth"],
+            "variable": "2 m air temperature and relative humidity, 10 m wind speed, all-sky surface shortwave radiation",
+            "units": "°C; %; m/s; kWh/m²/day",
+            "native_resolution_m": "Meteorology grid: 0.5° × 0.625°; solar radiation grid: 1° × 1°. NASA POWER point values represent these source grid cells, not local sensors.",
+            "access_method": "NASA POWER Climatology API; eight compact point responses cached locally",
+            "status": "operational" if _nasa_power_records() else "not_observed",
+            "source_url": "https://power.larc.nasa.gov/docs/services/api/temporal/climatology/",
+            "coverage_count": len(_nasa_power_records()),
+            "observation_period": "per-record period field; POWER response identifies Jan 2001–Dec 2025",
+            "uncertainty": "Gridded climatology/reanalysis estimate; not in-situ site measurements.",
+            "missing_data_semantics": "NASA POWER fill values are converted to explicit not_observed values.",
+        },
+        {
+            "id": "era5-earth-candidate-climatology",
+            "provider": "ECMWF/Copernicus ERA5 via Open-Meteo Historical Weather API",
+            "name": "ERA5 Earth candidate-place monthly climate summaries",
+            "version": "ERA5; 1991–2020 baseline; daily API values summarized by calendar month",
+            "bodies": ["earth"],
+            "variable": "2 m air temperature, 10 m wind speed, monthly precipitation total",
+            "units": "°C; m/s; mm/month",
+            "native_resolution_m": "0.25° grid, about 25 km; nearest returned grid point is recorded per candidate",
+            "access_method": "Open-Meteo Historical Weather API ERA5 model; compact monthly summaries cached locally",
+            "status": "operational" if any(item.get("dataset_id") == "era5-earth-candidate-climatology" for item in analogue.source_inventory(ROOT)) else "registered",
+            "source_url": "https://open-meteo.com/en/docs/historical-weather-api",
+            "coverage_count": next((item.get("coverage_count", 0) for item in analogue.source_inventory(ROOT) if item.get("dataset_id") == "era5-earth-candidate-climatology"), 0),
+            "observation_period": "1991-01-01 through 2020-12-31 climate baseline",
+            "uncertainty": "ERA5 reanalysis is a model grid rather than local weather-station data; grid-point snapping and full uncertainty ranges are not propagated.",
+            "missing_data_semantics": "Missing daily values are excluded from monthly summaries; months with no valid values remain null.",
+            "scorecard_role": "Earth climate context only; not used in cross-body analogue similarity or mission suitability.",
+        },
+        {
+            "id": "mars2020-meda",
+            "provider": "NASA Planetary Data System Atmospheres Node",
+            "name": "Mars 2020 MEDA selected-sol environmental records",
+            "version": "PDS4 Mars 2020 MEDA bundle 6.0; one-sol ENOM summaries",
+            "bodies": ["mars"],
+            "variable": "near-surface air temperature, relative humidity, and horizontal wind speed",
+            "units": "K; %RH; m/s",
+            "native_resolution_m": "Rover-mounted point sensors; rover track location varies within Jezero",
+            "access_method": "PDS Atmospheres Node CSV products summarized locally for Mars sol 100; raw CSV files are not retained",
+            "status": "operational" if _meda_records() else "registered",
+            "source_url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn:nasa:pds:mars2020_meda&version=1.0",
+            "coverage_count": len(_meda_records()),
+            "observation_period": "Mars sol 100 only; not a climate normal",
+            "uncertainty": "PDS product-level uncertainty and valid sample counts are preserved; source flags and short temporal coverage limit interpretation.",
+            "missing_data_semantics": "PDS fill values and non-finite values are excluded from each one-sol summary.",
+        },
+        {
+            "id": "mars2020-rover-places-best-tactical",
+            "provider": "NASA Mars 2020 Rover PLACES / PDS Geosciences Node",
+            "name": "Perseverance best-tactical drive localizations near Jezero",
+            "version": "Mars 2020 Rover PLACES Release 16; Jezero-region subset",
+            "bodies": ["mars"],
+            "variable": "planetocentric rover position fixes associated with drive records",
+            "units": "degrees; elevation m; Mars sol and site/drive indices",
+            "native_resolution_m": "Per-position localization; no uncertainty field in the connected CSV",
+            "spatial_coverage": "577 selected drive positions within 20 km of ENOM's Jezero candidate coordinate",
+            "access_method": "PDS PLACES best_tactical.csv; only candidate-region rows are retained in ENOM",
+            "licence": "NASA PDS archive; cite the dataset/product and follow archive guidance",
+            "uncertainty": "The source table provides coordinates but no per-position uncertainty estimate in this ingest.",
+            "missing_data_semantics": "SITE rows and invalid sol/drive entries are excluded; missing drive locations are not interpolated.",
+            "source_url": "https://pds-geosciences.wustl.edu/missions/mars2020/places.htm",
+            "status": "operational" if next((item["status"] for item in analogue.source_inventory(ROOT) if item["id"] == "mars2020-rover-places"), "registered") == "operational" else "registered",
+            "coverage_count": next((item["coverage_count"] for item in analogue.source_inventory(ROOT) if item["id"] == "mars2020-rover-places"), 0),
+            "scorecard_role": "Discrete operation context only; not a continuous traverse, rover-safety test, or suitability score",
+        },
+        {
+            "id": "usgs-earth-sgmc",
+            "provider": "U.S. Geological Survey / State Geological Surveys",
+            "name": "State Geologic Map Compilation (SGMC)",
+            "version": "Conterminous United States regional compilation; source maps range approximately 1:50,000–1:1,000,000",
+            "bodies": ["earth"],
+            "variable": "mapped geologic unit, generalized lithology, age and major materials",
+            "units": "categorical map interpretation",
+            "native_resolution_m": "varies by contributing state map; not a uniform pixel resolution",
+            "crs": "Source layer NAD83 (EPSG:4269); point queries submitted in WGS 84",
+            "access_method": "USGS ArcGIS FeatureServer point query; candidate result sidecars cached locally",
+            "licence": "USGS/state compilation attribution; follow source map citations",
+            "uncertainty": "State maps vary in scale and units are not fully reconciled across state boundaries; not a local assay.",
+            "missing_data_semantics": "Only three of eight catalogue candidates fall within this CONUS layer; outside-extent places remain explicit.",
+            "source_url": "https://doi.org/10.5066/F7WH2N65",
+            "status": "operational" if _earth_geology_records(mapped_only=True) else "registered",
+            "coverage_count": len(_earth_geology_records(mapped_only=True)),
+        },
+        {
             "id": "usgs-sim-1083-mars-global-geology",
             "provider": "U.S. Geological Survey Astrogeology Science Center",
             "name": "Global Mars geologic map unit polygons",
@@ -578,10 +1100,8 @@ def datasets() -> list[dict[str, object]]:
                 "Outside extent, unmapped, and boundary-ambiguous states are explicit"
             ),
             "source_url": "https://astrogeology.usgs.gov/search/map/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2/",
-            "status": "operational"
-            if list((ROOT / "data/geology").glob("usgs-unified-moon-*.json"))
-            else "registered",
-            "coverage_count": len(list((ROOT / "data/geology").glob("usgs-unified-moon-*.json"))),
+            "status": "operational" if _lunar_geology_records() else "registered",
+            "coverage_count": len(_lunar_geology_records()),
         },
     ]
 
@@ -589,6 +1109,61 @@ def datasets() -> list[dict[str, object]]:
 @app.get("/api/datasets/{dataset_id}/coverage")
 def dataset_coverage(dataset_id: str) -> dict[str, object]:
     """Describe indexed coverage and the dataset's observation-level limits."""
+    if dataset_id in {"candidate-subsurface-context", "candidate-mission-site-context"}:
+        rows = [
+            row for row in analogue.candidate_context_records(ROOT)
+            if row["dataset_id"] == dataset_id
+        ]
+        body_counts = {
+            body: sum(row["body"] == body for row in rows)
+            for body in sorted({str(row["body"]) for row in rows})
+        }
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [row["place_id"] for row in rows],
+            "coverage_count": len(rows),
+            "status": "context_only" if rows else "not_observed",
+            "body_counts": body_counts,
+            "observations": rows,
+            "measurement_status": "No measurements; these are source-linked catalogue interpretations.",
+        }
+    if dataset_id == "mars2020-meda":
+        rows = _meda_records()
+        path = ROOT / "data/environment/mars2020-meda-sol100.json"
+        payload = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"records": []}
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [row["observation_id"] for row in rows],
+            "coverage_count": len(rows),
+            "unique_place_count": len({row["place_id"] for row in rows}),
+            "status": "available" if rows else "not_observed",
+            "body_counts": {"mars": len(rows)} if rows else {},
+            "observations": rows,
+            "scope": payload.get("scope"),
+            "measurement_semantics": "One-sol sample summaries; not a climate normal and not used for Earth analogue scoring.",
+        }
+    if dataset_id == "mars2020-rover-places-best-tactical":
+        path = ROOT / "data/environment/mars2020-jezero-rover-places.json"
+        payload = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"records": []}
+        rows = payload.get("records", [])
+        sols = [int(row["sol"]) for row in rows]
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [row["observation_id"] for row in rows],
+            "place_ids": [payload["place_id"]] if rows else [],
+            "coverage_count": len(rows),
+            "unique_place_count": 1 if rows else 0,
+            "status": "context_only" if rows else "not_observed",
+            "body_counts": {"mars": 1} if rows else {},
+            "observations": rows,
+            "measurement_semantics": "Selected best-tactical rover positions associated with drive records; discrete fixes are not a continuous wheel path.",
+            "temporal_coverage": f"Mars sols {min(sols)}–{max(sols)}" if sols else None,
+            "spatial_coverage": f"Positions within {payload.get('candidate_region_radius_km')} km of the Jezero candidate coordinate.",
+            "uncertainty_semantics": payload.get("position_uncertainty"),
+            "interpretation_limit": payload.get("interpretation_limit"),
+            "release_url": payload.get("release_url"),
+            "scoring_role": "Operational context only; not included in analogue similarity or mission suitability.",
+        }
     if dataset_id == "lro-lola-gdr-ldem-64":
         metadata = _metadata_for_dataset(dataset_id)
         return {
@@ -602,6 +1177,120 @@ def dataset_coverage(dataset_id: str) -> dict[str, object]:
                 "Raster-valid-pixel fraction is not direct LOLA shot coverage; "
                 "the latter is not quantified by this product/crop."
             ),
+        }
+    if dataset_id == "lro-lola-gdr-polar-ldem-120m":
+        metadata = _metadata_for_dataset(dataset_id)
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [str(row["observation_id"]) for row in metadata],
+            "coverage_count": len(metadata),
+            "status": "available" if metadata else "not_observed",
+            "body_counts": {"moon": len(metadata)} if metadata else {},
+            "place_ids": [str(row["place_id"]) for row in metadata],
+            "observations": metadata,
+            "support_semantics": (
+                "Paired LDEC product reports direct laser observations per native 120 m cell. "
+                "ENOM masks unsupported native cells and requires at least 25% support within "
+                "each 463 m comparison-grid cell. This is coverage support, not vertical uncertainty."
+            ),
+        }
+    if dataset_id == "lro-mini-rf-south-polar-cpr":
+        path = ROOT / "data/environment/lro-mini-rf-south-polar-cpr.json"
+        payload = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"records": []}
+        rows = payload.get("records", [])
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [row["observation_id"] for row in rows],
+            "place_ids": [row["place_id"] for row in rows],
+            "coverage_count": len(rows),
+            "status": "context_only" if rows else "not_observed",
+            "body_counts": {"moon": len(rows)} if rows else {},
+            "observations": rows,
+            "measurement_semantics": "Median circular polarization ratio over a 5×5-pixel neighbourhood, about 948 m per pixel.",
+            "interpretation_limit": "CPR can reflect surface roughness/blockiness or volume scattering; it does not uniquely detect water ice or establish resource usability.",
+            "retrieval_method": payload.get("retrieval_method"),
+            "scoring_role": "Context only; not used for analogue similarity or mission suitability.",
+        }
+    if dataset_id == "lro-lend-south-polar-alds":
+        path = ROOT / "data/environment/lro-lend-south-polar-alds.json"
+        payload = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"records": []}
+        rows = payload.get("records", [])
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [row["observation_id"] for row in rows],
+            "place_ids": sorted({row["place_id"] for row in rows}),
+            "coverage_count": len(rows),
+            "unique_place_count": len({row["place_id"] for row in rows}),
+            "status": "context_only" if rows else "not_observed",
+            "body_counts": {"moon": len({row["place_id"] for row in rows})} if rows else {},
+            "observations": rows,
+            "measurement_semantics": "CSETN normalized neutron count rate for the matching 0.5° south-polar ALDS map cell.",
+            "temporal_coverage_limit": "These averaged ALDS products end in 2016; newer LEND RDR_DLD records are not included in ENOM.",
+            "missing_data_semantics": "CSETN rows with zero exposure, -1 rate or -1 error are exposed as not_observed, not as zero similarity or absence of hydrogen.",
+            "uncertainty_semantics": "CSETN_ERR is statistical error only; it does not combine instrument footprint, cell-location, or systematic uncertainty.",
+            "interpretation_limit": "Neutron rate is indirect hydrogen context, not a direct water/ice measurement or usable-resource estimate.",
+            "retrieval_method": payload.get("retrieval_method"),
+            "scoring_role": "Context only; not used for analogue similarity or mission suitability.",
+        }
+    if dataset_id == "lro-diviner-prp-south-polar":
+        path = ROOT / "data/environment/lro-diviner-south-polar-prp.json"
+        payload = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"records": []}
+        rows = payload.get("records", [])
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [row["observation_id"] for row in rows],
+            "place_ids": sorted({row["place_id"] for row in rows}),
+            "coverage_count": len(rows),
+            "unique_place_count": len({row["place_id"] for row in rows}),
+            "status": "context_only" if rows else "not_observed",
+            "body_counts": {"moon": len({row["place_id"] for row in rows})} if rows else {},
+            "observations": rows,
+            "measurement_semantics": "Nearest triangular-mesh centroid sample of model-derived annual temperatures and ice-stability depth.",
+            "missing_data_semantics": "PDS -999 ice-depth values mean the modeled threshold exceeds 2.8738 m; shown as not_reported.",
+            "uncertainty_semantics": "The product has no per-triangle uncertainty field; model uncertainty is not propagated.",
+            "interpretation_limit": "A thermal-model estimate from first-year Diviner observations, not direct detection or confirmation of accessible water ice.",
+            "retrieval_method": payload.get("retrieval_method"),
+            "scoring_role": "Lunar context only; not used for analogue similarity or mission suitability.",
+        }
+    if dataset_id == "nasa-power-climatology":
+        rows = _nasa_power_records()
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [row["place_id"] for row in rows],
+            "coverage_count": len(rows),
+            "status": "available" if rows else "not_observed",
+            "body_counts": {"earth": len(rows)},
+            "observations": rows,
+            "uncertainty_semantics": "NASA POWER gridded climatology, not local station observations.",
+        }
+    if dataset_id == "era5-earth-candidate-climatology":
+        path = ROOT / "data/environment/era5-earth-candidate-climatology.json"
+        payload = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {"records": []}
+        rows = payload.get("records", [])
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [row["observation_id"] for row in rows],
+            "place_ids": [row["place_id"] for row in rows],
+            "coverage_count": len(rows),
+            "unique_place_count": len({row["place_id"] for row in rows}),
+            "status": "context_only" if rows else "not_observed",
+            "body_counts": {"earth": len({row["place_id"] for row in rows})} if rows else {},
+            "observations": rows,
+            "measurement_semantics": "1991–2020 ERA5 daily reanalysis summarized into monthly 2 m temperature, 10 m wind, and precipitation climatologies at nearest 0.25° grid points.",
+            "uncertainty_semantics": "Grid-point offset and nominal resolution are retained; reanalysis and spatial uncertainty are not combined into total error bars.",
+            "interpretation_limit": "Not local station data; air temperature, wind, and precipitation do not directly measure surface material, dust events, soil water, or resource usability.",
+            "scoring_role": "Context only; no validated cross-body comparison is connected.",
+        }
+    if dataset_id == "mgs-tes-derived-thermal-inertia":
+        metadata = _metadata_for_dataset(dataset_id)
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [str(row["observation_id"]) for row in metadata],
+            "coverage_count": len(metadata),
+            "status": "available" if metadata else "not_observed",
+            "body_counts": {"mars": len(metadata)},
+            "observations": metadata,
+            "scorecard_role": "derived thermal inertia context only; not temperature and not scored against Earth air temperature.",
         }
     records, _, _ = _load()
     if dataset_id == "pilot-surface-imagery":
@@ -659,6 +1348,31 @@ def dataset_coverage(dataset_id: str) -> dict[str, object]:
             "body_counts": {"mars": len(metadata)},
             "observations": metadata,
             "scorecard_role": "categorical geological context only; excluded from terrain ranking",
+        }
+    if dataset_id == "usgs-fortezzo-2020-unified-lunar-geology":
+        metadata = _lunar_geology_records()
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [str(row["observation_id"]) for row in metadata],
+            "coverage_count": len(metadata),
+            "status": "available" if metadata else "not_observed",
+            "body_counts": {"moon": len(metadata)},
+            "observations": metadata,
+            "scorecard_role": "categorical regional interpretation; no mineral assay or terrain score.",
+        }
+    if dataset_id == "usgs-earth-sgmc":
+        metadata = _earth_geology_records()
+        mapped = [row for row in metadata if row.get("classification_status") in {"mapped", "boundary_ambiguous"}]
+        return {
+            "dataset_id": dataset_id,
+            "observation_ids": [str(row["observation_id"]) for row in mapped],
+            "coverage_count": len(mapped),
+            "candidate_site_query_count": len(metadata),
+            "status": "available" if mapped else "not_observed",
+            "body_counts": {"earth": len(mapped)},
+            "observations": metadata,
+            "coverage_notes": [row["observation_id"] + ": " + str(row["classification_status"]) for row in metadata],
+            "scorecard_role": "regional categorical geology context only; excluded from similarity scoring.",
         }
     if dataset_id == "lro-lola-gdr-ldem-64":
         metadata = _metadata_for_dataset(dataset_id)
@@ -1047,19 +1761,33 @@ def _scorecard_sites() -> list[dict[str, Any]]:
     for path in TERRAIN_SIDECARS:
         metadata = json.loads(path.read_text(encoding="utf-8"))
         dataset_id = metadata.get("dataset_id")
-        if dataset_id == "lro-lola-gdr-ldem-64":
+        if dataset_id in {"lro-lola-gdr-ldem-64", "lro-lola-gdr-polar-ldem-120m"}:
             body = "moon"
             location = metadata
-            support = {
-                "status": "unknown",
-                "observed_cell_count": None,
-                "grid_cell_count": metadata.get("grid_cell_count"),
-                "observed_cell_fraction": None,
-                "raster_valid_cell_count": metadata.get("valid_pixel_count"),
-                "note": "Direct-shot coverage is not quantified by the LOLA GDR product.",
-            }
+            polar = dataset_id == "lro-lola-gdr-polar-ldem-120m"
+            if polar:
+                support = {
+                    "status": "partial",
+                    "observed_cell_count": metadata.get("observed_cell_count"),
+                    "grid_cell_count": metadata.get("grid_cell_count"),
+                    "observed_cell_fraction": metadata.get("observed_cell_fraction"),
+                    "raster_valid_cell_count": metadata.get("valid_pixel_count"),
+                    "note": (
+                        "Native cells with zero LDEC direct-shot count are excluded; output cells "
+                        "need at least 25% directly sampled support. Counts are not error bars."
+                    ),
+                }
+            else:
+                support = {
+                    "status": "unknown",
+                    "observed_cell_count": None,
+                    "grid_cell_count": metadata.get("grid_cell_count"),
+                    "observed_cell_fraction": None,
+                    "raster_valid_cell_count": metadata.get("valid_pixel_count"),
+                    "note": "Direct-shot coverage is not quantified by the LOLA GDR product.",
+                }
             quality = str(
-                metadata.get("uncertainty_note", "LOLA direct-shot coverage is not quantified.")
+                metadata.get("uncertainty_note", "LOLA polar direct-shot coverage is not quantified.")
             )
         elif dataset_id == "mola-meg128":
             body = "mars"
@@ -1153,15 +1881,35 @@ def _mars_geology_records() -> list[dict[str, object]]:
     return [
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((ROOT / "data/geology").glob("usgs-sim1083-*.json"))
+    ] + [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((ROOT / "data/geology").glob("usgs-candidate-mars-*.json"))
     ]
+
+
+@lru_cache(maxsize=1)
+def _lunar_geology_records() -> list[dict[str, object]]:
+    return [
+        json.loads(path.read_text(encoding="utf-8"))
+        for pattern in ("usgs-unified-moon-*.json", "usgs-candidate-moon-*.json")
+        for path in sorted((ROOT / "data/geology").glob(pattern))
+    ]
+
+
+@lru_cache(maxsize=1)
+def _earth_geology_records(mapped_only: bool = False) -> list[dict[str, object]]:
+    rows = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((ROOT / "data/geology").glob("usgs-candidate-earth-*.json"))
+    ]
+    if mapped_only:
+        return [row for row in rows if row.get("classification_status") in {"mapped", "boundary_ambiguous"}]
+    return rows
 
 
 def _geology_evidence_for(observation_id: str) -> dict[str, object] | None:
     """Return categorical lunar or Mars map context, never a score feature."""
-    records = _mars_geology_records() + [
-        json.loads(path.read_text(encoding="utf-8"))
-        for path in sorted((ROOT / "data/geology").glob("usgs-unified-moon-*.json"))
-    ]
+    records = _mars_geology_records() + _lunar_geology_records()
     for metadata in records:
         if metadata.get("observation_id") == observation_id:
             return {

@@ -84,6 +84,8 @@ def ingest(
     latitude_deg: float = 8.5,
     *,
     output_id: str = "moon_mare_tranquillitatis_01",
+    place_name: str = "Mare Tranquillitatis (scorecard terrain window)",
+    place_id: str | None = None,
 ) -> dict[str, object]:
     """Create a source-traceable LOLA terrain context for a catalogue site."""
     if not output_id.replace("_", "").isalnum():
@@ -176,8 +178,9 @@ def ingest(
     ]
     metadata: dict[str, object] = {
         "observation_id": output_id,
+        "place_id": place_id or output_id,
         "body": "moon",
-        "name": "Mare Tranquillitatis (scorecard terrain window)",
+        "name": place_name,
         "longitude_east_deg": longitude_east_deg,
         "latitude_deg": latitude_deg,
         "dataset_id": "lro-lola-gdr-ldem-64",

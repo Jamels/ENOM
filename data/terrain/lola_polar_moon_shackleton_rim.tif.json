@@ -1,0 +1,155 @@
+{
+  "observation_id": "lola_polar_moon_shackleton_rim",
+  "place_id": "moon-shackleton-rim",
+  "body": "moon",
+  "name": "LOLA south-polar terrain \u00b7 Shackleton rim candidate region",
+  "latitude_deg": -89.77,
+  "longitude_east_deg": 188.13,
+  "location_precision": "candidate_region_locator",
+  "spatial_relation": "The candidate coordinate is a regional locator from the candidate catalogue, not a landing ellipse or rover traverse.",
+  "dataset_id": "lro-lola-gdr-polar-ldem-120m",
+  "provider": "NASA LRO LOLA / PDS Geosciences Node",
+  "source_product_id": "LDEM_75S_120M",
+  "count_product_id": "LDEC_75S_120M",
+  "data_set_id": "LRO-L-LOLA-4-GDR-V1.0",
+  "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_120m.img",
+  "label_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_120m.lbl",
+  "counts_source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldec_75s_120m.img",
+  "counts_label_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldec_75s_120m.lbl",
+  "retrieved_at": "2026-11-14",
+  "observation_period": "LOLA data acquired through 2017-02-02; PDS polar DEM product V2.1",
+  "native_resolution_m": 120.0,
+  "output_pixel_size_m": 463.05766716974557,
+  "context_size_m": 10187.268677734402,
+  "crs": "IAU_2015:30135",
+  "processing_crs": "IAU_2015:30135",
+  "coordinate_frame": "Mean Earth / polar axis of DE421; planetocentric latitude; east-positive longitude",
+  "units": "m relative to the LOLA 1,737.4 km reference sphere",
+  "observed_cell_count": 484,
+  "grid_cell_count": 484,
+  "observed_cell_fraction": 1.0,
+  "native_count_crop_fraction": 1.0,
+  "minimum_direct_support_fraction_per_output_cell": 0.25,
+  "count_raster": "data/terrain/lola_polar_moon_shackleton_rim-counts.tif",
+  "observation_coverage": "Paired LDEC product gives direct observation counts at 120 m. Output DEM cells are retained only when at least 25% of the contributing native grid is directly observed.",
+  "missing_data_semantics": "LDEC count 0 means no direct LOLA observations contributed to that native cell; such cells are not used as elevation evidence.",
+  "uncertainty_note": "Direct-shot counts describe support, not vertical uncertainty. The PDS product does not provide a per-cell elevation uncertainty layer; vertical error is not propagated.",
+  "processing_method": "Only the selected 96\u00d796 native-cell windows were fetched by verified HTTP byte-range requests; no whole polar raster was downloaded. DEM elevations were averaged to the 463.0577 m comparison grid after masking unsupported source cells.",
+  "output": "data/terrain/lola_polar_moon_shackleton_rim.tif",
+  "measurements": [
+    {
+      "name": "elevation_range",
+      "value": 3884.704345703125,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 10187.268677734402,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Input DEM uncertainty not supplied by adapter"
+      },
+      "provenance": {
+        "source_product_id": "LDEM_75S_120M",
+        "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_120m.img",
+        "provider": "NASA LRO LOLA / PDS Geosciences Node",
+        "processing_method": "Bounded PDS3 HTTP range reads of the 120 m LDEM and paired LDEC shot-count products; elevation is DN \u00d7 0.5 m; direct-support fraction is averaged into the 463.0577 m comparison grid; cells below 25% are excluded.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "mean_slope",
+      "value": 23.69927164224487,
+      "units": "degree",
+      "availability": "available",
+      "spatial_scale_m": 926.1153343394911,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Derived from neighbouring DEM elevations"
+      },
+      "provenance": {
+        "source_product_id": "LDEM_75S_120M",
+        "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_120m.img",
+        "provider": "NASA LRO LOLA / PDS Geosciences Node",
+        "processing_method": "Bounded PDS3 HTTP range reads of the 120 m LDEM and paired LDEC shot-count products; elevation is DN \u00d7 0.5 m; direct-support fraction is averaged into the 463.0577 m comparison grid; cells below 25% are excluded.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "median_local_relief_3x3",
+      "value": 603.1567840576172,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 1389.1730015092367,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Derived from a 3x3 pixel moving window"
+      },
+      "provenance": {
+        "source_product_id": "LDEM_75S_120M",
+        "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_120m.img",
+        "provider": "NASA LRO LOLA / PDS Geosciences Node",
+        "processing_method": "Bounded PDS3 HTTP range reads of the 120 m LDEM and paired LDEC shot-count products; elevation is DN \u00d7 0.5 m; direct-support fraction is averaged into the 463.0577 m comparison grid; cells below 25% are excluded.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "slope_p90",
+      "value": 32.55708372949823,
+      "units": "degree",
+      "availability": "available",
+      "spatial_scale_m": 926.1153343394911,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "90th percentile of central-difference slope"
+      },
+      "provenance": {
+        "source_product_id": "LDEM_75S_120M",
+        "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_120m.img",
+        "provider": "NASA LRO LOLA / PDS Geosciences Node",
+        "processing_method": "Bounded PDS3 HTTP range reads of the 120 m LDEM and paired LDEC shot-count products; elevation is DN \u00d7 0.5 m; direct-support fraction is averaged into the 463.0577 m comparison grid; cells below 25% are excluded.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "median_roughness_3x3",
+      "value": 8.06540595160584,
+      "units": "m",
+      "availability": "available",
+      "spatial_scale_m": 1389.1730015092367,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Median absolute deviation from the 3x3 mean"
+      },
+      "provenance": {
+        "source_product_id": "LDEM_75S_120M",
+        "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_120m.img",
+        "provider": "NASA LRO LOLA / PDS Geosciences Node",
+        "processing_method": "Bounded PDS3 HTTP range reads of the 120 m LDEM and paired LDEC shot-count products; elevation is DN \u00d7 0.5 m; direct-support fraction is averaged into the 463.0577 m comparison grid; cells below 25% are excluded.",
+        "software_version": null
+      }
+    },
+    {
+      "name": "median_curvature",
+      "value": 5.621964950576393e-05,
+      "units": "m^-1",
+      "availability": "available",
+      "spatial_scale_m": 1389.1730015092367,
+      "uncertainty": {
+        "value": null,
+        "units": null,
+        "description": "Finite-difference Laplacian; grid-scale dependent"
+      },
+      "provenance": {
+        "source_product_id": "LDEM_75S_120M",
+        "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img/ldem_75s_120m.img",
+        "provider": "NASA LRO LOLA / PDS Geosciences Node",
+        "processing_method": "Bounded PDS3 HTTP range reads of the 120 m LDEM and paired LDEC shot-count products; elevation is DN \u00d7 0.5 m; direct-support fraction is averaged into the 463.0577 m comparison grid; cells below 25% are excluded.",
+        "software_version": null
+      }
+    }
+  ]
+}

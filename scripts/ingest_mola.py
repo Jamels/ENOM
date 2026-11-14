@@ -70,17 +70,32 @@ def _read_crop(
     )
 
 
-def ingest(observation_id: str, output: Path, *, context_cells: int = 22) -> dict[str, object]:
+def ingest(
+    observation_id: str,
+    output: Path,
+    *,
+    context_cells: int = 22,
+    longitude_east_deg: float | None = None,
+    latitude_deg: float | None = None,
+    place_name: str | None = None,
+) -> dict[str, object]:
     """Fetch and process a bounded MOLA context for one pilot Mars observation."""
     if context_cells < 5 or context_cells > 256:
         raise ValueError("context_cells must be between 5 and 256")
-    manifest = read_jsonl(ROOT / "data/manifests/pilot-100.jsonl")
-    record = next((item for item in manifest if item.image_id == observation_id), None)
-    if record is None or record.body != "mars":
-        raise ValueError("observation_id must identify a Mars observation in pilot-100")
-    product_stem, west, north = tile_for(record.longitude, record.latitude)
-    center_column = math.floor((record.longitude % 360.0 - west) * PIXELS_PER_DEGREE)
-    center_row = math.floor((north - record.latitude) * PIXELS_PER_DEGREE)
+    if (longitude_east_deg is None) != (latitude_deg is None):
+        raise ValueError("provide both longitude_east_deg and latitude_deg, or neither")
+    if longitude_east_deg is None:
+        manifest = read_jsonl(ROOT / "data/manifests/pilot-100.jsonl")
+        record = next((item for item in manifest if item.image_id == observation_id), None)
+        if record is None or record.body != "mars":
+            raise ValueError("observation_id must identify a Mars observation in pilot-100")
+        longitude_east_deg, latitude_deg = record.longitude, record.latitude
+    assert latitude_deg is not None
+    if not math.isfinite(longitude_east_deg) or not math.isfinite(latitude_deg):
+        raise ValueError("site coordinates must be finite")
+    product_stem, west, north = tile_for(longitude_east_deg, latitude_deg)
+    center_column = math.floor((longitude_east_deg % 360.0 - west) * PIXELS_PER_DEGREE)
+    center_row = math.floor((north - latitude_deg) * PIXELS_PER_DEGREE)
     column = center_column - context_cells // 2
     row = center_row - context_cells // 2
     if (
@@ -186,6 +201,11 @@ def ingest(observation_id: str, output: Path, *, context_cells: int = 22) -> dic
     )
     metadata: dict[str, object] = {
         "observation_id": observation_id,
+        "place_id": observation_id,
+        "body": "mars",
+        "name": place_name or observation_id,
+        "longitude_east_deg": longitude_east_deg % 360.0,
+        "latitude_deg": latitude_deg,
         "dataset_id": "mola-meg128",
         "provider": "NASA Planetary Data System Geosciences Node / MGS MOLA",
         "source_product_id": f"{PDS_PRODUCT_PREFIX}:{topo_id}",

@@ -1,0 +1,53 @@
+{
+  "observation_id": "moon_mare_tranquillitatis_pit",
+  "body": "moon",
+  "dataset_id": "lro-diviner-gdr-level3-st-clc",
+  "provider": "NASA LRO Diviner / PDS Geosciences Node",
+  "source_product_id": "DGDR_ST_CLC_CYL_20120114N_128_IMG",
+  "data_set_id": "LRO-L-DLRE-5-GDR-V1.0",
+  "product_version": "PDS3 V6.0",
+  "source_url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_gdr_l3/2012/cylindrical/img/dgdr_st_clc_cyl_20120114n_128_img.img",
+  "label_url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_gdr_l3/2012/cylindrical/img/dgdr_st_clc_cyl_20120114n_128_img.lbl",
+  "retrieved_at": "2026-11-14",
+  "product_start_time": "2012-01-14T08:43:24.167Z",
+  "product_stop_time": "2012-02-10T15:57:54.922Z",
+  "source_description": "The product algorithm uses Diviner data acquired 2009-07-05 through 2016-10-10, local times 19:30\u201305:30, solar incidence >90\u00b0, emission angle <15\u00b0, and its stated temperature and quality filters.",
+  "longitude_east_deg": 33.222,
+  "latitude_deg": 8.3355,
+  "source_resolution_m_at_equator": 236.901175,
+  "context_size_m": 10368.442822922363,
+  "grid_shape": [
+    44,
+    44
+  ],
+  "valid_sample_count": 975,
+  "sample_count": 1936,
+  "valid_sample_fraction": 0.5036157024793388,
+  "units": "K; signed 16-bit little-endian DN \u00d7 0.02 K; -32768 is missing",
+  "latitude_type": "planetocentric",
+  "coordinate_reference_system": "PROJCS[\"unknown\",GEOGCS[\"unknown\",DATUM[\"unknown\",SPHEROID[\"unknown\",1737400,0]],PRIMEM[\"Reference meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"standard_parallel_1\",8.3359375],PARAMETER[\"central_meridian\",180],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+  "data_coverage_note": "Valid fraction is the fraction of non-missing raster cells, not observation count or independent spatial support.",
+  "earth_comparison_status": "not_compared",
+  "scorecard_role": "environmental_evidence_only; excluded from terrain ranking",
+  "measurement": {
+    "name": "Nighttime rock-free regolith surface temperature",
+    "value": 95.25999450683594,
+    "units": "K",
+    "availability": "available",
+    "spatial_scale_m": 10368.442822922363,
+    "summary": {
+      "mean_k": 95.36713409423828,
+      "median_k": 95.25999450683594,
+      "p10_k": 94.36000061035156,
+      "p90_k": 96.55999755859375
+    },
+    "uncertainty": {
+      "description": "Product-derived rock-free regolith temperature, not a direct in-situ measurement. The PDS label reports most surfaces have only one observation; per-pixel uncertainty and repeat-observation counts are not supplied here."
+    },
+    "provenance": {
+      "source_url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_gdr_l3/2012/cylindrical/img/dgdr_st_clc_cyl_20120114n_128_img.lbl",
+      "source_product_id": "DGDR_ST_CLC_CYL_20120114N_128_IMG"
+    }
+  },
+  "output": "data/terrain/diviner_moon_mare_tranquillitatis_pit.tif"
+}

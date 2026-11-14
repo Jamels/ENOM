@@ -1,0 +1,185 @@
+{
+  "dataset_id": "mars2020-meda",
+  "bundle_url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn:nasa:pds:mars2020_meda&version=1.0",
+  "records": [
+    {
+      "observation_id": "mars2020-meda-sol-0100-ats",
+      "place_id": "mars-jezero",
+      "body": "mars",
+      "name": "Perseverance MEDA ATS \u00b7 Mars sol 100",
+      "dataset_id": "mars2020-meda",
+      "product_id": "WE__0100___________CAL_ATS_________________P01.CSV",
+      "provider": "NASA Planetary Data System Atmospheres Node",
+      "source_url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0090_0179/sol_0100/WE__0100___________CAL_ATS_________________P01.CSV",
+      "dataset_reference_url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn:nasa:pds:mars2020_meda&version=1.0",
+      "units_reference_url": null,
+      "acquired_at": "Mars sol 100; LMST 00100M00:00:00.073 to 00100M23:05:24.551",
+      "kind": "measurement",
+      "dimensions": [
+        "thermal_illumination"
+      ],
+      "latitude_deg": 18.44,
+      "longitude_east_deg": 77.45,
+      "location_precision": "rover_track_in_mission_region",
+      "spatial_relation": "Perseverance rover observation within the Jezero mission region; catalogue coordinates mark a regional locator, not the rover's exact position for every sample.",
+      "summary": "Local air temperature measured near the Remote Sensing Mast at 50 degrees.",
+      "use_limit": "Calibrated one-sol rover measurement; not a seasonal climate statistic or illumination measure.",
+      "evidence_kind": "measured",
+      "quality_note": "PDS fill values and non-finite samples are excluded. 0 rows were excluded by the sensor quality filter. This one-sol summary is displayed as context only and is not used for analogue scoring.",
+      "temporal_coverage": {
+        "martian_sol": 100,
+        "local_mean_solar_time_start": "00100M00:00:00.073",
+        "local_mean_solar_time_stop": "00100M23:05:24.551"
+      },
+      "row_count": 102827,
+      "measurements": [
+        {
+          "name": "MEDA ATS local air temperature near mast sensor 1",
+          "value": 213.51,
+          "units": "K",
+          "availability": "available",
+          "summary_statistic": "median",
+          "sample_count": 102827,
+          "source_row_count": 102827,
+          "invalid_value_count": 0,
+          "quality_filtered_row_count": 0,
+          "sample_percentiles": {
+            "p10": 195.49,
+            "p90": 253.74
+          },
+          "sample_range": {
+            "minimum": 191.47,
+            "maximum": 258.3
+          },
+          "uncertainty": {
+            "value": null,
+            "units": "K",
+            "description": "No valid per-row uncertainty values were supplied."
+          }
+        }
+      ],
+      "retrieved_at": "2026-11-14T05:01:49.394909+00:00",
+      "processing_method": "One-sol median and p10\u2013p90 summary from the current PDS derived/calibrated CSV product; raw CSV is not retained."
+    },
+    {
+      "observation_id": "mars2020-meda-sol-0100-ws",
+      "place_id": "mars-jezero",
+      "body": "mars",
+      "name": "Perseverance MEDA WS \u00b7 Mars sol 100",
+      "dataset_id": "mars2020-meda",
+      "product_id": "WE__0100___________DER_WS__________________P02.CSV",
+      "provider": "NASA Planetary Data System Atmospheres Node",
+      "source_url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0090_0179/sol_0100/WE__0100___________DER_WS__________________P02.CSV",
+      "dataset_reference_url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn:nasa:pds:mars2020_meda&version=1.0",
+      "units_reference_url": null,
+      "acquired_at": "Mars sol 100; LMST 00100M04:00:28.047 to 00100M21:05:08.861",
+      "kind": "measurement",
+      "dimensions": [
+        "dust_processes"
+      ],
+      "latitude_deg": 18.44,
+      "longitude_east_deg": 77.45,
+      "location_precision": "rover_track_in_mission_region",
+      "spatial_relation": "Perseverance rover observation within the Jezero mission region; catalogue coordinates mark a regional locator, not the rover's exact position for every sample.",
+      "summary": "Derived horizontal wind speed; only rows with the rover stationary are summarized.",
+      "use_limit": "One sol of near-surface rover wind context; it does not measure dust movement or long-term wind climate.",
+      "evidence_kind": "derived",
+      "quality_note": "PDS fill values and non-finite samples are excluded. 0 rows were excluded by the sensor quality filter. This one-sol summary is displayed as context only and is not used for analogue scoring.",
+      "temporal_coverage": {
+        "martian_sol": 100,
+        "local_mean_solar_time_start": "00100M04:00:28.047",
+        "local_mean_solar_time_stop": "00100M21:05:08.861"
+      },
+      "row_count": 58938,
+      "measurements": [
+        {
+          "name": "MEDA horizontal wind speed",
+          "value": 2.82,
+          "units": "m/s",
+          "availability": "available",
+          "summary_statistic": "median",
+          "sample_count": 56611,
+          "source_row_count": 58938,
+          "invalid_value_count": 2327,
+          "quality_filtered_row_count": 0,
+          "sample_percentiles": {
+            "p10": 0.9,
+            "p90": 6.42
+          },
+          "sample_range": {
+            "minimum": 0.0,
+            "maximum": 15.27
+          },
+          "uncertainty": {
+            "value": null,
+            "units": "m/s",
+            "description": "No valid per-row uncertainty values were supplied."
+          }
+        }
+      ],
+      "retrieved_at": "2026-11-14T05:01:49.394909+00:00",
+      "processing_method": "One-sol median and p10\u2013p90 summary from the current PDS derived/calibrated CSV product; raw CSV is not retained."
+    },
+    {
+      "observation_id": "mars2020-meda-sol-0100-rhs",
+      "place_id": "mars-jezero",
+      "body": "mars",
+      "name": "Perseverance MEDA RHS \u00b7 Mars sol 100",
+      "dataset_id": "mars2020-meda",
+      "product_id": "WE__0100___________DER_RHS_________________P02.CSV",
+      "provider": "NASA Planetary Data System Atmospheres Node",
+      "source_url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0090_0179/sol_0100/WE__0100___________DER_RHS_________________P02.CSV",
+      "dataset_reference_url": "https://pds.nasa.gov/ds-view/pds/viewBundle.jsp?identifier=urn:nasa:pds:mars2020_meda&version=1.0",
+      "units_reference_url": "https://doi.org/10.1016/j.pss.2022.105590",
+      "acquired_at": "Mars sol 100; LMST 00100M00:00:00.560 to 00100M23:05:13.358",
+      "kind": "measurement",
+      "dimensions": [
+        "water_resources"
+      ],
+      "latitude_deg": 18.44,
+      "longitude_east_deg": 77.45,
+      "location_precision": "rover_track_in_mission_region",
+      "spatial_relation": "Perseverance rover observation within the Jezero mission region; catalogue coordinates mark a regional locator, not the rover's exact position for every sample.",
+      "summary": "Derived local atmospheric relative humidity, reported with respect to ice.",
+      "use_limit": "Sol 100 is after the sensor team's sol-80 recommendation. Self-heating can affect continuous-mode readings; this is atmospheric water vapour context, not soil water, ice, or a usable resource. The sol median (0.20 %RH) is no greater than the median of the reported per-row uncertainties (1.31 %RH).",
+      "evidence_kind": "derived",
+      "quality_note": "PDS fill values and non-finite samples are excluded. 0 rows were excluded by the sensor quality filter. This one-sol summary is displayed as context only and is not used for analogue scoring.",
+      "temporal_coverage": {
+        "martian_sol": 100,
+        "local_mean_solar_time_start": "00100M00:00:00.560",
+        "local_mean_solar_time_stop": "00100M23:05:13.358"
+      },
+      "row_count": 47299,
+      "measurements": [
+        {
+          "name": "MEDA near-surface atmospheric relative humidity",
+          "value": 0.2,
+          "units": "%RH",
+          "availability": "available",
+          "summary_statistic": "median",
+          "sample_count": 47289,
+          "source_row_count": 47299,
+          "invalid_value_count": 10,
+          "quality_filtered_row_count": 0,
+          "sample_percentiles": {
+            "p10": 0.18,
+            "p90": 3.81
+          },
+          "sample_range": {
+            "minimum": 0.06,
+            "maximum": 11.28
+          },
+          "uncertainty": {
+            "value": 1.315,
+            "units": "%RH",
+            "description": "Median reported per-row RHS uncertainty; not an uncertainty interval for the sol median."
+          }
+        }
+      ],
+      "retrieved_at": "2026-11-14T05:01:49.394909+00:00",
+      "processing_method": "One-sol median and p10\u2013p90 summary from the current PDS derived/calibrated CSV product; raw CSV is not retained."
+    }
+  ],
+  "retrieved_at": "2026-11-14T05:01:49.394909+00:00",
+  "scope": "Selected Mars sol 100 only; not a Mars climate normal or full rover traverse archive."
+}

@@ -1,0 +1,23 @@
+{
+  "observation_id": "mars-gale",
+  "body": "mars",
+  "name": "Gale crater / Curiosity landing region",
+  "place_id": "mars-gale",
+  "longitude_east_deg": 137.44,
+  "longitude_layer_deg": 137.44,
+  "latitude_deg": -4.59,
+  "dataset_id": "usgs-sim-1083-mars-global-geology",
+  "provider": "U.S. Geological Survey Astrogeology Science Center",
+  "source_product_id": "USGS SIM 1083 / I1083_Mariner9_25M_Mars2000",
+  "source_url": "https://www.sciencebase.gov/catalog/file/get/65678461d34e17319ded0ac1?f=__disk__ff%2Fdc%2Fa6%2Fffdca6605404f9a397ba005fd8d20632b6b7445e",
+  "dataset_reference_url": "https://doi.org/10.5066/P9UGAC18",
+  "record_url": "https://www.usgs.gov/data/geologic-map-mars",
+  "retrieved_at": "2026-11-14T03:37:50.160505+00:00",
+  "map_layer": "I1083_GeoUnits",
+  "map_unit_code": "Nplc",
+  "classification_status": "mapped",
+  "coordinate_reference_system": "Mars_2000_Sphere geographic; 3,396,190 m radius",
+  "nominal_cartographic_scale": "1:25,000,000 from 65\u00b0S to 65\u00b0N; approximately 1:5,000,000 poleward of 60\u00b0",
+  "source_description": "Regional mapped interpretation from USGS SIM 1083; not a local material assay.",
+  "scorecard_role": "geology_context_only; excluded from similarity scoring"
+}

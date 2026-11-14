@@ -1,0 +1,258 @@
+{
+  "dataset_id": "lro-mini-rf-south-polar-cpr",
+  "product_id": "LSZ_XXXXX_3CP_PFU_90S000_V1",
+  "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/lsz_xxxxx_3cp_pfu_90s000_v1.lbl",
+  "image_url": "https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/lsz_xxxxx_3cp_pfu_90s000_v1.img",
+  "retrieval_method": "HTTP byte ranges for 5\u00d75 pixel neighbourhoods only; full mosaic not downloaded",
+  "records": [
+    {
+      "observation_id": "moon-shackleton-rim:mini-rf-cpr",
+      "place_id": "moon-shackleton-rim",
+      "dataset_id": "lro-mini-rf-south-polar-cpr",
+      "product_id": "LSZ_XXXXX_3CP_PFU_90S000_V1",
+      "provider": "NASA LRO Mini-RF / PDS Geosciences Node",
+      "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/lsz_xxxxx_3cp_pfu_90s000_v1.lbl",
+      "image_url": "https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/lsz_xxxxx_3cp_pfu_90s000_v1.img",
+      "retrieved_at": "2026-11-14T05:31:43.408844+00:00",
+      "body": "moon",
+      "latitude_deg": -89.77,
+      "longitude_east_deg": 188.13,
+      "measurement_name": "Mini-RF circular polarization ratio (CPR)",
+      "value": 0.8031383156776428,
+      "units": "dimensionless ratio",
+      "spatial_scale_m": 947.6047007546699,
+      "spatial_coverage": {
+        "location_precision": "candidate_region_centre",
+        "context_size_m": 4738.02350377335,
+        "window_pixels": [
+          5,
+          5
+        ],
+        "valid_pixel_count": 25,
+        "sample_count": 25,
+        "grid_column": 645,
+        "grid_row": 654
+      },
+      "temporal_coverage": "Combined acquisitions from 2009-07-19 through 2011-01-11",
+      "measurement_semantics": "Median CPR in a 5\u00d75-pixel neighbourhood from the calibrated combined east- and west-looking mosaic.",
+      "evidence_kind": "measured_remote_sensing",
+      "interpretation": "Radar backscatter polarization ratio. Elevated CPR can be associated with rough blocky surfaces or volume scattering; it is not a unique water-ice detector.",
+      "uncertainty": "Regional map pixel is about 948 m; this local statistic uses a 5\u00d75 neighbourhood. Product is a combined multi-acquisition mosaic; no per-pixel uncertainty is supplied. CPR has non-ice explanations including surface roughness and blockiness.",
+      "use_limit": "Context clue only. Does not establish water, ice, concentration, accessibility, or extractable reserves; excluded from similarity scoring and mission-suitability assessment.",
+      "grid_column": 645,
+      "grid_row": 654,
+      "window_pixels": [
+        5,
+        5
+      ],
+      "valid_pixel_count": 25,
+      "sample_count": 25,
+      "median_cpr": 0.8031383156776428,
+      "minimum_cpr": 0.4836979806423187,
+      "maximum_cpr": 1.0980521440505981,
+      "grid_values": [
+        [
+          0.4836979806423187,
+          0.9819285869598389,
+          1.0980521440505981,
+          0.9138241410255432,
+          0.8324815630912781
+        ],
+        [
+          0.7006392478942871,
+          0.9656844139099121,
+          0.9732287526130676,
+          0.8397319912910461,
+          0.8031383156776428
+        ],
+        [
+          0.7639532685279846,
+          0.953804075717926,
+          0.9894113540649414,
+          0.8659602403640747,
+          0.6873989701271057
+        ],
+        [
+          0.6868594884872437,
+          0.8798415660858154,
+          0.9192874431610107,
+          0.7581624984741211,
+          0.6038500070571899
+        ],
+        [
+          0.6683602333068848,
+          0.7470035552978516,
+          0.7616209983825684,
+          0.6286316514015198,
+          0.5485700964927673
+        ]
+      ]
+    },
+    {
+      "observation_id": "moon-malapert-massif:mini-rf-cpr",
+      "place_id": "moon-malapert-massif",
+      "dataset_id": "lro-mini-rf-south-polar-cpr",
+      "product_id": "LSZ_XXXXX_3CP_PFU_90S000_V1",
+      "provider": "NASA LRO Mini-RF / PDS Geosciences Node",
+      "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/lsz_xxxxx_3cp_pfu_90s000_v1.lbl",
+      "image_url": "https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/lsz_xxxxx_3cp_pfu_90s000_v1.img",
+      "retrieved_at": "2026-11-14T05:31:48.408898+00:00",
+      "body": "moon",
+      "latitude_deg": -85.9948,
+      "longitude_east_deg": 359.76422,
+      "measurement_name": "Mini-RF circular polarization ratio (CPR)",
+      "value": 0.8842092752456665,
+      "units": "dimensionless ratio",
+      "spatial_scale_m": 947.6047007546699,
+      "spatial_coverage": {
+        "location_precision": "candidate_region_centre",
+        "context_size_m": 4738.02350377335,
+        "window_pixels": [
+          5,
+          5
+        ],
+        "valid_pixel_count": 25,
+        "sample_count": 25,
+        "grid_column": 646,
+        "grid_row": 518
+      },
+      "temporal_coverage": "Combined acquisitions from 2009-07-19 through 2011-01-11",
+      "measurement_semantics": "Median CPR in a 5\u00d75-pixel neighbourhood from the calibrated combined east- and west-looking mosaic.",
+      "evidence_kind": "measured_remote_sensing",
+      "interpretation": "Radar backscatter polarization ratio. Elevated CPR can be associated with rough blocky surfaces or volume scattering; it is not a unique water-ice detector.",
+      "uncertainty": "Regional map pixel is about 948 m; this local statistic uses a 5\u00d75 neighbourhood. Product is a combined multi-acquisition mosaic; no per-pixel uncertainty is supplied. CPR has non-ice explanations including surface roughness and blockiness.",
+      "use_limit": "Context clue only. Does not establish water, ice, concentration, accessibility, or extractable reserves; excluded from similarity scoring and mission-suitability assessment.",
+      "grid_column": 646,
+      "grid_row": 518,
+      "window_pixels": [
+        5,
+        5
+      ],
+      "valid_pixel_count": 25,
+      "sample_count": 25,
+      "median_cpr": 0.8842092752456665,
+      "minimum_cpr": 0.7877838015556335,
+      "maximum_cpr": 0.9590330123901367,
+      "grid_values": [
+        [
+          0.8842092752456665,
+          0.9191786050796509,
+          0.9482337832450867,
+          0.9521324038505554,
+          0.9431109428405762
+        ],
+        [
+          0.8593813180923462,
+          0.8831736445426941,
+          0.931249737739563,
+          0.9478002786636353,
+          0.9590330123901367
+        ],
+        [
+          0.8862031102180481,
+          0.8890692591667175,
+          0.8870100378990173,
+          0.9372245073318481,
+          0.9402803778648376
+        ],
+        [
+          0.8525490760803223,
+          0.8814377784729004,
+          0.8638839721679688,
+          0.8739759922027588,
+          0.8684633374214172
+        ],
+        [
+          0.8580510020256042,
+          0.7970407009124756,
+          0.7877838015556335,
+          0.7896212935447693,
+          0.7961673736572266
+        ]
+      ]
+    },
+    {
+      "observation_id": "moon-de-gerlache-rim:mini-rf-cpr",
+      "place_id": "moon-de-gerlache-rim",
+      "dataset_id": "lro-mini-rf-south-polar-cpr",
+      "product_id": "LSZ_XXXXX_3CP_PFU_90S000_V1",
+      "provider": "NASA LRO Mini-RF / PDS Geosciences Node",
+      "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/lsz_xxxxx_3cp_pfu_90s000_v1.lbl",
+      "image_url": "https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/lsz_xxxxx_3cp_pfu_90s000_v1.img",
+      "retrieved_at": "2026-11-14T05:31:54.003832+00:00",
+      "body": "moon",
+      "latitude_deg": -88.6834,
+      "longitude_east_deg": 292.0679,
+      "measurement_name": "Mini-RF circular polarization ratio (CPR)",
+      "value": 0.44191375374794006,
+      "units": "dimensionless ratio",
+      "spatial_scale_m": 947.6047007546699,
+      "spatial_coverage": {
+        "location_precision": "candidate_region_centre",
+        "context_size_m": 4738.02350377335,
+        "window_pixels": [
+          5,
+          5
+        ],
+        "valid_pixel_count": 25,
+        "sample_count": 25,
+        "grid_column": 607,
+        "grid_row": 631
+      },
+      "temporal_coverage": "Combined acquisitions from 2009-07-19 through 2011-01-11",
+      "measurement_semantics": "Median CPR in a 5\u00d75-pixel neighbourhood from the calibrated combined east- and west-looking mosaic.",
+      "evidence_kind": "measured_remote_sensing",
+      "interpretation": "Radar backscatter polarization ratio. Elevated CPR can be associated with rough blocky surfaces or volume scattering; it is not a unique water-ice detector.",
+      "uncertainty": "Regional map pixel is about 948 m; this local statistic uses a 5\u00d75 neighbourhood. Product is a combined multi-acquisition mosaic; no per-pixel uncertainty is supplied. CPR has non-ice explanations including surface roughness and blockiness.",
+      "use_limit": "Context clue only. Does not establish water, ice, concentration, accessibility, or extractable reserves; excluded from similarity scoring and mission-suitability assessment.",
+      "grid_column": 607,
+      "grid_row": 631,
+      "window_pixels": [
+        5,
+        5
+      ],
+      "valid_pixel_count": 25,
+      "sample_count": 25,
+      "median_cpr": 0.44191375374794006,
+      "minimum_cpr": 0.21725530922412872,
+      "maximum_cpr": 0.5421921610832214,
+      "grid_values": [
+        [
+          0.39954227209091187,
+          0.33972787857055664,
+          0.3205271363258362,
+          0.2741474211215973,
+          0.21725530922412872
+        ],
+        [
+          0.5174315571784973,
+          0.4763992130756378,
+          0.4075765013694763,
+          0.3250247538089752,
+          0.23643261194229126
+        ],
+        [
+          0.5421921610832214,
+          0.5122957229614258,
+          0.4562937021255493,
+          0.4261068105697632,
+          0.34247446060180664
+        ],
+        [
+          0.5344955325126648,
+          0.5106406807899475,
+          0.5084685683250427,
+          0.4935160279273987,
+          0.4365973174571991
+        ],
+        [
+          0.450924813747406,
+          0.4116376042366028,
+          0.4492318630218506,
+          0.46884685754776,
+          0.44191375374794006
+        ]
+      ]
+    }
+  ]
+}

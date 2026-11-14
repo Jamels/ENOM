@@ -136,8 +136,14 @@ def test_real_lola_scorecard_api_has_ranked_earth_candidates_and_provenance(monk
     client = TestClient(app)
     sites = client.get("/api/scorecards/sites")
     assert sites.status_code == 200
-    moon = next(site for site in sites.json()["sites"] if site["body"] == "moon")
-    assert moon["source_product_id"] == "LDEM_64"
+    moon_sites = [site for site in sites.json()["sites"] if site["body"] == "moon"]
+    assert any(site["source_product_id"] == "LDEM_64" for site in moon_sites)
+    polar_sites = [site for site in moon_sites if site["source_product_id"] == "LDEM_75S_120M"]
+    assert {site["name"] for site in polar_sites} == {
+        "LOLA south-polar terrain · Shackleton rim candidate region",
+        "LOLA south-polar terrain · Malapert Massif",
+        "LOLA south-polar terrain · de Gerlache Rim 1",
+    }
     response = client.post(
         "/api/scorecards/rank",
         json={
@@ -595,11 +601,13 @@ def test_nasadem_earth_products_rank_as_distinct_candidates(tmp_path, monkeypatc
         path
         for path in original_sidecars
         if json.loads(path.read_text())["dataset_id"] == "lro-lola-gdr-ldem-64"
+        and json.loads(path.read_text())["observation_id"] == "moon_mare_tranquillitatis_01"
     )
     earth_sidecar = next(
         path
         for path in original_sidecars
         if json.loads(path.read_text()).get("dataset_id") == "cop-dem-glo-30"
+        and json.loads(path.read_text()).get("observation_id") == "earth_namib_barchan-01"
     )
     earth = json.loads(earth_sidecar.read_text())
     nasa = earth | {

@@ -1,0 +1,55 @@
+{
+  "observation_id": "mars_viking1",
+  "body": "mars",
+  "dataset_id": "mgs-tes-derived-thermal-inertia",
+  "provider": "NASA MGS TES / PDS Geosciences Node",
+  "source_product_id": "GLOBAL_TI_NIGHT_2007",
+  "data_set_id": "MGS-M-TES-5-TIMAP-V1.0",
+  "product_version": "PDS3 archive; product created 2007-01-30",
+  "source_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_night_2007.img",
+  "label_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_night_2007.lbl",
+  "mask_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_msk_night_2007.img",
+  "mask_label_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_msk_night_2007.lbl",
+  "retrieved_at": "2026-11-14",
+  "source_description": "Nightside thermal inertia derived from TES bolometer temperature observations. The paired PDS mask identifies interpolated cells; only non-interpolated cells in the crop are summarized.",
+  "observation_period": "TES observations, 1999-02 through 2004-04 (orbits 1583\u201324346)",
+  "longitude_east_deg": -47.95,
+  "latitude_deg": 22.48,
+  "native_resolution_m_at_equator": 2960.0,
+  "context_size_m": 22788.34120598018,
+  "grid_shape": [
+    8,
+    8
+  ],
+  "valid_sample_count": 64,
+  "sample_count": 64,
+  "valid_sample_fraction": 1.0,
+  "units": "J/(m^2*K*sqrt(s)); product values outside 5\u20135000 are not computed",
+  "latitude_type": "planetocentric",
+  "coordinate_reference_system": "PROJCS[\"unknown\",GEOGCS[\"unknown\",DATUM[\"unknown\",SPHEROID[\"unknown\",3396000,0]],PRIMEM[\"Reference meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"standard_parallel_1\",0],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+  "data_coverage_note": "Mask-zero cells are TES map values infilled by interpolation and excluded.",
+  "earth_comparison_status": "not_compared",
+  "scorecard_role": "environmental_evidence_only; excluded from terrain ranking",
+  "measurement": {
+    "name": "Nightside derived surface thermal inertia",
+    "value": 275.0,
+    "units": "J/(m^2*K*sqrt(s))",
+    "availability": "available",
+    "spatial_scale_m": 22788.34120598018,
+    "summary": {
+      "mean": 280.640625,
+      "median": 275.0,
+      "p10": 227.89999389648438,
+      "p90": 342.79998779296875
+    },
+    "uncertainty": {
+      "description": "Global derived map at ~2.96 km/pixel; no per-cell uncertainty is included here."
+    },
+    "provenance": {
+      "source_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_night_2007.lbl",
+      "source_product_id": "GLOBAL_TI_NIGHT_2007",
+      "mask_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_msk_night_2007.img"
+    }
+  },
+  "output": "data/terrain/tes-mars_viking1.tif"
+}

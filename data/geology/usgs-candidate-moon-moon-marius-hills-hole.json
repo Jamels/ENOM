@@ -1,0 +1,36 @@
+{
+  "observation_id": "moon-marius-hills-hole",
+  "body": "moon",
+  "name": "Marius Hills Hole and rille",
+  "longitude_east_deg": 303.23,
+  "longitude_layer_deg": -56.76999999999998,
+  "latitude_deg": 14.091,
+  "dataset_id": "usgs-fortezzo-2020-unified-lunar-geology",
+  "provider": "U.S. Geological Survey Astrogeology Science Center",
+  "source_product_id": "Fortezzo et al. (2020) Unified Geologic Map of the Moon / GeoUnits_Mercator",
+  "source_url": "https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/Features_Fortezzo_et_al_2020_Unified_Map_of_the_Moon/FeatureServer/7/query",
+  "dataset_reference_url": "https://astrogeology.usgs.gov/search/map/Moon/Geology/Unified_Geologic_Map_of_the_Moon_GIS_v2/",
+  "retrieved_at": "2026-11-14T03:37:49.798807+00:00",
+  "map_unit_code": "EIp",
+  "map_unit_name": "Plateau Unit",
+  "map_unit_age": "Eratosthenian-Imbrian",
+  "map_unit_description": "Forms high standing plateaus (relative to the mare surfaces in Oceanus Procellarum) with domes, cones, and dark mantling materials.",
+  "map_unit_interpretation": "Volcanic constructs, flows, and pyroclatic materials.",
+  "candidate_unit_codes": [
+    "EIp"
+  ],
+  "classification_status": "mapped",
+  "nominal_cartographic_scale": "1:5,000,000 global map; regional-unit generalization",
+  "coordinate_reference_system": "Moon_2000 geographic projected to spherical Mercator; R=1,737,400 m; central meridian 0\u00b0",
+  "service_layer_extent": {
+    "xmin": -5458202.5763,
+    "ymin": -2114095.705097923,
+    "xmax": 5458202.576300001,
+    "ymax": 2114095.705097923
+  },
+  "source_description": "The USGS unified map aggregates 49 lunar geologic units from six regional maps. Mapped interpretation is regional context at 1:5M scale, not a local assay, mineral detection, regolith composition measurement, or engineering property.",
+  "source_attribution": "USGS Astrogeology Science Center; Fortezzo, Spudis, and Harrel (2020)",
+  "usage_note": "The public feature service exposes no explicit licence field; preserve USGS and map-author attribution and consult the product page for reuse terms.",
+  "scorecard_role": "geology_context_only; excluded from terrain ranking and mission screening",
+  "place_id": "moon-marius-hills-hole"
+}

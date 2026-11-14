@@ -245,6 +245,16 @@ data/patches/**/*.tif
 data/patches/**/*.tiff
 data/terrain/**/*.tif
 data/terrain/**/*.tiff
+# Compact, candidate-place windows are source-backed display assets used by
+# analogue discovery; keep the global/raw terrain products ignored.
+!data/terrain/cop-dem-candidate-earth_*.tif
+!data/terrain/mola-candidate-mars_*.tif
+!data/terrain/moon_candidate_moon_*.tif
+!data/terrain/diviner_moon_mare_tranquillitatis_pit.tif
+!data/terrain/tes-mars_jezero.tif
+!data/terrain/tes-mars_gale.tif
+!data/terrain/tes-mars_viking1.tif
+!data/terrain/lola_polar_*.tif
 data/**/*.vrt
 data/**/*.img
 data/**/*.cub
@@ -279,3 +289,13 @@ test-results/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Frontend globe imagery modules are source code, not generated Python lib output.
+!apps/twinworld/src/lib/
+apps/twinworld/src/lib/*
+!apps/twinworld/src/lib/globeImagery.ts
+!apps/twinworld/src/lib/globeTileStore.ts
+
+# User-requested offline NASA tile package (local repository cache, not source code).
+apps/twinworld/public/tiles/offline/
+data/offline_globe_maps/

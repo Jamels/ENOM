@@ -1,0 +1,195 @@
+{
+  "dataset_id": "lro-diviner-prp-south-polar",
+  "instrument": "Lunar Reconnaissance Orbiter Diviner",
+  "source_url": "https://pds-geosciences.wustl.edu/missions/lro/diviner.htm",
+  "product_id": "DLRE_PRP_SOUTH.TAB",
+  "retrieval_method": "Nearest-triangle local samples; global PDS table not downloaded",
+  "records": [
+    {
+      "observation_id": "moon-shackleton-rim:lro-diviner-prp-south-polar",
+      "place_id": "moon-shackleton-rim",
+      "dataset_id": "lro-diviner-prp-south-polar",
+      "product_id": "DLRE_PRP_SOUTH.TAB",
+      "provider": "NASA LRO Diviner / PDS Geosciences Node",
+      "source_url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_prp/dlre_prp_south.lbl",
+      "retrieved_at": "2026-11-14T06:21:26.721499+00:00",
+      "body": "moon",
+      "latitude_deg": -89.769950867,
+      "longitude_east_deg": 186.953109741,
+      "candidate_latitude_deg": -89.77,
+      "candidate_longitude_east_deg": 188.13,
+      "distance_from_candidate_km": 0.14327796972291762,
+      "record_index": 1472396,
+      "location_precision": "nearest_triangular_mesh_centroid",
+      "spatial_scale_m": 500.0,
+      "context_size_m": 500.0,
+      "sample_count": 1,
+      "spatial_relation": "Nearest mesh centroid is 0.143 km from the catalogue place coordinate",
+      "spatial_coverage": {
+        "type": "nearest_triangle_centroid",
+        "nominal_mesh_spacing_m": 500.0,
+        "triangle_count_searched": 50,
+        "nearest_centroid_distance_km": 0.14327796972291762,
+        "note": "about 0.5 km triangle spacing; sample is the nearest triangle centroid, not a place-wide average"
+      },
+      "retrieval_method": "Five bounded HTTP byte-range reads around the candidate; each selected the nearest triangle centroid. The 604 MB global table was not downloaded.",
+      "evidence_kind": "model_derived_remote_sensing",
+      "observation_period": "Thermal-model fit to Diviner observations from the first mapping year (2009-07-05 through 2010-07-05)",
+      "measurements": [
+        {
+          "name": "Annual average surface temperature at 2 cm depth",
+          "value": 112.539,
+          "units": "K",
+          "availability": "available",
+          "spatial_scale_m": 500.0,
+          "sample_count": 1,
+          "uncertainty": "The PRP product provides no per-triangle uncertainty value; thermal-model uncertainty is not quantified here."
+        },
+        {
+          "name": "Annual maximum surface temperature",
+          "value": 319.613,
+          "units": "K",
+          "availability": "available",
+          "spatial_scale_m": 500.0,
+          "sample_count": 1,
+          "uncertainty": "The PRP product provides no per-triangle uncertainty value; thermal-model uncertainty is not quantified here."
+        },
+        {
+          "name": "Modeled depth to water-ice stability threshold",
+          "value": 0.94973,
+          "units": "m",
+          "availability": "available",
+          "spatial_scale_m": 500.0,
+          "sample_count": 1,
+          "uncertainty": "Model-derived depth threshold, not a detected ice layer. PDS -999 means the depth exceeds the product limit of 2.8738 m."
+        }
+      ],
+      "interpretation": "Diviner PRP is a thermal-model estimate based on first-year observations. Ice stability depth is a modeled sublimation threshold, not a direct ice detection or resource measurement.",
+      "use_limit": "Lunar environmental context only. No Earth-equivalent measurement is connected; values are not cross-body scored and do not prove accessible or usable water ice."
+    },
+    {
+      "observation_id": "moon-malapert-massif:lro-diviner-prp-south-polar",
+      "place_id": "moon-malapert-massif",
+      "dataset_id": "lro-diviner-prp-south-polar",
+      "product_id": "DLRE_PRP_SOUTH.TAB",
+      "provider": "NASA LRO Diviner / PDS Geosciences Node",
+      "source_url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_prp/dlre_prp_south.lbl",
+      "retrieved_at": "2026-11-14T06:21:32.240492+00:00",
+      "body": "moon",
+      "latitude_deg": -85.985877991,
+      "longitude_east_deg": 359.841066405,
+      "candidate_latitude_deg": -85.9948,
+      "candidate_longitude_east_deg": 359.76422,
+      "distance_from_candidate_km": 0.315823595671189,
+      "record_index": 862798,
+      "location_precision": "nearest_triangular_mesh_centroid",
+      "spatial_scale_m": 500.0,
+      "context_size_m": 500.0,
+      "sample_count": 1,
+      "spatial_relation": "Nearest mesh centroid is 0.316 km from the catalogue place coordinate",
+      "spatial_coverage": {
+        "type": "nearest_triangle_centroid",
+        "nominal_mesh_spacing_m": 500.0,
+        "triangle_count_searched": 50,
+        "nearest_centroid_distance_km": 0.315823595671189,
+        "note": "about 0.5 km triangle spacing; sample is the nearest triangle centroid, not a place-wide average"
+      },
+      "retrieval_method": "Five bounded HTTP byte-range reads around the candidate; each selected the nearest triangle centroid. The 604 MB global table was not downloaded.",
+      "evidence_kind": "model_derived_remote_sensing",
+      "observation_period": "Thermal-model fit to Diviner observations from the first mapping year (2009-07-05 through 2010-07-05)",
+      "measurements": [
+        {
+          "name": "Annual average surface temperature at 2 cm depth",
+          "value": 107.596,
+          "units": "K",
+          "availability": "available",
+          "spatial_scale_m": 500.0,
+          "sample_count": 1,
+          "uncertainty": "The PRP product provides no per-triangle uncertainty value; thermal-model uncertainty is not quantified here."
+        },
+        {
+          "name": "Annual maximum surface temperature",
+          "value": 197.606,
+          "units": "K",
+          "availability": "available",
+          "spatial_scale_m": 500.0,
+          "sample_count": 1,
+          "uncertainty": "The PRP product provides no per-triangle uncertainty value; thermal-model uncertainty is not quantified here."
+        },
+        {
+          "name": "Modeled depth to water-ice stability threshold",
+          "value": 0.22201,
+          "units": "m",
+          "availability": "available",
+          "spatial_scale_m": 500.0,
+          "sample_count": 1,
+          "uncertainty": "Model-derived depth threshold, not a detected ice layer. PDS -999 means the depth exceeds the product limit of 2.8738 m."
+        }
+      ],
+      "interpretation": "Diviner PRP is a thermal-model estimate based on first-year observations. Ice stability depth is a modeled sublimation threshold, not a direct ice detection or resource measurement.",
+      "use_limit": "Lunar environmental context only. No Earth-equivalent measurement is connected; values are not cross-body scored and do not prove accessible or usable water ice."
+    },
+    {
+      "observation_id": "moon-de-gerlache-rim:lro-diviner-prp-south-polar",
+      "place_id": "moon-de-gerlache-rim",
+      "dataset_id": "lro-diviner-prp-south-polar",
+      "product_id": "DLRE_PRP_SOUTH.TAB",
+      "provider": "NASA LRO Diviner / PDS Geosciences Node",
+      "source_url": "https://pds-geosciences.wustl.edu/lro/urn-nasa-pds-lro_diviner_derived1/data_derived_prp/dlre_prp_south.lbl",
+      "retrieved_at": "2026-11-14T06:21:41.393861+00:00",
+      "body": "moon",
+      "latitude_deg": -88.678253174,
+      "longitude_east_deg": 292.025543213,
+      "candidate_latitude_deg": -88.6834,
+      "candidate_longitude_east_deg": 292.0679,
+      "distance_from_candidate_km": 0.1588454458226764,
+      "record_index": 1369053,
+      "location_precision": "nearest_triangular_mesh_centroid",
+      "spatial_scale_m": 500.0,
+      "context_size_m": 500.0,
+      "sample_count": 1,
+      "spatial_relation": "Nearest mesh centroid is 0.159 km from the catalogue place coordinate",
+      "spatial_coverage": {
+        "type": "nearest_triangle_centroid",
+        "nominal_mesh_spacing_m": 500.0,
+        "triangle_count_searched": 50,
+        "nearest_centroid_distance_km": 0.1588454458226764,
+        "note": "about 0.5 km triangle spacing; sample is the nearest triangle centroid, not a place-wide average"
+      },
+      "retrieval_method": "Five bounded HTTP byte-range reads around the candidate; each selected the nearest triangle centroid. The 604 MB global table was not downloaded.",
+      "evidence_kind": "model_derived_remote_sensing",
+      "observation_period": "Thermal-model fit to Diviner observations from the first mapping year (2009-07-05 through 2010-07-05)",
+      "measurements": [
+        {
+          "name": "Annual average surface temperature at 2 cm depth",
+          "value": 106.79,
+          "units": "K",
+          "availability": "available",
+          "spatial_scale_m": 500.0,
+          "sample_count": 1,
+          "uncertainty": "The PRP product provides no per-triangle uncertainty value; thermal-model uncertainty is not quantified here."
+        },
+        {
+          "name": "Annual maximum surface temperature",
+          "value": 189.962,
+          "units": "K",
+          "availability": "available",
+          "spatial_scale_m": 500.0,
+          "sample_count": 1,
+          "uncertainty": "The PRP product provides no per-triangle uncertainty value; thermal-model uncertainty is not quantified here."
+        },
+        {
+          "name": "Modeled depth to water-ice stability threshold",
+          "value": 0.29781,
+          "units": "m",
+          "availability": "available",
+          "spatial_scale_m": 500.0,
+          "sample_count": 1,
+          "uncertainty": "Model-derived depth threshold, not a detected ice layer. PDS -999 means the depth exceeds the product limit of 2.8738 m."
+        }
+      ],
+      "interpretation": "Diviner PRP is a thermal-model estimate based on first-year observations. Ice stability depth is a modeled sublimation threshold, not a direct ice detection or resource measurement.",
+      "use_limit": "Lunar environmental context only. No Earth-equivalent measurement is connected; values are not cross-body scored and do not prove accessible or usable water ice."
+    }
+  ]
+}
