@@ -1,0 +1,20 @@
+{
+  "observation_id": "mars-dune-barchan_crescent_dune-0067+071",
+  "dataset_id": "usgs-sim-1083-mars-global-geology",
+  "provider": "U.S. Geological Survey Astrogeology Science Center",
+  "source_product_id": "USGS SIM 1083 / I1083_Mariner9_25M_Mars2000",
+  "source_url": "https://www.sciencebase.gov/catalog/file/get/65678461d34e17319ded0ac1?f=__disk__ff%2Fdc%2Fa6%2Fffdca6605404f9a397ba005fd8d20632b6b7445e",
+  "dataset_reference_url": "https://doi.org/10.5066/P9UGAC18",
+  "record_url": "https://www.usgs.gov/data/geologic-map-mars",
+  "retrieved_at": "2026-11-13T23:17:35.104458+00:00",
+  "map_layer": "I1083_GeoUnits",
+  "map_unit_code": "Nplc",
+  "classification_status": "mapped",
+  "longitude_east_deg": 6.76067416807,
+  "longitude_layer_deg": 6.760674168070011,
+  "latitude_deg": 7.10904979375,
+  "coordinate_reference_system": "Mars_2000_Sphere geographic; 3,396,190 m radius",
+  "nominal_cartographic_scale": "1:25,000,000 from 65\u00b0S to 65\u00b0N; approximately 1:5,000,000 poleward of 60\u00b0",
+  "source_description": "Global polygon unit classification from the Scott and Carr USGS geologic map, digitized and renovated against a semi-controlled THEMIS daytime IR 100 m/pixel basemap. Map-unit polygons generalize regional interpretations; this code is not a measurement of local soil, mineralogy, or engineering properties.",
+  "scorecard_role": "geology_context_only; excluded from terrain ranking"
+}

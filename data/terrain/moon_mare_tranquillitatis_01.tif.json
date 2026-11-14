@@ -42,13 +42,13 @@
         "source_product_id": "LDEM_64",
         "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
         "provider": "NASA LRO LOLA / PDS Geosciences Node",
-        "processing_method": "Bounded PDS3 LDEM_64 range read; DN \u00d7 0.5 m; bilinear reprojection to 22\u00d722 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+        "processing_method": "Bounded byte-range crop and metric-grid reprojection; no whole-planet file downloaded",
         "software_version": null
       }
     },
     {
       "name": "mean_slope",
-      "value": 1.985014869536044,
+      "value": 1.8286853466691446,
       "units": "degree",
       "availability": "available",
       "spatial_scale_m": 926.1153343394911,
@@ -61,7 +61,7 @@
         "source_product_id": "LDEM_64",
         "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
         "provider": "NASA LRO LOLA / PDS Geosciences Node",
-        "processing_method": "Bounded PDS3 LDEM_64 range read; DN \u00d7 0.5 m; bilinear reprojection to 22\u00d722 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+        "processing_method": "Bounded byte-range crop and metric-grid reprojection; no whole-planet file downloaded",
         "software_version": null
       }
     },
@@ -80,13 +80,13 @@
         "source_product_id": "LDEM_64",
         "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
         "provider": "NASA LRO LOLA / PDS Geosciences Node",
-        "processing_method": "Bounded PDS3 LDEM_64 range read; DN \u00d7 0.5 m; bilinear reprojection to 22\u00d722 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+        "processing_method": "Bounded byte-range crop and metric-grid reprojection; no whole-planet file downloaded",
         "software_version": null
       }
     },
     {
       "name": "slope_p90",
-      "value": 4.55569905530959,
+      "value": 3.933492009358815,
       "units": "degree",
       "availability": "available",
       "spatial_scale_m": 926.1153343394911,
@@ -99,7 +99,7 @@
         "source_product_id": "LDEM_64",
         "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
         "provider": "NASA LRO LOLA / PDS Geosciences Node",
-        "processing_method": "Bounded PDS3 LDEM_64 range read; DN \u00d7 0.5 m; bilinear reprojection to 22\u00d722 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+        "processing_method": "Bounded byte-range crop and metric-grid reprojection; no whole-planet file downloaded",
         "software_version": null
       }
     },
@@ -118,7 +118,7 @@
         "source_product_id": "LDEM_64",
         "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
         "provider": "NASA LRO LOLA / PDS Geosciences Node",
-        "processing_method": "Bounded PDS3 LDEM_64 range read; DN \u00d7 0.5 m; bilinear reprojection to 22\u00d722 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+        "processing_method": "Bounded byte-range crop and metric-grid reprojection; no whole-planet file downloaded",
         "software_version": null
       }
     },
@@ -137,7 +137,7 @@
         "source_product_id": "LDEM_64",
         "source_url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/DATA/LOLA_GDR/CYLINDRICAL/IMG/ldem_64.img",
         "provider": "NASA LRO LOLA / PDS Geosciences Node",
-        "processing_method": "Bounded PDS3 LDEM_64 range read; DN \u00d7 0.5 m; bilinear reprojection to 22\u00d722 cells at 463.0577 m in local lunar-radius equirectangular CRS",
+        "processing_method": "Bounded byte-range crop and metric-grid reprojection; no whole-planet file downloaded",
         "software_version": null
       }
     }

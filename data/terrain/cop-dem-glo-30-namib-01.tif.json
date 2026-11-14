@@ -33,13 +33,13 @@
         "source_product_id": "Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "provider": "Copernicus / Microsoft Planetary Computer",
-        "processing_method": "Central finite differences on projected DEM grid",
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
         "software_version": null
       }
     },
     {
       "name": "mean_slope",
-      "value": 2.8593574109714988,
+      "value": 2.7245744768303974,
       "units": "degree",
       "availability": "available",
       "spatial_scale_m": 926.1153343394911,
@@ -52,7 +52,7 @@
         "source_product_id": "Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "provider": "Copernicus / Microsoft Planetary Computer",
-        "processing_method": "Central finite differences on projected DEM grid",
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
         "software_version": null
       }
     },
@@ -71,13 +71,13 @@
         "source_product_id": "Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "provider": "Copernicus / Microsoft Planetary Computer",
-        "processing_method": "Central finite differences on projected DEM grid",
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
         "software_version": null
       }
     },
     {
       "name": "slope_p90",
-      "value": 5.250810753401879,
+      "value": 4.867406958460329,
       "units": "degree",
       "availability": "available",
       "spatial_scale_m": 926.1153343394911,
@@ -90,7 +90,7 @@
         "source_product_id": "Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "provider": "Copernicus / Microsoft Planetary Computer",
-        "processing_method": "Central finite differences on projected DEM grid",
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
         "software_version": null
       }
     },
@@ -109,7 +109,7 @@
         "source_product_id": "Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "provider": "Copernicus / Microsoft Planetary Computer",
-        "processing_method": "Central finite differences on projected DEM grid",
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
         "software_version": null
       }
     },
@@ -128,7 +128,7 @@
         "source_product_id": "Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "source_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
         "provider": "Copernicus / Microsoft Planetary Computer",
-        "processing_method": "Central finite differences on projected DEM grid",
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
         "software_version": null
       }
     }
