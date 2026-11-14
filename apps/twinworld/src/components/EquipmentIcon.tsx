@@ -1,4 +1,5 @@
 import type { EquipmentId } from "../types";
+import { planetaryColor } from "../planetaryTokens";
 
 export function EquipmentIcon({
   id,
@@ -59,16 +60,10 @@ export function EquipmentIcon({
 }
 
 export function PlanetBadgeDot({ body }: { body: "earth" | "mars" | "moon" }) {
-  const background =
-    body === "earth"
-      ? "radial-gradient(circle at 35% 32%, #9fd7fb, #3b89c4 58%, #153e63)"
-      : body === "mars"
-        ? "radial-gradient(circle at 35% 32%, #f4ab89, #cb5a31 58%, #6d2612)"
-        : "radial-gradient(circle at 35% 32%, #f1f5f9, #94a3b8 58%, #475569)";
   return (
     <span
-      className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-      style={{ background }}
+      className="inline-block w-2.5 h-2.5 rounded-full shrink-0 border"
+      style={{ backgroundColor: planetaryColor(body), borderColor: planetaryColor(body, "deep") }}
       aria-hidden="true"
     />
   );

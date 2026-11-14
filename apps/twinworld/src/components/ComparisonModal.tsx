@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   ImageOff,
   Info,
-  Sparkles,
   X,
 } from "lucide-react";
 import {
@@ -26,6 +25,7 @@ import type {
   ScorecardResult,
 } from "../types";
 import { formatCoords, getEquipmentProfile } from "../lib/missions";
+import { planetaryColor, planetarySourceStyle } from "../planetaryTokens";
 
 type ComparisonModalProps = {
   open: boolean;
@@ -75,57 +75,53 @@ export function ComparisonModal({
         scorePct: v.score !== null ? Math.round(v.score * 100) : 0,
         available: v.availability === "available" && v.score !== null,
         rawScore: v.score,
-        refVal: v.reference_value,
-        earthVal: v.earth_value,
-        units: v.units,
       })) ?? [];
 
   const targetImageUrl = target.pilotRegion?.image_url ?? null;
   const earthImageUrl = earthCandidate.pilotRegion?.image_url ?? sr?.image_url ?? null;
-  const bodyAccent = target.body === "mars" ? "#e07246" : "#cbd5e1";
+  const bodyAccent = planetaryColor(target.body);
+  const earthAccent = planetaryColor("earth");
+  const bodySourceStyle = planetarySourceStyle(target.body);
+  const earthSourceStyle = planetarySourceStyle("earth");
   const bodyLabel = target.body === "mars" ? "Mars" : "Moon";
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Backdrop className="dialog-backdrop fixed inset-0 z-50 bg-black/75 backdrop-blur-xs" />
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-3 sm:p-6 scroll-contain">
-          <Dialog.Popup className="dialog-popup relative w-full max-w-5xl rounded-2xl border border-[var(--border-strong)] bg-[#0d121a] text-slate-100 shadow-2xl overflow-hidden my-auto">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4 border-b border-[var(--border-subtle)] bg-[#0f1621] px-5 py-4">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6 scroll-contain">
+          <Dialog.Popup className="dialog-popup relative w-full max-w-5xl rounded-2xl border border-[var(--border-strong)] bg-[var(--bg-panel)] text-[var(--text-primary)] shadow-2xl overflow-hidden my-auto">
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-6 py-4">
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono-tabular uppercase tracking-[0.07em] text-slate-400">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
                   <span style={{ color: bodyAccent }}>{bodyLabel}</span>
                   <span>↔</span>
-                  <span className="text-sky-400">Earth</span>
+                  <span className="planetary-source" style={earthSourceStyle}>Earth</span>
                   <span>·</span>
                   <span>{equipTitle}</span>
-                  {sc && <span>· Rank #{sc.rank}</span>}
+                  {sc && <span className="font-mono-tabular">· Rank #{sc.rank}</span>}
                 </div>
-                <Dialog.Title className="font-display text-lg sm:text-xl font-semibold tracking-[-0.02em] text-slate-50 mt-1">
+                <Dialog.Title className="font-display text-lg sm:text-xl font-medium tracking-[-0.02em] text-[var(--text-primary)] mt-1">
                   {target.name} ↔ {earthCandidate.regionLabel}
                 </Dialog.Title>
               </div>
               <Dialog.Close
                 aria-label="Close comparison"
-                className="pressable shrink-0 rounded-lg border border-[var(--border-subtle)] bg-[#141d2b] p-2 text-slate-300 hover-surface"
+                className="pressable shrink-0 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-void)] p-2 text-[var(--text-secondary)] hover-surface"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" strokeWidth={1.5} />
               </Dialog.Close>
             </div>
 
-            <div className="p-5 space-y-6">
-              {/* Side-by-Side Planetary & Earth Imagery + Coordinates */}
+            <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <section className="rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] overflow-hidden">
-                  <div className="px-3.5 py-2.5 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2">
-                    <div>
-                      <div className="text-[10px] font-mono-tabular uppercase tracking-[0.08em]" style={{ color: bodyAccent }}>
-                        {bodyLabel} target
-                      </div>
-                      <div className="text-sm font-medium text-slate-100">{target.name}</div>
+                <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] overflow-hidden">
+                  <div className="px-4 py-3 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-xs" style={{ color: bodyAccent }}>{bodyLabel}</div>
+                      <div className="text-sm font-medium text-[var(--text-primary)] truncate">{target.name}</div>
                     </div>
-                    <span className="font-mono-tabular text-[11px] text-slate-400">
+                    <span className="font-mono-tabular text-xs text-[var(--text-muted)] shrink-0">
                       {formatCoords(target.latitude_deg, target.longitude_east_deg, target.body)}
                     </span>
                   </div>
@@ -133,50 +129,47 @@ export function ComparisonModal({
                     <div className="relative aspect-[16/10] bg-black">
                       <img
                         src={targetImageUrl}
-                        alt={target.name + " orbital surface observation"}
+                        alt={target.name + " surface image"}
                         className="w-full h-full object-cover"
                       />
-                      <span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-0.5 text-[10px] font-mono-tabular text-slate-200 border border-white/10">
-                        {target.pilotRegion?.provider} · {Number(target.pilotRegion?.native_resolution_m ?? 0).toFixed(1)} m/px
+                      <span className="absolute bottom-2 left-2 rounded-md bg-black/75 px-2 py-1 text-xs font-mono-tabular text-[var(--text-primary)] border border-white/10">
+                        MRO CTX · {Number(target.pilotRegion?.native_resolution_m ?? 0).toFixed(1)} m/px
                       </span>
                     </div>
                   ) : (
-                    <div className="aspect-[16/10] bg-[#080b10] flex flex-col items-center justify-center p-5 text-center border-b border-[var(--border-subtle)]">
-                      <ImageOff className="w-6 h-6 text-slate-500 mb-2" />
-                      <p className="text-xs font-medium text-slate-300">Optical surface crop not indexed</p>
-                      <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
-                        {target.body === "moon"
-                          ? "This Moon site provides LRO LOLA LDEM_64 terrain derivatives and Diviner thermal data; LROC NAC imagery is not indexed in Pilot-100."
-                          : "Orbital imagery asset unavailable for this catalogue site."}
+                    <div className="aspect-[16/10] bg-[var(--bg-void)] flex flex-col items-center justify-center p-6 text-center border-b border-[var(--border-subtle)]">
+                      <ImageOff className="w-5 h-5 text-[var(--text-muted)] mb-2" strokeWidth={1.5} />
+                      <p className="text-xs font-medium text-[var(--text-secondary)]">Optical crop not indexed</p>
+                      <p className="text-xs text-[var(--text-muted)] mt-1 max-w-xs">
+                        {target.body === "moon" ? "LRO LOLA DEM and Diviner thermal data indexed" : "Outside Pilot-100 imagery"}
                       </p>
                     </div>
                   )}
-                  <div className="px-3.5 py-2.5 text-[11px] text-slate-400 flex flex-wrap items-center justify-between gap-2">
-                    <span>
-                      {site ? site.source.dataset_id + " · " + site.source.product_id : target.subtitle}
+                  <div className="px-4 py-3 text-xs text-[var(--text-muted)] flex items-center justify-between gap-2">
+                    <span className="font-mono-tabular truncate">
+                      {site ? site.source.dataset_id + " · " + site.source.product_id : target.id}
                     </span>
                     {(site?.source.url || target.pilotRegion?.source_url) && (
                       <a
                         href={site?.source.url ?? target.pilotRegion?.source_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300"
+                        className="planetary-source inline-flex items-center gap-1 shrink-0"
+                        style={bodySourceStyle}
                       >
-                        NASA PDS source <ArrowUpRight className="w-3 h-3" />
+                        Source <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} />
                       </a>
                     )}
                   </div>
                 </section>
 
-                <section className="rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] overflow-hidden">
-                  <div className="px-3.5 py-2.5 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2">
-                    <div>
-                      <div className="text-[10px] font-mono-tabular uppercase tracking-[0.08em] text-sky-400">
-                        Earth analogue
-                      </div>
-                      <div className="text-sm font-medium text-slate-100">{earthCandidate.regionLabel}</div>
+                <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] overflow-hidden">
+                  <div className="px-4 py-3 border-b border-[var(--border-subtle)] flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-xs planetary-source" style={earthSourceStyle}>Earth</div>
+                      <div className="text-sm font-medium text-[var(--text-primary)] truncate">{earthCandidate.regionLabel}</div>
                     </div>
-                    <span className="font-mono-tabular text-[11px] text-slate-400">
+                    <span className="font-mono-tabular text-xs text-[var(--text-muted)] shrink-0">
                       {formatCoords(earthCandidate.latitude_deg, earthCandidate.longitude_east_deg, "earth")}
                     </span>
                   </div>
@@ -187,128 +180,103 @@ export function ComparisonModal({
                         alt={earthCandidate.regionLabel + " Sentinel-2 imagery"}
                         className="w-full h-full object-cover"
                       />
-                      <span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-0.5 text-[10px] font-mono-tabular text-slate-200 border border-white/10">
-                        {earthCandidate.pilotRegion?.provider ?? "ESA Sentinel-2"} · {Number(earthCandidate.pilotRegion?.native_resolution_m ?? 10).toFixed(1)} m/px
+                      <span className="absolute bottom-2 left-2 rounded-md bg-black/75 px-2 py-1 text-xs font-mono-tabular text-[var(--text-primary)] border border-white/10">
+                        Sentinel-2 · {Number(earthCandidate.pilotRegion?.native_resolution_m ?? 10).toFixed(1)} m/px
                       </span>
                     </div>
                   ) : (
-                    <div className="aspect-[16/10] bg-[#080b10] flex flex-col items-center justify-center p-5 text-center border-b border-[var(--border-subtle)]">
-                      <ImageOff className="w-6 h-6 text-slate-500 mb-2" />
-                      <p className="text-xs font-medium text-slate-300">Catalogue site · imagery not indexed</p>
-                      <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
-                        {earthCandidate.catalogueEntry?.basis ?? "Earth Sentinel-2 crop is outside the local pilot-100 index."}
-                      </p>
+                    <div className="aspect-[16/10] bg-[var(--bg-void)] flex flex-col items-center justify-center p-6 text-center border-b border-[var(--border-subtle)]">
+                      <ImageOff className="w-5 h-5 text-[var(--text-muted)] mb-2" strokeWidth={1.5} />
+                      <p className="text-xs font-medium text-[var(--text-secondary)]">Reference site · imagery not indexed</p>
                     </div>
                   )}
-                  <div className="px-3.5 py-2.5 text-[11px] text-slate-400 flex flex-wrap items-center justify-between gap-2">
-                    <span>
-                      {sc ? sc.source.dataset_id + " · " + sc.source.product_id : earthCandidate.catalogueEntry?.dataset_refs.join(", ") ?? "Sentinel-2 L2A"}
+                  <div className="px-4 py-3 text-xs text-[var(--text-muted)] flex items-center justify-between gap-2">
+                    <span className="font-mono-tabular truncate">
+                      {sc ? sc.source.dataset_id + " · " + sc.source.product_id : earthCandidate.catalogueEntry?.dataset_refs[0] ?? "Sentinel-2 L2A"}
                     </span>
                     {(sc?.source.documentation_url || sc?.source.url || earthCandidate.pilotRegion?.source_url || earthCandidate.catalogueEntry?.source_url) && (
                       <a
                         href={sc?.source.documentation_url ?? sc?.source.url ?? earthCandidate.pilotRegion?.source_url ?? earthCandidate.catalogueEntry?.source_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300"
+                        className="planetary-source inline-flex items-center gap-1 shrink-0"
+                        style={earthSourceStyle}
                       >
-                        Source record <ArrowUpRight className="w-3 h-3" />
+                        Source <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} />
                       </a>
                     )}
                   </div>
                 </section>
               </div>
 
-              {/* Calculated Similarity & Retrieval Metrics */}
               {(sc || sr) && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] p-3.5">
-                    <div className="text-[10px] font-mono-tabular uppercase tracking-[0.07em] text-slate-400">
-                      Terrain similarity index
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4">
+                    <div className="text-xs text-[var(--text-muted)]">Terrain similarity</div>
+                    <div className="mt-1 font-display text-2xl font-medium font-mono-tabular text-[var(--text-primary)]">
+                      {sc?.similarity_score !== null && sc?.similarity_score !== undefined
+                        ? sc.similarity_score.toFixed(3)
+                        : sr?.terrain_similarity !== null && sr?.terrain_similarity !== undefined
+                          ? sr.terrain_similarity.toFixed(3)
+                          : "Unavailable"}
                     </div>
-                    <div className="mt-1 flex items-baseline gap-2">
-                      <span className="font-display text-2xl font-semibold font-mono-tabular text-sky-300">
-                        {sc?.similarity_score !== null && sc?.similarity_score !== undefined
-                          ? sc.similarity_score.toFixed(3)
-                          : sr?.terrain_similarity !== null && sr?.terrain_similarity !== undefined
-                            ? sr.terrain_similarity.toFixed(3)
-                            : "Unavailable"}
-                      </span>
-                      <span className="text-[11px] text-slate-400">0–1 ranking index</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      {sc ? sc.matched_variable_count + " of " + sc.requested_variable_count + " weighted variables matched (" + Math.round(sc.data_completeness * 100) + "% completeness)" : "Scale-matched terrain feature score"}
+                    <p className="text-xs text-[var(--text-secondary)] mt-1 font-mono-tabular">
+                      {sc ? sc.matched_variable_count + "/" + sc.requested_variable_count + " variables · " + Math.round(sc.data_completeness * 100) + "%" : "Scale-matched terrain"}
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] p-3.5">
-                    <div className="text-[10px] font-mono-tabular uppercase tracking-[0.07em] text-slate-400">
-                      DINOv2 visual retrieval
+                  <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4">
+                    <div className="text-xs text-[var(--text-muted)]">DINOv2 cosine</div>
+                    <div className="mt-1 font-display text-2xl font-medium font-mono-tabular text-[var(--text-primary)]">
+                      {sr ? sr.cosine_similarity.toFixed(4) : "Not indexed"}
                     </div>
-                    <div className="mt-1 flex items-baseline gap-2">
-                      <span className="font-display text-2xl font-semibold font-mono-tabular text-amber-300">
-                        {sr ? sr.cosine_similarity.toFixed(4) : "Not indexed"}
-                      </span>
-                      {sr && <span className="text-[11px] text-slate-400">cosine</span>}
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      {sr
-                        ? "Visual rank #" + (sr.visual_rank ?? sr.rank) + " in Pilot-100; retrieval lead, not physical similarity."
-                        : target.body === "moon"
-                          ? "Moon optical imagery is outside Pilot-100 DINOv2 index."
-                          : "Select a Pilot-100 Mars target for DINOv2 retrieval comparison."}
+                    <p className="text-xs text-[var(--text-secondary)] mt-1 font-mono-tabular">
+                      {sr ? "Visual rank #" + (sr.visual_rank ?? sr.rank) : target.body === "moon" ? "Moon outside Pilot-100" : "No Pilot-100 pair"}
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] p-3.5">
-                    <div className="text-[10px] font-mono-tabular uppercase tracking-[0.07em] text-slate-400">
-                      Provisional mission screen
+                  <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4">
+                    <div className="text-xs text-[var(--text-muted)]">Mission screen</div>
+                    <div className="mt-1 font-display text-xl font-medium capitalize text-[var(--text-primary)]">
+                      {site ? site.mission_suitability.status.replaceAll("_", " ") : "Not assessed"}
                     </div>
-                    <div className="mt-1 flex items-center gap-2">
-                      <span className="font-display text-lg font-semibold capitalize text-slate-100">
-                        {site ? site.mission_suitability.status.replaceAll("_", " ") : "Not assessed"}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      {sc?.why_ranked.length ? sc.why_ranked[0] : "Terrain screening applies provisional engineering assumptions."}
+                    <p className="text-xs text-[var(--text-secondary)] mt-1 truncate">
+                      {sc?.why_ranked[0] ?? "Provisional terrain screen"}
                     </p>
                   </div>
                 </div>
               )}
 
-              {/* Terrain Variable Comparison Chart + Table */}
               {sc && (
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                  <section className="lg:col-span-2 rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] p-4">
+                  <section className="lg:col-span-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4">
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <h3 className="font-display text-sm font-medium text-slate-100">Variable similarity profile</h3>
-                      <span className="text-[10px] font-mono-tabular text-slate-400">exp(-|Δ| / tol)</span>
+                      <h3 className="font-display text-sm font-medium text-[var(--text-primary)]">Variable similarity</h3>
+                      <span className="text-xs font-mono-tabular text-[var(--text-muted)]">0–100%</span>
                     </div>
-                    <div className="h-[210px] w-full">
+                    <div className="h-[220px] w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 4 }}>
-                          <CartesianGrid stroke="rgba(226,232,240,0.08)" horizontal={false} />
-                          <XAxis type="number" domain={[0, 100]} tick={{ fill: "#94a3b8", fontSize: 10 }} unit="%" />
-                          <YAxis type="category" dataKey="name" width={96} tick={{ fill: "#cbd5e1", fontSize: 11 }} />
+                          <CartesianGrid stroke="rgba(238,240,245,0.08)" horizontal={false} />
+                          <XAxis type="number" domain={[0, 100]} tick={{ fill: "#7a8296", fontSize: 11 }} unit="%" />
+                          <YAxis type="category" dataKey="name" width={96} tick={{ fill: "#a3a9b8", fontSize: 12 }} />
                           <Tooltip
                             contentStyle={{
-                              backgroundColor: "#0f141c",
-                              border: "1px solid rgba(226,232,240,0.18)",
+                              backgroundColor: "#11141c",
+                              border: "1px solid rgba(238,240,245,0.16)",
                               borderRadius: "8px",
-                              fontSize: "11px",
-                              color: "#f1f5f9",
+                              fontSize: "12px",
+                              color: "#eef0f5",
                             }}
                             formatter={(_value, _name, props) => {
                               const item = props.payload;
-                              if (!item.available) return ["Unavailable / scale unmatched", "Status"];
+                              if (!item.available) return ["Unavailable", "Status"];
                               return [item.rawScore.toFixed(3) + " (" + item.scorePct + "%)", "Score"];
                             }}
                           />
                           <Bar dataKey="scorePct" radius={[0, 4, 4, 0]} barSize={16}>
                             {chartData.map((entry, index) => (
-                              <Cell
-                                key={index}
-                                fill={entry.available ? (entry.scorePct >= 75 ? "#4cc38a" : entry.scorePct >= 45 ? "#56b4e9" : "#e8b04a") : "#334155"}
-                              />
+                              <Cell key={index} fill={entry.available ? "#a3a9b8" : "#242936"} />
                             ))}
                           </Bar>
                         </BarChart>
@@ -316,42 +284,41 @@ export function ComparisonModal({
                     </div>
                   </section>
 
-                  <section className="lg:col-span-3 rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] overflow-hidden">
+                  <section className="lg:col-span-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] overflow-hidden">
                     <div className="px-4 py-3 border-b border-[var(--border-subtle)] flex items-center justify-between">
-                      <h3 className="font-display text-sm font-medium text-slate-100">Scale-matched terrain measurements</h3>
-                      <span className="text-[10px] font-mono-tabular text-slate-400">Units & scale ≤5%</span>
+                      <h3 className="font-display text-sm font-medium text-[var(--text-primary)]">Terrain measurements</h3>
+                      <span className="text-xs font-mono-tabular text-[var(--text-muted)]">Scale ≤5%</span>
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-[#0f1621] text-[10px] font-mono-tabular uppercase tracking-[0.06em] text-slate-400">
+                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-muted)]">
                           <tr>
-                            <th className="px-3.5 py-2">Variable</th>
-                            <th className="px-3 py-2 text-right">{bodyLabel}</th>
-                            <th className="px-3 py-2 text-right">Earth</th>
-                            <th className="px-3 py-2 text-right">Δ (E − T)</th>
-                            <th className="px-3 py-2 text-right">Score</th>
+                            <th className="px-4 py-2 font-medium">Variable</th>
+                            <th className="px-3 py-2 font-medium text-right" style={{ color: bodyAccent }}>{bodyLabel}</th>
+                            <th className="px-3 py-2 font-medium text-right" style={{ color: earthAccent }}>Earth</th>
+                            <th className="px-3 py-2 font-medium text-right">Delta</th>
+                            <th className="px-4 py-2 font-medium text-right">Score</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--border-subtle)]">
                           {sc.variables.map((v) => (
                             <tr key={v.name}>
-                              <td className="px-3.5 py-2.5">
-                                <div className="font-medium text-slate-200">{v.label}</div>
-                                <div className="text-[10px] text-slate-500 font-mono-tabular">
-                                  w={v.weight.toFixed(2)} · tol ±{v.tolerance} {v.units}
-                                  {v.reference_spatial_scale_m ? " · " + Math.round(v.reference_spatial_scale_m) + " m" : ""}
+                              <td className="px-4 py-3">
+                                <div className="font-medium text-[var(--text-primary)]">{SHORT_VARIABLE_LABELS[v.name] ?? v.label}</div>
+                                <div className="text-xs text-[var(--text-muted)] font-mono-tabular">
+                                  w={v.weight.toFixed(2)} · ±{v.tolerance} {v.units}
                                 </div>
                               </td>
-                              <td className="px-3 py-2.5 text-right font-mono-tabular text-slate-200">
-                                {v.reference_value !== null ? v.reference_value.toFixed(2) + " " + v.units : "Unavailable"}
+                              <td className="px-3 py-3 text-right font-mono-tabular" style={{ color: bodyAccent }}>
+                                {v.reference_value !== null ? v.reference_value.toFixed(2) + " " + v.units : "—"}
                               </td>
-                              <td className="px-3 py-2.5 text-right font-mono-tabular text-slate-200">
-                                {v.earth_value !== null ? v.earth_value.toFixed(2) + " " + v.units : "Unavailable"}
+                              <td className="px-3 py-3 text-right font-mono-tabular" style={{ color: earthAccent }}>
+                                {v.earth_value !== null ? v.earth_value.toFixed(2) + " " + v.units : "—"}
                               </td>
-                              <td className="px-3 py-2.5 text-right font-mono-tabular text-slate-300">
+                              <td className="px-3 py-3 text-right font-mono-tabular text-[var(--text-muted)]">
                                 {v.difference !== null ? (v.difference >= 0 ? "+" : "") + v.difference.toFixed(2) : "—"}
                               </td>
-                              <td className="px-3 py-2.5 text-right font-mono-tabular font-semibold text-sky-300">
+                              <td className="px-4 py-3 text-right font-mono-tabular font-medium text-[var(--text-secondary)]">
                                 {v.score !== null ? v.score.toFixed(3) : "—"}
                               </td>
                             </tr>
@@ -363,151 +330,128 @@ export function ComparisonModal({
                 </div>
               )}
 
-              {/* Live Pair Comparison Deltas from /api/comparisons when indexed */}
               {(comparisonBusy || comparison) && (
-                <section className="rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] p-4 space-y-3">
+                <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4 space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-display text-sm font-medium text-slate-100 inline-flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-300" />
-                      Pair comparison & explicit data gaps
-                    </h3>
-                    {comparisonBusy && <span className="text-[11px] text-slate-400">Loading comparison…</span>}
+                    <h3 className="font-display text-sm font-medium text-[var(--text-primary)]">Pair deltas & gaps</h3>
+                    {comparisonBusy && <span className="text-xs text-[var(--text-muted)]">Loading</span>}
                   </div>
                   {comparison && (
                     <>
                       {comparison.terrain_measurement_differences.length > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {comparison.terrain_measurement_differences.map((d) => (
-                            <div key={d.name} className="rounded-lg border border-white/8 bg-[#0f1621] p-3 text-xs">
-                              <div className="font-medium text-slate-200 capitalize">{d.name.replaceAll("_", " ")}</div>
-                              <div className="mt-1 font-mono-tabular text-slate-300">
-                                {bodyLabel}: {d.query_value.toFixed(2)} {d.units} · Earth: {d.candidate_value.toFixed(2)} {d.units}
-                              </div>
-                              <div className="mt-0.5 text-[11px] text-slate-400">
-                                Δ (Earth − Query): {(d.difference_candidate_minus_query >= 0 ? "+" : "") + d.difference_candidate_minus_query.toFixed(2)} {d.units} · scale {Math.round(d.query_scale_m)} m
+                            <div key={d.name} className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3 text-xs">
+                              <div className="font-medium text-[var(--text-primary)] capitalize">{d.name.replaceAll("_", " ")}</div>
+                              <div className="mt-1 font-mono-tabular text-[var(--text-secondary)]">
+                                {bodyLabel} {d.query_value.toFixed(2)} {d.units} · Earth {d.candidate_value.toFixed(2)} {d.units} · Δ {(d.difference_candidate_minus_query >= 0 ? "+" : "") + d.difference_candidate_minus_query.toFixed(2)}
                               </div>
                             </div>
                           ))}
                         </div>
                       )}
-                      <div className="text-[11px] text-slate-400">
-                        <span className="font-medium text-slate-300">Unobserved / missing layers: </span>
-                        {comparison.data_gaps.join(", ")}.
+                      <div className="text-xs text-[var(--text-muted)]">
+                        Unobserved layers: {comparison.data_gaps.join(", ")}.
                       </div>
                     </>
                   )}
                 </section>
               )}
 
-              {/* Environmental & Geological Context + Provisional Mission Checks */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(envEvidence || geoEvidence) && (
-                  <section className="rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] p-4 space-y-3">
-                    <h3 className="font-display text-sm font-medium text-slate-100">Environmental & geological context</h3>
+                  <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4 space-y-3">
+                    <h3 className="font-display text-sm font-medium text-[var(--text-primary)]">Environmental & geology context</h3>
                     {envEvidence && (
-                      <div className="rounded-lg border border-white/8 bg-[#0f1621] p-3 space-y-1 text-xs">
+                      <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3 space-y-1 text-xs">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-mono-tabular uppercase text-slate-400">
-                            {envEvidence.body === "moon" ? "LRO Diviner nighttime temperature" : "MGS TES thermal inertia"}
+                          <span className="text-[var(--text-muted)]">
+                            {envEvidence.body === "moon" ? "LRO Diviner night temperature" : "MGS TES thermal inertia"}
                           </span>
-                          <a href={envEvidence.label_url} target="_blank" rel="noreferrer" className="text-[10px] text-sky-400 inline-flex items-center gap-0.5">
-                            {envEvidence.product_id} <ArrowUpRight className="w-3 h-3" />
+                          <a href={envEvidence.label_url} target="_blank" rel="noreferrer" className="planetary-source inline-flex items-center gap-1" style={bodySourceStyle}>
+                            {envEvidence.product_id} <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} />
                           </a>
                         </div>
-                        <div className="font-mono-tabular text-sm font-semibold text-slate-100">
-                          Median {envEvidence.summary.median.toFixed(1)} {envEvidence.units} (P10–P90: {envEvidence.summary.p10.toFixed(1)}–{envEvidence.summary.p90.toFixed(1)})
+                        <div className="font-mono-tabular text-sm font-medium text-[var(--text-primary)]">
+                          Median {envEvidence.summary.median.toFixed(1)} {(envEvidence.measurement?.units ?? envEvidence.units).split(";")[0]} · P10–P90 {envEvidence.summary.p10.toFixed(1)}–{envEvidence.summary.p90.toFixed(1)}
                         </div>
-                        <p className="text-[11px] text-slate-400">
-                          {envEvidence.source_description} Valid cells: {(envEvidence.valid_sample_fraction * 100).toFixed(1)}%. Excluded from terrain score.
-                        </p>
                       </div>
                     )}
                     {geoEvidence && (
-                      <div className="rounded-lg border border-white/8 bg-[#0f1621] p-3 space-y-1 text-xs">
+                      <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3 space-y-1 text-xs">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-mono-tabular uppercase text-slate-400">USGS regional map unit</span>
-                          <a href={geoEvidence.dataset_reference_url} target="_blank" rel="noreferrer" className="text-[10px] text-sky-400 inline-flex items-center gap-0.5">
-                            {geoEvidence.product_id} <ArrowUpRight className="w-3 h-3" />
+                          <span className="text-[var(--text-muted)]">USGS regional unit</span>
+                          <a href={geoEvidence.dataset_reference_url} target="_blank" rel="noreferrer" className="planetary-source inline-flex items-center gap-1" style={bodySourceStyle}>
+                            {geoEvidence.product_id} <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} />
                           </a>
                         </div>
-                        <div className="font-medium text-slate-100">
+                        <div className="font-medium text-[var(--text-primary)]">
                           {geoEvidence.classification_status === "mapped"
                             ? [geoEvidence.map_unit_code, geoEvidence.map_unit_name, geoEvidence.map_unit_age].filter(Boolean).join(" · ")
                             : geoEvidence.classification_status.replaceAll("_", " ")}
                         </div>
-                        <p className="text-[11px] text-slate-400">
-                          {geoEvidence.map_unit_description ?? geoEvidence.source_description} Scale: {geoEvidence.nominal_cartographic_scale}.
-                        </p>
                       </div>
                     )}
                   </section>
                 )}
 
-                <section className={"rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] p-4 space-y-3 " + (!envEvidence && !geoEvidence ? "md:col-span-2" : "")}>
-                  <h3 className="font-display text-sm font-medium text-slate-100">Mission suitability & physical limits ({equipTitle})</h3>
+                <section className={"rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4 space-y-3 " + (!envEvidence && !geoEvidence ? "md:col-span-2" : "")}>
+                  <h3 className="font-display text-sm font-medium text-[var(--text-primary)]">Mission suitability ({equipTitle})</h3>
                   {site?.mission_suitability.checks.map((check) => (
-                    <div key={check.name} className="rounded-lg border border-white/8 bg-[#0f1621] p-3 text-xs space-y-1">
+                    <div key={check.name} className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3 text-xs space-y-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-medium capitalize text-slate-200">{check.name.replaceAll("_", " ")}</span>
-                        <span className={"inline-flex items-center gap-1 font-mono-tabular text-[11px] " + (check.status === "within_screen" ? "text-emerald-300" : check.status === "outside_screen" ? "text-rose-300" : "text-amber-300")}>
-                          {check.status === "within_screen" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
-                          {check.value !== null ? check.value.toFixed(2) + " " + check.units : "Unavailable"} (limit {check.maximum} {check.units})
+                        <span className="font-medium capitalize text-[var(--text-primary)]">{check.name.replaceAll("_", " ")}</span>
+                        <span className={"inline-flex items-center gap-1 font-mono-tabular " + (check.status === "within_screen" ? "text-emerald-400" : check.status === "outside_screen" ? "text-rose-400" : "text-amber-300")}>
+                          {check.status === "within_screen" ? <CheckCircle2 className="w-4 h-4" strokeWidth={1.5} /> : <AlertTriangle className="w-4 h-4" strokeWidth={1.5} />}
+                          {check.value !== null ? check.value.toFixed(2) + " " + check.units : "Unavailable"} / {check.maximum} {check.units}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400">{check.basis}</p>
                       {check.basis_source_url && (
-                        <a href={check.basis_source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[10px] text-sky-400">
-                          Engineering reference <ArrowUpRight className="w-3 h-3" />
+                        <a href={check.basis_source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                          Engineering reference <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} />
                         </a>
                       )}
                     </div>
                   ))}
 
-                  <div className="rounded-lg border-l-2 border-amber-400/70 bg-amber-500/8 p-3 text-xs space-y-1.5">
-                    <div className="font-medium text-amber-200 flex items-center gap-1.5">
-                      <Info className="w-3.5 h-3.5 shrink-0" />
-                      Where Earth analogues break down
+                  <div className="rounded-lg border-l-2 border-amber-400/70 bg-[var(--bg-elevated)] p-3 text-xs space-y-1">
+                    <div className="font-medium text-amber-300 flex items-center gap-2">
+                      <Info className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                      Physical limits on Earth
                     </div>
-                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                    <p className="text-[var(--text-secondary)] leading-relaxed">
                       {target.body === "mars" ? equipment.earthAnalogueLimits.mars : equipment.earthAnalogueLimits.moon}
-                    </p>
-                    <p className="text-[11px] text-slate-400">
-                      Unscored factors for {equipTitle.toLowerCase()}: {equipment.unscoredGaps.join("; ")}.
                     </p>
                   </div>
                 </section>
               </div>
 
-              {/* Provenance, Coverage & Limitations */}
-              <section className="rounded-xl border border-[var(--border-subtle)] bg-[#0a0e15] p-4 space-y-2 text-[11px] text-slate-400">
-                <div className="font-medium text-slate-200">Evidence completeness, uncertainty & citations</div>
+              <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4 space-y-2 text-xs text-[var(--text-muted)]">
+                <div className="font-medium text-[var(--text-secondary)]">Provenance & limits</div>
                 {site && (
                   <p>
-                    Observation support: {site.data_coverage.status === "partial"
-                      ? site.data_coverage.observed_cell_count + "/" + site.data_coverage.grid_cell_count + " bins (" + ((site.data_coverage.observed_cell_fraction ?? 0) * 100).toFixed(1) + "%)"
-                      : site.data_coverage.note}{" "}
+                    {site.data_coverage.status === "partial"
+                      ? site.data_coverage.observed_cell_count + "/" + site.data_coverage.grid_cell_count + " MOLA bins (" + ((site.data_coverage.observed_cell_fraction ?? 0) * 100).toFixed(1) + "%). "
+                      : ""}
                     {site.data_quality}
                   </p>
                 )}
-                {sc?.source.direct_srtm_source_fraction !== null && sc?.source.direct_srtm_source_fraction !== undefined && (
-                  <p>Earth NASADEM direct SRTM-class fraction: {(sc.source.direct_srtm_source_fraction * 100).toFixed(1)}%.</p>
-                )}
-                {(scorecard?.limitations ?? comparison?.limitations ?? []).map((item) => (
+                {(scorecard?.limitations ?? comparison?.limitations ?? []).slice(0, 3).map((item) => (
                   <p key={item}>• {item}</p>
                 ))}
                 <div className="pt-1 flex flex-wrap gap-4">
                   {site?.source.label_url && (
-                    <a href={site.source.label_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300">
-                      NASA PDS product label <ArrowUpRight className="w-3 h-3" />
+                    <a href={site.source.label_url} target="_blank" rel="noreferrer" className="planetary-source inline-flex items-center gap-1" style={bodySourceStyle}>
+                      PDS label <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} />
                     </a>
                   )}
                   {site?.source.support_url && (
-                    <a href={site.source.support_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sky-400 hover:text-sky-300">
-                      MOLA count product <ArrowUpRight className="w-3 h-3" />
+                    <a href={site.source.support_url} target="_blank" rel="noreferrer" className="planetary-source inline-flex items-center gap-1" style={bodySourceStyle}>
+                      MOLA counts <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} />
                     </a>
                   )}
-                  <a href="/api/docs" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-slate-300 hover:text-white">
-                    FastAPI schema (/api/docs) <ArrowUpRight className="w-3 h-3" />
+                  <a href="/api/docs" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                    API schema <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} />
                   </a>
                 </div>
               </section>

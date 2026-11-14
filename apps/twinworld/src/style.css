@@ -1,24 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --bg-void: #080b10;
-  --bg-panel: #0f141c;
-  --bg-elevated: #151c27;
-  --bg-hover: #1b2432;
-  --border-subtle: rgba(226, 232, 240, 0.09);
-  --border-strong: rgba(226, 232, 240, 0.18);
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --earth: #56b4e9;
-  --mars: #e07246;
-  --moon: #cbd5e1;
+  --bg-void: #07080d;
+  --bg-panel: #0b0d14;
+  --bg-elevated: #11141c;
+  --bg-hover: #1a1e28;
+  --border-subtle: rgba(238, 240, 245, 0.08);
+  --border-strong: rgba(238, 240, 245, 0.16);
+  --text-primary: #eef0f5;
+  --text-secondary: #a3a9b8;
+  --text-muted: #7a8296;
+  --earth: var(--planet-earth-primary);
+  --mars: var(--planet-mars-primary);
+  --moon: var(--planet-moon-primary);
   --good: #4cc38a;
   --caution: #e8b04a;
   --gap: #e5566b;
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
@@ -85,6 +83,35 @@
 }
 .pressable:active:not(:disabled) {
   transform: scale(0.97);
+}
+
+.planetary-source {
+  color: var(--planetary-color);
+  transition: color 140ms ease;
+}
+.planetary-source:hover {
+  color: var(--planetary-light);
+}
+.planetary-selection {
+  border-color: var(--planetary-deep);
+  background-color: var(--bg-hover);
+  color: var(--planetary-color);
+}
+
+:where(button, a, input, select, summary, [role="button"]):focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .scroll-contain {

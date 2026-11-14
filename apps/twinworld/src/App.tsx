@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { motion } from "motion/react";
-import { ArrowLeftRight, ArrowUpRight, Database, Info, Sparkles } from "lucide-react";
-import { api } from "./lib/api";
+import { ArrowLeftRight, ArrowUpRight, Database, HardDrive, Info } from "lucide-react";
+import enomLogo from "../../../ENOM.png";
+import { api, type AnalogueDiscovery, type AnalogueProfile } from "./lib/api";
+import { planetaryColor } from "./planetaryTokens";
 import {
   EQUIPMENT_PROFILES,
   formatCoords,
@@ -31,6 +33,7 @@ import { EarthAnalogueSidebar } from "./components/EarthAnalogueSidebar";
 import { PlanetBaselineBar } from "./components/PlanetBaselineBar";
 import { ComparisonModal } from "./components/ComparisonModal";
 import { DatasetsDialog } from "./components/DatasetsDialog";
+import { OfflineMapsDialog } from "./components/OfflineMapsDialog";
 
 export function App() {
   const [body, setBody] = useState<PlanetaryBody>("mars");
@@ -53,6 +56,12 @@ export function App() {
 
   const [scorecard, setScorecard] = useState<ScorecardResult | null>(null);
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null);
+  const [analogueDiscovery, setAnalogueDiscovery] = useState<AnalogueDiscovery | null>(null);
+  const [discoveryProfiles, setDiscoveryProfiles] = useState<AnalogueProfile[]>([]);
+  const [discoveryProfileId, setDiscoveryProfileId] = useState("dunes");
+  const [discoveryWeights, setDiscoveryWeights] = useState<Record<string, number>>({});
+  const [discoveryBusy, setDiscoveryBusy] = useState(false);
+  const [discoveryError, setDiscoveryError] = useState("");
   const [comparison, setComparison] = useState<Comparison | null>(null);
   const [comparisonBusy, setComparisonBusy] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -61,6 +70,7 @@ export function App() {
 
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [datasetsOpen, setDatasetsOpen] = useState(false);
+  const [offlineMapsOpen, setOfflineMapsOpen] = useState(false);
   const [mobileGlobeMode, setMobileGlobeMode] = useState<"dual" | "target" | "earth">("dual");
   const [mobilePanelTab, setMobilePanelTab] = useState<"targets" | "analogues">("targets");
 
@@ -85,6 +95,45 @@ export function App() {
       });
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    api.getAnalogueProfiles().then((profiles) => {
+      if (cancelled) return;
+      setDiscoveryProfiles(profiles);
+      const initial = profiles.find((profile) => profile.id === discoveryProfileId) ?? profiles[0];
+      if (initial) {
+        setDiscoveryProfileId(initial.id);
+        setDiscoveryWeights(initial.weights);
+      }
+    }).catch((err) => {
+      if (!cancelled) setDiscoveryError(err instanceof Error ? err.message : "Could not load profiles");
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedTargetId || !discoveryProfiles.length || !Object.keys(discoveryWeights).length) {
+      setAnalogueDiscovery(null);
+      setDiscoveryBusy(false);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setDiscoveryBusy(true);
+      setDiscoveryError("");
+      api.discoverAnalogues({ target_site_id: selectedTargetId, profile_id: discoveryProfileId, weights: discoveryWeights, limit: 10 })
+        .then((result) => { if (!cancelled) setAnalogueDiscovery(result); })
+        .catch((err) => {
+          if (!cancelled) {
+            setAnalogueDiscovery(null);
+            setDiscoveryError(err instanceof Error ? err.message : "Analogue ranking failed");
+          }
+        })
+        .finally(() => { if (!cancelled) setDiscoveryBusy(false); });
+    }, 180);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, [selectedTargetId, body, discoveryProfiles, discoveryProfileId, discoveryWeights]);
+
   const regionById = useMemo(() => {
     const map = new Map<string, Region>();
     for (const r of regions) map.set(r.id, r);
@@ -99,8 +148,16 @@ export function App() {
     // 1. Ingested scorecard sites first
     for (const site of scoreSites) {
       if (site.body !== body) continue;
-      const pilot = regionById.get(site.id) ?? null;
+      const matchedRegion = regionById.get(site.id) ?? null;
+      const isCataloguePlace = catalogueEntries.some((entry) => entry.id === site.id);
+      // Keep the scored observations in the API, but keep default place browsing to
+      // reviewed imagery or explicit candidate catalogue entries.
+      if (!isCataloguePlace && (!matchedRegion || matchedRegion.label_status !== "verified")) continue;
+      const isMareTranquillitatisContext = site.body === "moon" && site.id.startsWith("moon_mare_tranquillitatis");
+      const placeId = site.id;
+      const pilot = matchedRegion;
       seenIds.add(site.id);
+      seenIds.add(placeId);
       const hasDiviner = Boolean(site.environmental_evidence);
       const hasGeology = Boolean(site.geology_evidence);
       const subtitleParts: string[] = [];
@@ -115,15 +172,13 @@ export function App() {
         if (hasGeology) subtitleParts.push("USGS geology");
       }
       const displayName =
-        site.body === "moon" && hasDiviner
-          ? "Mare Tranquillitatis (Diviner + LOLA)"
-          : site.body === "moon"
-            ? "Mare Tranquillitatis (LOLA)"
-            : site.id.includes("dune")
+        isMareTranquillitatisContext
+          ? "Mare Tranquillitatis context · " + (site.id.split("_").at(-1) ?? "site")
+          : site.id.startsWith("mars-dune-")
               ? "Mars Dune " + site.id.replace(/^mars-dune-(barchan_crescent_dune-|linear-)?/, "")
               : humanizeGroup(site.name.replaceAll(" ", "_")) + " · " + (site.id.split("-").at(-1) ?? "01");
       list.push({
-        id: site.id,
+        id: placeId,
         name: displayName,
         subtitle: subtitleParts.join(" · "),
         body,
@@ -140,7 +195,9 @@ export function App() {
     // 2. Remaining Mars Pilot-100 regions
     if (body === "mars") {
       for (const r of regions) {
-        if (r.body !== "mars" || seenIds.has(r.id)) continue;
+        // Keep source records in the catalogue, but do not expose unreviewed pilot patches
+        // as default place targets. Reviewed observations can be restored by updating status.
+        if (r.body !== "mars" || r.label_status !== "verified" || seenIds.has(r.id)) continue;
         seenIds.add(r.id);
         const displayName = humanizeGroup(r.geographic_group) + " · " + (r.id.split("-").at(-1) ?? r.id);
         list.push({
@@ -379,6 +436,7 @@ export function App() {
 
   const handleSelectTarget = (target: PlanetaryTarget) => {
     setSelectedTargetId(target.id);
+    setAnalogueDiscovery(null);
     setLeftFocus({
       lat: target.latitude_deg,
       lon: target.longitude_east_deg,
@@ -412,6 +470,18 @@ export function App() {
     }
   };
 
+  const handleSelectDiscoveredPlace = (place: AnalogueDiscovery["results"][number]["place"]) => {
+    setSelectedEarthId(place.id);
+    setRightFocus({ lat: place.latitude_deg, lon: place.longitude_east_deg, token: Date.now() });
+  };
+
+  const handleDiscoveryProfileChange = (id: string) => {
+    const profile = discoveryProfiles.find((item) => item.id === id);
+    if (!profile) return;
+    setDiscoveryProfileId(id);
+    setDiscoveryWeights(profile.weights);
+  };
+
   const handleEquipmentChange = (nextId: EquipmentId) => {
     setEquipmentId(nextId);
     const profile = getEquipmentProfile(nextId);
@@ -424,6 +494,7 @@ export function App() {
     setSelectedTargetId(null);
     setScorecard(null);
     setSearchResponse(null);
+    setAnalogueDiscovery(null);
     setComparison(null);
   };
 
@@ -467,7 +538,25 @@ export function App() {
         score: c.scorecardCandidate?.similarity_score ?? c.searchResult?.cosine_similarity ?? null,
       });
     }
+    const discoveredIds = new Set<string>();
+    for (const row of analogueDiscovery?.results ?? []) {
+      const place = row.place;
+      discoveredIds.add(place.id);
+      const key = place.latitude_deg.toFixed(1) + "," + place.longitude_east_deg.toFixed(1);
+      if (place.id !== selectedEarthId && seenGroup.has(key)) continue;
+      seenGroup.add(key);
+      list.push({
+        id: place.id,
+        label: place.name,
+        lat: place.latitude_deg,
+        lon: place.longitude_east_deg,
+        kind: "ranked",
+        rank: row.rank ?? undefined,
+        score: row.score,
+      });
+    }
     for (const e of earthCatalogue) {
+      if (discoveredIds.has(e.id)) continue;
       list.push({
         id: e.id,
         label: e.name,
@@ -477,7 +566,7 @@ export function App() {
       });
     }
     return list;
-  }, [earthCandidates, earthCatalogue, selectedEarthId]);
+  }, [earthCandidates, analogueDiscovery, earthCatalogue, selectedEarthId]);
 
   const activeEquipment = getEquipmentProfile(equipmentId);
   const activeEquipmentName =
@@ -489,34 +578,22 @@ export function App() {
       ? activeEquipment.moonSummary
       : activeEquipment.summary;
 
-  const jumpToIngested = () => {
-    const firstIngested =
-      targets.find((t) => t.tier === "scorecard_imagery") ??
-      targets.find((t) => t.tier === "scorecard_only");
-    if (firstIngested) handleSelectTarget(firstIngested);
-  };
-
   return (
     <div className="min-h-dvh lg:h-dvh flex flex-col bg-[var(--bg-void)] text-[var(--text-primary)] lg:overflow-hidden">
       {/* Top Navigation & Equipment Bar */}
-      <header className="sticky top-0 z-30 border-b border-[var(--border-subtle)] bg-[#080b10]/90 backdrop-blur-md pt-[env(safe-area-inset-top)]">
-        <div className="px-3 sm:px-5 h-14 flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-30 border-b border-[var(--border-subtle)] bg-[var(--bg-void)]/92 backdrop-blur-md pt-[env(safe-area-inset-top)]">
+        <div className="px-3 sm:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
           {/* Brand */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className="w-7 h-7 rounded-lg border border-white/15 bg-[#111824] flex items-center justify-center">
-              <PlanetBadgeDot body={body} />
-            </div>
-            <div className="leading-tight">
-              <div className="font-display text-sm font-semibold tracking-[-0.02em] text-slate-50">ENOM</div>
-              <div className="text-[10px] text-slate-400 hidden sm:block">Planetary Analogue Observatory</div>
-            </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <img src={enomLogo} alt="" className="w-7 h-7 rounded-lg border border-[var(--border-subtle)] object-cover" />
+            <span className="font-display text-base font-medium tracking-[-0.02em] text-[var(--text-primary)]">ENOM</span>
           </div>
 
           {/* Body Switcher: Mars / Moon */}
           <div
             role="tablist"
             aria-label="Target planetary body"
-            className="relative inline-flex items-center p-1 rounded-xl border border-[var(--border-subtle)] bg-[#0e141d] shrink-0"
+            className="relative inline-flex items-center p-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-panel)] shrink-0"
           >
             {(["mars", "moon"] as const).map((item) => {
               const active = body === item;
@@ -529,14 +606,15 @@ export function App() {
                   onClick={() => handleBodyChange(item)}
                   className={
                     "relative z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors " +
-                    (active ? "text-slate-50" : "text-slate-400 hover:text-slate-200")
+                    (active ? "text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]")
                   }
+                  style={active ? { color: planetaryColor(item) } : undefined}
                 >
                   {active && (
                     <motion.span
                       layoutId="active-body-pill"
                       transition={{ type: "spring", bounce: 0.15, duration: 0.35 }}
-                      className="absolute inset-0 rounded-lg bg-[#192231] border border-[var(--border-strong)] -z-10"
+                      className="absolute inset-0 rounded-lg bg-[var(--bg-hover)] border border-[var(--border-strong)] -z-10"
                     />
                   )}
                   <PlanetBadgeDot body={item} />
@@ -549,30 +627,30 @@ export function App() {
           {/* Equipment Mission Factors Popover + Datasets Modal */}
           <div className="flex items-center gap-2 shrink-0">
             <Popover.Root>
-              <Popover.Trigger className="pressable inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[#0f141c] hover-surface px-2.5 py-1.5 text-xs text-slate-200">
-                <Info className="w-3.5 h-3.5 text-sky-400" />
+              <Popover.Trigger className="pressable inline-flex items-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-panel)] hover-surface px-3 py-1.5 text-xs text-[var(--text-secondary)]">
+                <Info className="w-4 h-4 text-[var(--text-muted)]" strokeWidth={1.5} />
                 <span className="hidden sm:inline">Mission factors</span>
               </Popover.Trigger>
               <Popover.Portal>
                 <Popover.Positioner sideOffset={8} align="end" className="z-50">
-                  <Popover.Popup className="popover-popup w-80 sm:w-96 rounded-xl border border-[var(--border-strong)] bg-[#0f1520] p-4 shadow-2xl text-xs text-slate-200 space-y-2.5">
+                  <Popover.Popup className="popover-popup w-80 sm:w-96 rounded-xl border border-[var(--border-strong)] bg-[var(--bg-elevated)] p-4 shadow-2xl text-xs text-[var(--text-primary)] space-y-3">
                     <div className="flex items-center gap-2">
-                      <EquipmentIcon id={equipmentId} className="w-4 h-4 text-sky-400" />
+                      <EquipmentIcon id={equipmentId} className="w-4 h-4 text-[var(--text-muted)]" />
                       <div>
-                        <div className="font-display text-sm font-semibold text-slate-100">{activeEquipmentName}</div>
-                        <div className="text-[11px] text-slate-400">{activeEquipmentSummary}</div>
+                        <div className="font-display text-sm font-medium text-[var(--text-primary)]">{activeEquipmentName}</div>
+                        <div className="text-xs text-[var(--text-secondary)]">{activeEquipmentSummary}</div>
                       </div>
                     </div>
-                    <div className="border-t border-[var(--border-subtle)] pt-2 space-y-1">
-                      <div className="text-[10px] font-mono-tabular uppercase tracking-[0.06em] text-slate-400">Relevant terrain & environmental factors</div>
+                    <div className="border-t border-[var(--border-subtle)] pt-3 space-y-1">
+                      <div className="text-xs font-medium text-[var(--text-muted)]">Relevant factors</div>
                       {activeEquipment.keyFactors.map((f) => (
-                        <div key={f} className="text-[11px] text-slate-300">• {f}</div>
+                        <div key={f} className="text-xs text-[var(--text-secondary)]">• {f}</div>
                       ))}
                     </div>
-                    <div className="border-t border-[var(--border-subtle)] pt-2 space-y-1">
-                      <div className="text-[10px] font-mono-tabular uppercase tracking-[0.06em] text-amber-300/90">Unscored gaps</div>
+                    <div className="border-t border-[var(--border-subtle)] pt-3 space-y-1">
+                      <div className="text-xs font-medium text-amber-300">Unscored gaps</div>
                       {activeEquipment.unscoredGaps.map((g) => (
-                        <div key={g} className="text-[11px] text-slate-400">• {g}</div>
+                        <div key={g} className="text-xs text-[var(--text-muted)]">• {g}</div>
                       ))}
                     </div>
                   </Popover.Popup>
@@ -582,22 +660,30 @@ export function App() {
 
             <button
               type="button"
-              onClick={() => setDatasetsOpen(true)}
-              className="pressable inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[#0f141c] hover-surface px-2.5 py-1.5 text-xs text-slate-200"
+              onClick={() => setOfflineMapsOpen(true)}
+              className="pressable inline-flex items-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-panel)] hover-surface px-3 py-1.5 text-xs text-[var(--text-secondary)]"
+              aria-label="Save maps offline"
             >
-              <Database className="w-3.5 h-3.5 text-slate-400" />
+              <HardDrive className="w-4 h-4 text-[var(--text-muted)]" strokeWidth={1.5} />
+              <span className="hidden lg:inline">Save maps offline</span>
+              <span className="lg:hidden">Offline</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDatasetsOpen(true)}
+              className="pressable inline-flex items-center gap-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-panel)] hover-surface px-3 py-1.5 text-xs text-[var(--text-secondary)]"
+            >
+              <Database className="w-4 h-4 text-[var(--text-muted)]" strokeWidth={1.5} />
               <span className="hidden md:inline">Datasets</span>
-              <span className="font-mono-tabular text-[10px] text-slate-400">{datasets.length}</span>
+              <span className="font-mono-tabular text-xs text-[var(--text-muted)]">{datasets.length}</span>
             </button>
           </div>
         </div>
 
         {/* Compact Equipment Selector Strip */}
-        <div className="border-t border-[var(--border-subtle)] bg-[#0a0e14]/80 px-3 sm:px-5 py-1.5 overflow-x-auto scroll-contain">
-          <div className="flex items-center gap-1.5 min-w-max">
-            <span className="text-[10px] font-mono-tabular uppercase tracking-[0.08em] text-slate-500 mr-1 hidden sm:inline">
-              Equipment
-            </span>
+        <div className="border-t border-[var(--border-subtle)] bg-[var(--bg-void)] px-4 sm:px-6 py-2 overflow-x-auto scroll-contain">
+          <div className="flex items-center gap-1 min-w-max">
             {EQUIPMENT_PROFILES.map((item) => {
               const active = equipmentId === item.id;
               const label = body === "moon" && item.moonName ? item.moonName : item.name;
@@ -608,20 +694,17 @@ export function App() {
                   onClick={() => handleEquipmentChange(item.id)}
                   aria-pressed={active}
                   className={
-                    "pressable inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium " +
+                    "pressable inline-flex items-center gap-2 rounded-lg border px-3 py-1 text-xs font-medium " +
                     (active
-                      ? "border-[var(--border-strong)] bg-[#172130] text-slate-50"
-                      : "border-transparent bg-transparent text-slate-400 hover-surface")
+                      ? "border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)]"
+                      : "border-transparent bg-transparent text-[var(--text-muted)] hover-surface")
                   }
                 >
-                  <EquipmentIcon id={item.id} className="w-3.5 h-3.5 shrink-0" />
+                  <EquipmentIcon id={item.id} className="w-4 h-4 shrink-0" />
                   <span>{label}</span>
                 </button>
               );
             })}
-            <span className="hidden xl:inline-block ml-auto text-[11px] text-slate-400 truncate max-w-md pl-4">
-              {activeEquipmentSummary}
-            </span>
           </div>
         </div>
       </header>
@@ -633,7 +716,7 @@ export function App() {
       )}
 
       {/* Main Three-Area Workspace */}
-      <main className="flex-1 min-h-0 p-3 sm:p-4 flex flex-col lg:grid lg:grid-cols-[284px_minmax(0,1fr)_308px] xl:grid-cols-[300px_minmax(0,1fr)_324px] gap-3.5">
+      <main className="flex-1 min-h-0 p-4 flex flex-col lg:grid lg:grid-cols-[272px_minmax(0,1fr)_280px] xl:grid-cols-[280px_minmax(0,1fr)_304px] gap-4">
         {/* Left Rail (Desktop) */}
         <TargetSidebar
           body={body}
@@ -653,39 +736,38 @@ export function App() {
         {/* Centerpiece: Two Side-by-Side Interactive Globes */}
         <section className="flex flex-col min-w-0 min-h-0 gap-3">
           {/* Active Pair Connection Strip */}
-          <div className="rounded-xl border border-[var(--border-subtle)] bg-[#0c1118]/90 px-3.5 py-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-panel)] px-4 py-2 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0 text-xs">
               <PlanetBadgeDot body={body} />
-              <span className="font-medium text-slate-100 truncate">
+              <span className="font-medium truncate" style={{ color: planetaryColor(body) }}>
                 {selectedTarget?.name ?? "Select target"}
               </span>
-              <ArrowLeftRight className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              <ArrowLeftRight className="w-4 h-4 text-[var(--text-muted)] shrink-0" strokeWidth={1.5} />
               <PlanetBadgeDot body="earth" />
-              <span className="font-medium text-sky-300 truncate">
+              <span className="font-medium truncate" style={{ color: planetaryColor("earth") }}>
                 {selectedEarthCandidate?.regionLabel ?? "No Earth match"}
               </span>
               {selectedEarthCandidate?.scorecardCandidate?.similarity_score != null && (
-                <span className="hidden sm:inline-flex items-center rounded bg-sky-500/12 border border-sky-500/25 px-1.5 py-0.5 font-mono-tabular text-[10px] text-sky-300">
-                  Terrain {selectedEarthCandidate.scorecardCandidate.similarity_score.toFixed(3)}
+                <span className="hidden sm:inline font-mono-tabular text-xs text-[var(--text-secondary)]">
+                  · Terrain {selectedEarthCandidate.scorecardCandidate.similarity_score.toFixed(3)}
                 </span>
               )}
               {selectedEarthCandidate?.searchResult && (
-                <span className="hidden md:inline-flex items-center gap-1 rounded bg-white/6 border border-white/10 px-1.5 py-0.5 font-mono-tabular text-[10px] text-slate-300">
-                  <Sparkles className="w-2.5 h-2.5 text-amber-300" />
-                  DINOv2 {selectedEarthCandidate.searchResult.cosine_similarity.toFixed(3)}
+                <span className="hidden md:inline font-mono-tabular text-xs text-[var(--text-muted)]">
+                  · Visual {selectedEarthCandidate.searchResult.cosine_similarity.toFixed(3)}
                 </span>
               )}
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
               {/* Mobile globe view selector */}
-              <div className="inline-flex lg:hidden rounded-lg border border-[var(--border-subtle)] bg-[#080b10] p-0.5 text-[11px]">
+              <div className="inline-flex lg:hidden rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-void)] p-0.5 text-xs">
                 {(["dual", "target", "earth"] as const).map((m) => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => setMobileGlobeMode(m)}
-                    className={"px-2 py-0.5 rounded-md capitalize " + (mobileGlobeMode === m ? "bg-[#192231] text-slate-100" : "text-slate-400")}
+                    className={"px-2 py-0.5 rounded-md capitalize " + (mobileGlobeMode === m ? "bg-[var(--bg-hover)] text-[var(--text-primary)]" : "text-[var(--text-muted)]")}
                   >
                     {m === "target" ? (body === "mars" ? "Mars" : "Moon") : m}
                   </button>
@@ -698,10 +780,10 @@ export function App() {
                     void loadComparisonFor(selectedTarget, selectedEarthCandidate);
                     setComparisonOpen(true);
                   }}
-                  className="pressable inline-flex items-center gap-1 rounded-lg bg-sky-500/16 hover:bg-sky-500/26 border border-sky-400/35 px-2.5 py-1 text-[11px] font-medium text-sky-200"
+                  className="pressable inline-flex items-center gap-1 rounded-lg bg-[var(--text-primary)] hover:bg-white text-[var(--bg-void)] px-3 py-1 text-xs font-medium"
                 >
-                  Open scorecard
-                  <ArrowUpRight className="w-3 h-3" />
+                  Scorecard
+                  <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={1.5} />
                 </button>
               )}
             </div>
@@ -720,8 +802,8 @@ export function App() {
                 title={body === "mars" ? "Mars" : "Moon"}
                 subtitle={
                   body === "mars"
-                    ? "NASA Viking / MOLA global mosaic · 0–360°E"
-                    : "NASA LRO WAC / Clementine mosaic"
+                    ? "NASA Trek · Viking MDIM 2.1 · 232 m/px"
+                    : "NASA Trek · LRO WAC global mosaic v2"
                 }
                 markers={leftMarkers}
                 selectedId={selectedTargetId}
@@ -738,19 +820,27 @@ export function App() {
               <PlanetaryGlobe
                 body="earth"
                 title="Earth"
-                subtitle="NASA Blue Marble · Ranked analogue candidates"
+                subtitle="NASA GIBS · Blue Marble (Aug 2004) · cloud-free global · 500 m/px"
                 markers={rightMarkers}
                 selectedId={selectedEarthId}
                 focusCoords={rightFocus}
                 defaultCoords={{ lat: -22, lon: 22 }}
                 onSelectMarker={(id) => {
+                  const discovered = analogueDiscovery?.results.find((row) => row.place.id === id);
+                  if (discovered) {
+                    handleSelectDiscoveredPlace(discovered.place);
+                    return;
+                  }
                   const cand = earthCandidates.find((c) => c.id === id);
                   if (cand) {
                     handleSelectEarthCandidate(cand, true);
                     return;
                   }
                   const cat = earthCatalogue.find((e) => e.id === id);
-                  if (cat) handleSelectCatalogueEarth(cat);
+                  if (cat) {
+                    handleSelectCatalogueEarth(cat);
+                    return;
+                  }
                 }}
                 className="min-h-[300px] lg:min-h-0"
               />
@@ -774,7 +864,19 @@ export function App() {
           error={error}
           onSelectEarthCandidate={handleSelectEarthCandidate}
           onSelectCatalogueEarth={handleSelectCatalogueEarth}
-          onJumpToIngested={jumpToIngested}
+          discoveryProfiles={discoveryProfiles}
+          discoveryProfileId={discoveryProfileId}
+          discoveryWeights={discoveryWeights}
+          discoveryResult={analogueDiscovery}
+          discoveryBusy={discoveryBusy}
+          discoveryError={discoveryError}
+          onDiscoveryProfileChange={handleDiscoveryProfileChange}
+          onDiscoveryWeightChange={(id, value) => setDiscoveryWeights((current) => ({ ...current, [id]: value }))}
+          onResetDiscoveryWeights={() => {
+            const profile = discoveryProfiles.find((item) => item.id === discoveryProfileId);
+            if (profile) setDiscoveryWeights(profile.weights);
+          }}
+          onSelectDiscoveredPlace={handleSelectDiscoveredPlace}
           className="hidden lg:flex lg:min-h-0"
         />
 
@@ -793,7 +895,7 @@ export function App() {
               onClick={() => setMobilePanelTab("analogues")}
               className={"py-2 rounded-lg text-xs font-medium " + (mobilePanelTab === "analogues" ? "bg-[#192231] text-slate-100" : "text-slate-400")}
             >
-              Earth Analogues ({earthCandidates.length})
+              Earth Analogues ({analogueDiscovery?.results.length ?? earthCandidates.length})
             </button>
           </div>
 
@@ -828,7 +930,19 @@ export function App() {
               error={error}
               onSelectEarthCandidate={handleSelectEarthCandidate}
               onSelectCatalogueEarth={handleSelectCatalogueEarth}
-              onJumpToIngested={jumpToIngested}
+              discoveryProfiles={discoveryProfiles}
+              discoveryProfileId={discoveryProfileId}
+              discoveryWeights={discoveryWeights}
+              discoveryResult={analogueDiscovery}
+              discoveryBusy={discoveryBusy}
+              discoveryError={discoveryError}
+              onDiscoveryProfileChange={handleDiscoveryProfileChange}
+              onDiscoveryWeightChange={(id, value) => setDiscoveryWeights((current) => ({ ...current, [id]: value }))}
+              onResetDiscoveryWeights={() => {
+                const profile = discoveryProfiles.find((item) => item.id === discoveryProfileId);
+                if (profile) setDiscoveryWeights(profile.weights);
+              }}
+              onSelectDiscoveredPlace={handleSelectDiscoveredPlace}
               className="max-h-[520px]"
             />
           )}
@@ -851,6 +965,7 @@ export function App() {
         onOpenChange={setDatasetsOpen}
         datasets={datasets}
       />
+      <OfflineMapsDialog open={offlineMapsOpen} onOpenChange={setOfflineMapsOpen} />
     </div>
   );
 }

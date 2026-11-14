@@ -3,6 +3,15 @@ import * as THREE from "three";
 import { Compass, Minus, Plus, RotateCcw } from "lucide-react";
 import type { AnyBody } from "../types";
 import { formatCoords } from "../lib/missions";
+import { GlobeTileOverlay, imageryAttribution } from "../lib/globeImagery";
+import { planetaryColor } from "../planetaryTokens";
+
+const MIN_CAMERA_DISTANCE = 1.15;
+const MAX_CAMERA_DISTANCE_RATIO = 1.65;
+
+function clampCameraDistance(distance: number, baseDistance: number): number {
+  return Math.max(MIN_CAMERA_DISTANCE, Math.min(baseDistance * MAX_CAMERA_DISTANCE_RATIO, distance));
+}
 
 export type GlobeMarker = {
   id: string;
@@ -25,30 +34,6 @@ type PlanetaryGlobeProps = {
   onSelectMarker: (id: string) => void;
   defaultCoords?: { lat: number; lon: number };
   className?: string;
-};
-
-const BODY_COLORS: Record<
-  AnyBody,
-  { accent: string; glow: string; rim: string; fallback: string }
-> = {
-  earth: {
-    accent: "#56b4e9",
-    glow: "rgba(86, 180, 233, 0.14)",
-    rim: "#6ec3f4",
-    fallback: "#13314c",
-  },
-  mars: {
-    accent: "#e07246",
-    glow: "rgba(224, 114, 70, 0.14)",
-    rim: "#e8845a",
-    fallback: "#5c2716",
-  },
-  moon: {
-    accent: "#cbd5e1",
-    glow: "rgba(203, 213, 225, 0.10)",
-    rim: "#cbd5e1",
-    fallback: "#3a3e47",
-  },
 };
 
 function latLonToVec3(latDeg: number, lonDeg: number, radius = 1): THREE.Vector3 {
@@ -144,9 +129,16 @@ export function PlanetaryGlobe({
   const [showGrid, setShowGrid] = useState(true);
   const [textureReady, setTextureReady] = useState(false);
   const [webglError, setWebglError] = useState<string | null>(null);
+  const [imageryStatus, setImageryStatus] = useState<"base" | "loading" | "active" | "unavailable">("base");
+  const [imageryDate, setImageryDate] = useState<string | null>(null);
   const [viewHud, setViewHud] = useState({ lat: defaultCoords.lat, lon: defaultCoords.lon, zoom: 1 });
 
-  const palette = BODY_COLORS[body];
+  const palette = {
+    accent: planetaryColor(body),
+    light: planetaryColor(body, "light"),
+    deep: planetaryColor(body, "deep"),
+    fallback: body === "earth" ? "#13314c" : body === "mars" ? "#5c2716" : "#3a3e47",
+  };
 
   const camStateRef = useRef({
     lat: defaultCoords.lat,
@@ -169,6 +161,9 @@ export function PlanetaryGlobe({
   const gridRef = useRef<THREE.LineSegments | null>(null);
   const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const atmosRef = useRef<THREE.Mesh | null>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const tileOverlayRef = useRef<GlobeTileOverlay | null>(null);
 
   const markerVectors = useMemo(
     () =>
@@ -213,11 +208,24 @@ export function PlanetaryGlobe({
     const mat = materialRef.current;
     const atmos = atmosRef.current;
     if (!mat) return;
+    tileOverlayRef.current?.dispose();
+    tileOverlayRef.current = null;
+    setImageryStatus("base");
+    setImageryDate(null);
+    if (sceneRef.current && rendererRef.current) {
+      tileOverlayRef.current = new GlobeTileOverlay(
+        body,
+        sceneRef.current,
+        setImageryStatus,
+        setImageryDate,
+        rendererRef.current,
+      );
+    }
     let cancelled = false;
     setTextureReady(false);
     const loader = new THREE.TextureLoader();
     loader.load(
-      "/textures/" + body + ".jpg",
+      "/textures/" + body + ".jpg?v=20261114-globe-sources",
       (tex) => {
         if (cancelled) {
           tex.dispose();
@@ -237,14 +245,14 @@ export function PlanetaryGlobe({
       undefined,
       () => {
         if (!cancelled) {
-          mat.color.set(BODY_COLORS[body].fallback);
+          mat.color.set(palette.fallback);
           mat.needsUpdate = true;
           setTextureReady(true);
         }
       },
     );
     if (atmos && atmos.material instanceof THREE.ShaderMaterial) {
-      atmos.material.uniforms.uColor.value.set(BODY_COLORS[body].rim);
+      atmos.material.uniforms.uColor.value.set(palette.light);
       atmos.material.uniforms.uStrength.value =
         body === "earth" ? 0.55 : body === "mars" ? 0.35 : 0.14;
     }
@@ -275,6 +283,7 @@ export function PlanetaryGlobe({
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const scene = new THREE.Scene();
+    sceneRef.current = scene;
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 20);
 
     const sun = new THREE.DirectionalLight(0xfff8ee, 2.2);
@@ -290,7 +299,7 @@ export function PlanetaryGlobe({
 
     const geometry = new THREE.SphereGeometry(1, 72, 48);
     const material = new THREE.MeshStandardMaterial({
-      color: BODY_COLORS[body].fallback,
+      color: body === "earth" ? "#13314c" : body === "mars" ? "#5c2716" : "#3a3e47",
       roughness: 0.85,
       metalness: 0.02,
     });
@@ -298,13 +307,23 @@ export function PlanetaryGlobe({
     const globeMesh = new THREE.Mesh(geometry, material);
     scene.add(globeMesh);
 
+    const tileOverlay = new GlobeTileOverlay(
+      body,
+      scene,
+      setImageryStatus,
+      setImageryDate,
+      renderer,
+    );
+    tileOverlayRef.current = tileOverlay;
+    rendererRef.current = renderer;
+
     const atmosGeo = new THREE.SphereGeometry(1.045, 64, 40);
     const atmosMat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
       side: THREE.BackSide,
       uniforms: {
-        uColor: { value: new THREE.Color(BODY_COLORS[body].rim) },
+        uColor: { value: new THREE.Color(planetaryColor(body, "light")) },
         uStrength: { value: body === "earth" ? 0.55 : body === "mars" ? 0.35 : 0.14 },
       },
       vertexShader: ATMOS_VERT,
@@ -321,7 +340,7 @@ export function PlanetaryGlobe({
 
     const loader = new THREE.TextureLoader();
     loader.load(
-      "/textures/" + body + ".jpg",
+      "/textures/" + body + ".jpg?v=20261114-globe-sources",
       (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
@@ -362,9 +381,9 @@ export function PlanetaryGlobe({
       const nextBase = computeBaseDistance(width, height);
       const ratio = st.baseDist > 0 ? st.dist / st.baseDist : 1;
       st.baseDist = nextBase;
-      st.dist = Math.max(nextBase * 0.42, Math.min(nextBase * 1.65, nextBase * ratio));
+      st.dist = clampCameraDistance(nextBase * ratio, nextBase);
       if (st.targetDist !== null) {
-        st.targetDist = Math.max(nextBase * 0.42, Math.min(nextBase * 1.65, st.targetDist));
+        st.targetDist = clampCameraDistance(st.targetDist, nextBase);
       }
     };
     updateSize();
@@ -374,6 +393,9 @@ export function PlanetaryGlobe({
     let rafId = 0;
     let lastTime = performance.now();
     let hudTimer = 0;
+    let tileUpdateTimer = 0;
+    let previousTileView = "";
+    let previousTileOverlay: GlobeTileOverlay | null = null;
     const camDir = new THREE.Vector3();
     const projected = new THREE.Vector3();
 
@@ -431,6 +453,32 @@ export function PlanetaryGlobe({
 
       renderer.render(scene, camera);
 
+      if (now - tileUpdateTimer > 110) {
+        tileUpdateTimer = now;
+        const zoom = st.baseDist / st.dist;
+        const tileView = [
+          Math.round(st.lat * 2) / 2,
+          Math.round(st.lon * 2) / 2,
+          Math.round(zoom * 20) / 20,
+          Math.round(width),
+          Math.round(height),
+        ].join(":");
+        const tileOverlay = tileOverlayRef.current;
+        if (tileOverlay && (tileOverlay !== previousTileOverlay || tileView !== previousTileView)) {
+          previousTileView = tileView;
+          previousTileOverlay = tileOverlay;
+          const pixelRatio = renderer.getPixelRatio();
+          tileOverlay.update(
+            st.lat,
+            st.lon,
+            zoom,
+            width * pixelRatio,
+            height * pixelRatio,
+            st.dist,
+          );
+        }
+      }
+
       camDir.copy(camera.position).normalize();
       const list = markerVectorsRef.current;
       for (let i = 0; i < list.length; i++) {
@@ -472,6 +520,7 @@ export function PlanetaryGlobe({
     return () => {
       cancelAnimationFrame(rafId);
       observer.disconnect();
+      tileOverlay.dispose();
       geometry.dispose();
       if (material.map) material.map.dispose();
       material.dispose();
@@ -480,6 +529,9 @@ export function PlanetaryGlobe({
       graticule.geometry.dispose();
       (graticule.material as THREE.Material).dispose();
       renderer.dispose();
+      if (tileOverlayRef.current === tileOverlay) tileOverlayRef.current = null;
+      sceneRef.current = null;
+      rendererRef.current = null;
       materialRef.current = null;
       atmosRef.current = null;
       gridRef.current = null;
@@ -515,7 +567,7 @@ export function PlanetaryGlobe({
       const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
       if (st.pinchDist !== null && dist > 0) {
         const ratio = st.pinchDist / dist;
-        st.dist = Math.max(st.baseDist * 0.42, Math.min(st.baseDist * 1.65, st.dist * ratio));
+        st.dist = clampCameraDistance(st.dist * ratio, st.baseDist);
         st.targetDist = null;
       }
       st.pinchDist = dist;
@@ -546,14 +598,14 @@ export function PlanetaryGlobe({
     e.preventDefault();
     const st = camStateRef.current;
     const delta = e.deltaY * 0.0022 * (st.baseDist / 3.6);
-    st.dist = Math.max(st.baseDist * 0.42, Math.min(st.baseDist * 1.65, st.dist + delta));
+    st.dist = clampCameraDistance(st.dist + delta, st.baseDist);
     st.targetDist = null;
   };
 
   const zoomBy = (factor: number) => {
     const st = camStateRef.current;
     const base = st.targetDist ?? st.dist;
-    st.targetDist = Math.max(st.baseDist * 0.42, Math.min(st.baseDist * 1.65, base * factor));
+    st.targetDist = clampCameraDistance(base * factor, st.baseDist);
   };
 
   const resetView = () => {
@@ -564,37 +616,29 @@ export function PlanetaryGlobe({
   };
 
   const hoveredMarker = hoveredId ? markers.find((m) => m.id === hoveredId) ?? null : null;
-  const selectedMarker = selectedId ? markers.find((m) => m.id === selectedId) ?? null : null;
-  const activeCallout = hoveredMarker ?? selectedMarker;
 
   return (
     <div
       className={
-        "relative flex flex-col rounded-2xl border border-[var(--border-subtle)] bg-[#0a0e15] overflow-hidden " +
+        "relative flex flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-panel)] overflow-hidden " +
         className
       }
     >
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 52%, " + palette.glow + ", transparent 68%)",
-        }}
-        aria-hidden="true"
-      />
-
       <div className="relative z-10 flex items-center justify-between gap-2 px-4 pt-3 pb-1">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span
-              className="inline-block w-2 h-2 rounded-full"
-              style={{ backgroundColor: palette.accent }}
-            />
-            <h2 className="font-display text-sm font-semibold tracking-[-0.01em] text-slate-100 truncate">
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className="inline-block w-2 h-2 rounded-full shrink-0"
+            style={{ backgroundColor: palette.accent }}
+          />
+          <div className="min-w-0">
+            <h2 className="font-display text-sm font-medium truncate" style={{ color: palette.accent }}>
               {title}
             </h2>
+            <p className="text-[10px] leading-4 text-[var(--text-muted)] truncate" title={subtitle}>
+              {subtitle}
+              {body === "earth" && imageryDate ? ` · ${imageryDate}` : ""}
+            </p>
           </div>
-          <p className="text-[11px] text-slate-400 truncate pl-4">{subtitle}</p>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
@@ -606,36 +650,36 @@ export function PlanetaryGlobe({
             className={
               "pressable inline-flex items-center justify-center w-7 h-7 rounded-lg border text-xs " +
               (showGrid
-                ? "border-[var(--border-strong)] bg-white/8 text-slate-200"
-                : "border-transparent text-slate-400 hover-surface")
+                ? "border-[var(--border-strong)] bg-white/8 text-[var(--text-primary)]"
+                : "border-transparent text-[var(--text-muted)] hover-surface")
             }
           >
-            <Compass className="w-3.5 h-3.5" />
+            <Compass className="w-4 h-4" strokeWidth={1.5} />
           </button>
           <button
             type="button"
             onClick={() => zoomBy(0.84)}
             aria-label={"Zoom in on " + title}
-            className="pressable inline-flex items-center justify-center w-7 h-7 rounded-lg border border-transparent text-slate-300 hover-surface"
+            className="pressable inline-flex items-center justify-center w-7 h-7 rounded-lg border border-transparent text-[var(--text-secondary)] hover-surface"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" strokeWidth={1.5} />
           </button>
           <button
             type="button"
             onClick={() => zoomBy(1.18)}
             aria-label={"Zoom out on " + title}
-            className="pressable inline-flex items-center justify-center w-7 h-7 rounded-lg border border-transparent text-slate-300 hover-surface"
+            className="pressable inline-flex items-center justify-center w-7 h-7 rounded-lg border border-transparent text-[var(--text-secondary)] hover-surface"
           >
-            <Minus className="w-3.5 h-3.5" />
+            <Minus className="w-4 h-4" strokeWidth={1.5} />
           </button>
           <button
             type="button"
             onClick={resetView}
             aria-label={"Reset " + title + " view"}
             title="Reset globe view"
-            className="pressable inline-flex items-center justify-center w-7 h-7 rounded-lg border border-transparent text-slate-300 hover-surface"
+            className="pressable inline-flex items-center justify-center w-7 h-7 rounded-lg border border-transparent text-[var(--text-secondary)] hover-surface"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-4 h-4" strokeWidth={1.5} />
           </button>
         </div>
       </div>
@@ -703,34 +747,34 @@ export function PlanetaryGlobe({
                   {isSelected && (
                     <span
                       className="absolute -inset-2 rounded-full border-2"
-                      style={{ borderColor: palette.accent }}
+                      style={{ borderColor: palette.light }}
                     />
                   )}
                   {isTopThree ? (
                     <span
                       className="flex items-center justify-center min-w-[20px] h-[20px] px-1 rounded-full text-[10px] font-mono-tabular font-semibold shadow-sm transition-transform"
                       style={{
-                        backgroundColor: isSelected ? "#f8fafc" : palette.accent,
+                        backgroundColor: isSelected ? palette.light : palette.accent,
                         color: "#080b10",
-                        border: "1.5px solid #080b10",
+                        border: `1.5px solid ${palette.deep}`,
                       }}
                     >
                       {m.rank}
                     </span>
                   ) : m.kind === "catalogue" ? (
                     <span
-                      className="block w-3 h-3 rounded-full border-2 bg-[#080b10]/80 transition-transform group-hover:scale-125"
+                      className="block w-14 h-14 rounded-full border-[8px] bg-[#080b10]/80 transition-transform group-hover:scale-105"
                       style={{
-                        borderColor: isSelected ? "#f8fafc" : palette.accent,
+                        borderColor: isSelected ? palette.light : palette.deep,
                       }}
                     />
                   ) : (
                     <span
-                      className="block rounded-full border border-[#080b10] transition-transform group-hover:scale-125"
+                      className="block rounded-full border-[4px] border-[#080b10] transition-transform group-hover:scale-105"
                       style={{
-                        backgroundColor: isSelected ? "#f8fafc" : palette.accent,
-                        width: isSelected ? "11px" : "9px",
-                        height: isSelected ? "11px" : "9px",
+                        backgroundColor: isSelected ? palette.light : palette.accent,
+                        width: isSelected ? "48px" : "42px",
+                        height: isSelected ? "48px" : "42px",
                       }}
                     />
                   )}
@@ -738,7 +782,7 @@ export function PlanetaryGlobe({
                     <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md border border-white/15 bg-[#0c1118]/92 px-2 py-0.5 text-[11px] font-medium text-slate-100 backdrop-blur-sm shadow-md">
                       {m.label}
                       {m.score != null && (
-                        <span className="ml-1.5 font-mono-tabular text-[10px] text-emerald-400">
+                        <span className="ml-1.5 font-mono-tabular text-[10px] text-[var(--text-secondary)]">
                           {(m.score * 100).toFixed(0)}%
                         </span>
                       )}
@@ -750,24 +794,22 @@ export function PlanetaryGlobe({
           })}
         </div>
 
-        {activeCallout && (
-          <div className="pointer-events-none absolute bottom-2.5 left-3 right-3 flex items-center justify-between gap-2">
-            <div className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-[#0c1118]/85 px-2.5 py-1 text-[11px] text-slate-200 backdrop-blur-sm truncate max-w-[85%]">
-              <span className="truncate font-medium">{activeCallout.label}</span>
-              <span className="font-mono-tabular text-[10px] text-slate-400 shrink-0">
-                {formatCoords(activeCallout.lat, activeCallout.lon, body)}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
-      <div className="relative z-10 flex items-center justify-between gap-2 border-t border-[var(--border-subtle)] bg-[#0b1017]/80 px-3.5 py-2 text-[11px] text-slate-400">
+      <div className="relative z-10 flex items-center justify-between gap-2 border-t border-[var(--border-subtle)] bg-[var(--bg-void)]/60 px-4 py-2 text-xs text-[var(--text-muted)]">
         <span className="font-mono-tabular truncate">
-          Center {formatCoords(viewHud.lat, viewHud.lon, body)} · {viewHud.zoom.toFixed(1)}×
+          {hoveredMarker
+            ? hoveredMarker.label + " · " + formatCoords(hoveredMarker.lat, hoveredMarker.lon, body)
+            : formatCoords(viewHud.lat, viewHud.lon, body) + " · " + viewHud.zoom.toFixed(1) + "×"}
         </span>
-        <span className="text-[10px] text-slate-500 shrink-0">
-          {markers.length} {markers.length === 1 ? "site" : "sites"} · Drag / scroll
+        <span className="font-mono-tabular shrink-0" title={`${imageryAttribution(body)}${body === "earth" && imageryDate ? ` · ${imageryDate}` : ""}`}>
+          {imageryStatus === "active"
+            ? `${body === "earth" ? "NASA GIBS" : "NASA Trek"} detail active`
+            : imageryStatus === "loading"
+              ? "NASA detail loading"
+              : imageryStatus === "unavailable"
+                ? "NASA detail unavailable · base map"
+                : `${markers.length} ${markers.length === 1 ? "site" : "sites"}`}
         </span>
       </div>
     </div>
