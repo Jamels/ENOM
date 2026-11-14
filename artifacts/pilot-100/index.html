@@ -347,7 +347,7 @@
             };
 
             function renderTiles(){
-            tilesEl.innerHTML = EQUIP.map(e=>`<button class="tile" data-id="${e.id}">${ICONS[e.id]}<b>${eqName(e)}</b><span>${eqDesc(e)}</span></button>`).join('');
+            tilesEl.innerHTML = EQUIP.map(e=>`<button class="tile${e.id === "rover" || e.id === "lander" ? " tile-primary" : ""}" data-id="${e.id}">${ICONS[e.id]}<b>${eqName(e)}</b><span>${eqDesc(e)}</span></button>`).join('');
             }
             tilesEl.addEventListener('click', ev=>{
             const t = ev.target.closest('.tile'); if(!t) return;
