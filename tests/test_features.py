@@ -7,7 +7,7 @@ import rasterio
 from rasterio.transform import from_origin
 
 from twinworld.features import classical_descriptor, read_grayscale
-from twinworld.vision import embedding_cache_stem
+from twinworld.vision import _valid_embedding_matrix, embedding_cache_stem
 
 
 def test_rgb_nodata_is_filled_before_grayscale_and_descriptors(tmp_path: Path):
@@ -41,3 +41,16 @@ def test_rgb_nodata_is_filled_before_grayscale_and_descriptors(tmp_path: Path):
 def test_dinov2_profiles_keep_distinct_embedding_cache_names():
     assert embedding_cache_stem("facebook/dinov2-small") == "embeddings_dinov2"
     assert embedding_cache_stem("facebook/dinov2-base") == "embeddings_dinov2_base"
+
+
+def test_embedding_cache_requires_valid_nonzero_matrix():
+    valid = np.array([[1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
+    assert _valid_embedding_matrix(valid, row_count=2, embedding_dimension=2)
+    assert not _valid_embedding_matrix(valid[0], row_count=1, embedding_dimension=2)
+    assert not _valid_embedding_matrix(valid, row_count=2, embedding_dimension=3)
+    assert not _valid_embedding_matrix(
+        np.array([[0.0, 0.0]], dtype=np.float32), row_count=1, embedding_dimension=2
+    )
+    assert not _valid_embedding_matrix(
+        np.array([[np.nan, 1.0]], dtype=np.float32), row_count=1, embedding_dimension=2
+    )

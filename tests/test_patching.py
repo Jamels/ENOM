@@ -61,3 +61,19 @@ def test_metric_patch_rejects_unprojected_source(tmp_path: Path):
             extent_m=1000,
             native_gsd_m=10,
         )
+
+
+@pytest.mark.parametrize("invalid_value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize("parameter", ["extent_m", "native_gsd_m"])
+def test_metric_patch_rejects_non_finite_physical_scales(tmp_path, parameter, invalid_value):
+    arguments = {"extent_m": 1000.0, "native_gsd_m": 10.0}
+    arguments[parameter] = invalid_value
+
+    with pytest.raises(ValueError, match="must be finite and positive"):
+        extract_metric_patch(
+            tmp_path / "does-not-need-to-exist.tif",
+            tmp_path / "out.tif",
+            center_x=2000,
+            center_y=2000,
+            **arguments,
+        )

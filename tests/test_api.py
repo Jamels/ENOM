@@ -1,5 +1,9 @@
-import pytest
+import math
 
+import pytest
+import yaml
+
+from twinworld import api as api_module
 from twinworld.api import (
     SearchRequest,
     catalogue,
@@ -9,6 +13,8 @@ from twinworld.api import (
     region,
     search,
 )
+from twinworld.retrieval import search as visual_search
+from twinworld.science import Availability, PhysicalMeasurement
 
 
 def test_real_pilot_is_searchable_and_missing_data_is_explicit():
@@ -21,6 +27,44 @@ def test_real_pilot_is_searchable_and_missing_data_is_explicit():
         for result in payload.results
     )
     assert any("provisional" in item.lower() for item in payload.limitations)
+
+
+def test_visual_api_order_matches_shared_retrieval():
+    query_id = "mars-dune-barchan_crescent_dune-0067+071"
+    records, indexes, vectors = api_module._load()
+    expected = visual_search(vectors, records, indexes[query_id], top_k=50)
+    actual = search(
+        SearchRequest(observation_id=query_id, method="visual", limit=50)
+    )
+
+    assert [item.observation_id for item in actual.results] == [
+        records[index].image_id for index, _ in expected
+    ]
+    assert [item.cosine_similarity for item in actual.results] == pytest.approx(
+        [score for _, score in expected]
+    )
+
+
+def test_embedding_metadata_must_match_a_configured_model_and_preprocessing():
+    config = yaml.safe_load(api_module.MODEL_CONFIG.read_text(encoding="utf-8"))
+    preprocessing_id = config["preprocessing"]["id"]
+    for profile in config["models"].values():
+        metadata = {
+            "model_id": profile["model_id"],
+            "revision": profile["revision"],
+            "embedding_dimension": profile["embedding_dimension"],
+            "preprocessing_id": preprocessing_id,
+        }
+        api_module._validate_embedding_identity(metadata)
+
+        metadata["revision"] = "stale-revision"
+        with pytest.raises(RuntimeError, match="model identity"):
+            api_module._validate_embedding_identity(metadata)
+
+        metadata["revision"] = profile["revision"]
+        metadata["preprocessing_id"] = "stale-preprocessing"
+        with pytest.raises(RuntimeError, match="preprocessing"):
+            api_module._validate_embedding_identity(metadata)
 
 
 def test_copernicus_coverage_matches_ingested_region():
@@ -37,7 +81,8 @@ def test_candidate_catalogue_and_lunar_coverage_are_separate_from_image_index():
     assert any(item["body"] == "moon" for item in entries)
     lunar = dataset_coverage("lro-lola-gdr-ldem-64")
     assert lunar["status"] == "available"
-    assert lunar["coverage_count"] == 1
+    assert lunar["coverage_count"] == 2
+    assert "moon_mare_tranquillitatis_diviner_01" in lunar["observation_ids"]
     bodies = {item["id"]: item for item in planets()}
     assert bodies["moon"]["available"] is False
 
@@ -57,6 +102,35 @@ def test_terrain_and_combined_modes_return_inspectable_scores_and_rank_changes()
     assert combined.method == "combined"
     assert all(result.combined_score is not None for result in combined.results)
     assert all(result.visual_rank is not None for result in combined.results)
+
+
+def test_terrain_vector_excludes_measurements_marked_unavailable(monkeypatch):
+    unavailable = PhysicalMeasurement(
+        name="mean_slope",
+        value=0.0,
+        units="degree",
+        availability=Availability.NOT_OBSERVED,
+        spatial_scale_m=926.0,
+    )
+    monkeypatch.setattr(api_module, "_terrain_quality", lambda _id: {"eligible": True})
+    monkeypatch.setattr(api_module, "_terrain_measurements", lambda _id: [unavailable])
+    api_module._terrain_vector.cache_clear()
+    try:
+        assert api_module._terrain_vector("unavailable-fixture") == {}
+    finally:
+        api_module._terrain_vector.cache_clear()
+
+
+def test_terrain_similarity_uses_documented_scale_fallback_when_mad_is_zero(monkeypatch):
+    values = {"query": 1.0, "candidate": 2.0, "other": 1.0}
+    monkeypatch.setattr(
+        api_module,
+        "_terrain_vector",
+        lambda observation_id: {"elevation_range": (values[observation_id], 100.0, "m")},
+    )
+    assert api_module._terrain_similarity("query", "candidate", list(values)) == pytest.approx(
+        math.exp(-1.0)
+    )
 
 
 def test_low_coverage_query_cannot_affect_combined_ranking():

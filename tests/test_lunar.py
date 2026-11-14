@@ -34,6 +34,12 @@ def test_lunar_polar_crs_round_trip(hemisphere: str, latitude: int) -> None:
     assert "1737400" in crs.to_proj4()
 
 
+@pytest.mark.parametrize("radius_m", [float("nan"), float("inf")])
+def test_lunar_polar_crs_rejects_non_finite_radius(radius_m: float) -> None:
+    with pytest.raises(ValueError, match="radius_m must be finite and positive"):
+        polar_stereographic_crs("south", radius_m=radius_m)
+
+
 def test_candidate_catalogue_has_provenance_and_normalized_coordinates() -> None:
     data = json.loads((ROOT / "data/manifests/candidate-locations.json").read_text())
     entries = data["entries"]

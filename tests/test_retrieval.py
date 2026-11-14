@@ -10,7 +10,7 @@ from twinworld.evaluation import (
     random_ranking,
 )
 from twinworld.records import PatchRecord
-from twinworld.retrieval import search
+from twinworld.retrieval import normalize_rows, search
 from twinworld.splits import geographic_holdout
 
 
@@ -48,6 +48,17 @@ def test_search_returns_cross_planet_cosine_neighbours():
 def test_search_rejects_misaligned_metadata():
     with pytest.raises(ValueError, match="order/count"):
         search(np.ones((1, 2)), [record("e", "earth"), record("m", "mars")], 0)
+
+
+def test_normalize_rows_avoids_float32_norm_overflow():
+    vectors = np.array([[3e38, 3e38], [1e-38, 0]], dtype=np.float32)
+
+    normalized = normalize_rows(vectors)
+
+    assert normalized.dtype == np.float32
+    np.testing.assert_allclose(
+        np.linalg.norm(normalized.astype(np.float64), axis=1), np.ones(2), atol=1e-7
+    )
 
 
 def test_search_can_exclude_geographic_group():
