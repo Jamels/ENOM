@@ -1,4 +1,4 @@
-"""Missing-data-aware terrain analogue scorecards for terrestrial candidates."""
+"""Missing-data-aware planetary-to-Earth terrain analogue scorecards."""
 
 from __future__ import annotations
 
@@ -6,6 +6,11 @@ import math
 from typing import Any
 
 VARIABLES: dict[str, dict[str, Any]] = {
+    "elevation_range": {
+        "units": "m",
+        "tolerance": 200.0,
+        "label": "10 km footprint relief range",
+    },
     "mean_slope": {"units": "degree", "tolerance": 5.0, "label": "Mean slope"},
     "slope_p90": {"units": "degree", "tolerance": 10.0, "label": "90th percentile slope"},
     "median_local_relief_3x3": {
@@ -24,37 +29,91 @@ MISSION_PRESETS: dict[str, dict[str, Any]] = {
     "landing": {
         "name": "Landing-site terrain screening",
         "weights": {
-            "mean_slope": 0.35,
-            "slope_p90": 0.30,
-            "median_local_relief_3x3": 0.20,
-            "median_roughness_3x3": 0.15,
+            "elevation_range": 0.20,
+            "mean_slope": 0.28,
+            "slope_p90": 0.24,
+            "median_local_relief_3x3": 0.16,
+            "median_roughness_3x3": 0.12,
         },
         "limits": {"slope_p90": 10.0, "median_local_relief_3x3": 60.0},
+        "limit_basis": {
+            "slope_p90": {
+                "note": (
+                    "Reference only: a draft NASA VIPER requirement limits lander effective "
+                    "slope to 10°. This 926 m slope percentile is not the foot-scale "
+                    "effective-slope test."
+                ),
+                "source_url": "https://assets.science.nasa.gov/content/dam/science/psd/lunar-science/documents/VIPER_Technical_Information_AFPP.pdf",
+            },
+            "median_local_relief_3x3": {
+                "note": (
+                    "60 m at 1.39 km scale is a research assumption; no vehicle-specific "
+                    "limit is validated."
+                ),
+                "source_url": None,
+            },
+        },
     },
     "base_construction": {
         "name": "Base-construction terrain screening",
         "weights": {
-            "mean_slope": 0.20,
-            "slope_p90": 0.15,
-            "median_local_relief_3x3": 0.35,
-            "median_roughness_3x3": 0.30,
+            "elevation_range": 0.20,
+            "mean_slope": 0.16,
+            "slope_p90": 0.12,
+            "median_local_relief_3x3": 0.28,
+            "median_roughness_3x3": 0.24,
         },
         "limits": {"mean_slope": 5.0, "median_local_relief_3x3": 40.0},
+        "limit_basis": {
+            "mean_slope": {
+                "note": (
+                    "Reference only: a NASA notional lunar landing-pad document lists <5°; "
+                    "it is preliminary and does not establish a base-construction limit."
+                ),
+                "source_url": "https://ntrs.nasa.gov/api/citations/20205009125/downloads/Lunar%20Landing%20%26%20Launch%20Pads%20v1.pdf",
+            },
+            "median_local_relief_3x3": {
+                "note": (
+                    "40 m at 1.39 km scale is a research assumption; no construction "
+                    "requirement is validated."
+                ),
+                "source_url": None,
+            },
+        },
     },
     "rover_mobility": {
         "name": "Rover-mobility terrain screening",
         "weights": {
-            "mean_slope": 0.20,
-            "slope_p90": 0.40,
-            "median_local_relief_3x3": 0.25,
-            "median_roughness_3x3": 0.15,
+            "elevation_range": 0.20,
+            "mean_slope": 0.16,
+            "slope_p90": 0.32,
+            "median_local_relief_3x3": 0.20,
+            "median_roughness_3x3": 0.12,
         },
         "limits": {"slope_p90": 15.0, "median_local_relief_3x3": 100.0},
+        "limit_basis": {
+            "slope_p90": {
+                "note": (
+                    "Reference only: NASA slope-climbing trials tested a specific rover on loose "
+                    "sand through 15°. This 926 m terrain percentile is not a mobility "
+                    "performance limit."
+                ),
+                "source_url": "https://ntrs.nasa.gov/citations/20180000349",
+            },
+            "median_local_relief_3x3": {
+                "note": (
+                    "100 m at 1.39 km scale is a research assumption; no rover-specific "
+                    "limit is validated."
+                ),
+                "source_url": None,
+            },
+        },
     },
 }
 
 
 def validate_weights(weights: dict[str, float]) -> dict[str, float]:
+    """Validate score weights without silently normalizing their relative values."""
     if not weights:
         raise ValueError("At least one terrain weight is required")
     unknown = set(weights) - set(VARIABLES)
@@ -72,26 +131,41 @@ def validate_weights(weights: dict[str, float]) -> dict[str, float]:
 
 
 def measurements_by_name(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    return {
-        row["name"]: row
-        for row in rows
-        if row.get("name") in VARIABLES
-        and row.get("value") is not None
-        and row.get("spatial_scale_m") is not None
-    }
+    """Index known, valued terrain measurements by their stable variable name."""
+    available: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        name = row.get("name")
+        value = row.get("value")
+        scale = row.get("spatial_scale_m")
+        if (
+            name not in VARIABLES
+            or row.get("availability") != "available"
+            or isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or isinstance(scale, bool)
+            or not isinstance(scale, (int, float))
+            or not math.isfinite(scale)
+            or scale <= 0
+        ):
+            continue
+        available[name] = row
+    return available
 
 
 def _compatible(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    """Require matching units and spatial scales within five percent."""
     if a.get("units") != b.get("units"):
         return False
     scale_a, scale_b = float(a["spatial_scale_m"]), float(b["spatial_scale_m"])
     if scale_a <= 0 or scale_b <= 0:
         return False
+    # Comparing different footprint sizes can create a false terrain match.
     return max(scale_a, scale_b) / min(scale_a, scale_b) <= 1.05
 
 
 def compare_candidate(
-    lunar_measurements: list[dict[str, Any]],
+    reference_measurements: list[dict[str, Any]],
     earth_measurements: list[dict[str, Any]],
     weights: dict[str, float],
 ) -> dict[str, Any]:
@@ -101,20 +175,20 @@ def compare_candidate(
     tolerance). The result is an interpretable ranking index, not a probability.
     """
     checked_weights = validate_weights(weights)
-    lunar = measurements_by_name(lunar_measurements)
+    reference = measurements_by_name(reference_measurements)
     earth = measurements_by_name(earth_measurements)
     details: list[dict[str, Any]] = []
     weighted_sum = 0.0
     used_weight = 0.0
     for name, weight in checked_weights.items():
-        a, b = lunar.get(name), earth.get(name)
+        a, b = reference.get(name), earth.get(name)
         if weight == 0 or a is None or b is None or not _compatible(a, b):
             details.append(
                 {
                     "name": name,
                     "label": VARIABLES[name]["label"],
                     "availability": "unmatched_or_missing",
-                    "lunar_value": None if a is None else a.get("value"),
+                    "reference_value": None if a is None else a.get("value"),
                     "earth_value": None if b is None else b.get("value"),
                     "weight": weight,
                     "score": None,
@@ -133,11 +207,11 @@ def compare_candidate(
                 "name": name,
                 "label": VARIABLES[name]["label"],
                 "availability": "available",
-                "lunar_value": float(a["value"]),
+                "reference_value": float(a["value"]),
                 "earth_value": float(b["value"]),
                 "difference": float(b["value"]) - float(a["value"]),
                 "units": VARIABLES[name]["units"],
-                "lunar_spatial_scale_m": float(a["spatial_scale_m"]),
+                "reference_spatial_scale_m": float(a["spatial_scale_m"]),
                 "earth_spatial_scale_m": float(b["spatial_scale_m"]),
                 "scale_match": True,
                 "weight": weight,
@@ -168,6 +242,7 @@ def mission_suitability(measurements: list[dict[str, Any]], objective: str) -> d
         raise ValueError(f"Unknown mission objective '{objective}'")
     observed = measurements_by_name(measurements)
     limits = MISSION_PRESETS[objective]["limits"]
+    limit_basis = MISSION_PRESETS[objective]["limit_basis"]
     checks = []
     for name, maximum in limits.items():
         row = observed.get(name)
@@ -177,6 +252,8 @@ def mission_suitability(measurements: list[dict[str, Any]], objective: str) -> d
                 "value": None if row is None else float(row["value"]),
                 "units": VARIABLES[name]["units"],
                 "maximum": maximum,
+                "basis": limit_basis[name]["note"],
+                "basis_source_url": limit_basis[name]["source_url"],
                 "status": (
                     "not_assessed"
                     if row is None
