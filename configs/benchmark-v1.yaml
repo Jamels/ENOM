@@ -1,3 +1,5 @@
+# Planning specification only; no current command reads this file.
+# `scripts/run_pilot_benchmark.py` uses `models.yaml` and its CLI options.
 benchmark_id: benchmark-v1
 random_seed: 20261104
 target_scale_m: 2000

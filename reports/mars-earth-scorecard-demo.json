@@ -1,0 +1,1150 @@
+{
+  "site": {
+    "id": "mars_aeolis_nondune-01",
+    "name": "mars aeolis nondune",
+    "body": "mars",
+    "longitude_east_deg": 149.99156469757094,
+    "latitude_deg": -3.0,
+    "measurements": [
+      {
+        "name": "elevation_range",
+        "value": 202.0,
+        "units": "m",
+        "availability": "available",
+        "spatial_scale_m": 10187.268677734402,
+        "uncertainty": {
+          "value": null,
+          "units": null,
+          "description": "Range uses observed MOLA bins only; 153/484 bins (31.6%) contain altimetry. Empty-bin interpolations are excluded; this sampled range does not estimate unsampled local extrema."
+        },
+        "provenance": {
+          "source_product_id": "megt00n090hb",
+          "source_url": "https://pds-geosciences.wustl.edu/mgs/urn-nasa-pds-mgs_mola_topography_derived/meg128/megt00n090hb.img",
+          "provider": "NASA Planetary Data System Geosciences Node / MGS MOLA",
+          "processing_method": "PDS4 MEG128 byte-range crop; count-grid mask excludes interpolated bins; range over observed median-topography cells",
+          "software_version": null
+        }
+      }
+    ],
+    "environmental_evidence": {
+      "body": "mars",
+      "dataset_id": "mgs-tes-derived-thermal-inertia",
+      "product_id": "GLOBAL_TI_NIGHT_2007",
+      "source_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_night_2007.img",
+      "label_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_night_2007.lbl",
+      "mask_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_msk_night_2007.img",
+      "retrieved_at": "2026-11-14",
+      "measurement": {
+        "name": "Nightside derived surface thermal inertia",
+        "value": 68.0,
+        "units": "J/(m^2*K*sqrt(s))",
+        "availability": "available",
+        "spatial_scale_m": 23692.301115521524,
+        "summary": {
+          "mean": 69.01587677001953,
+          "median": 68.0,
+          "p10": 40.20000076293945,
+          "p90": 95.80000305175781
+        },
+        "uncertainty": {
+          "description": "Global derived map at ~2.96 km/pixel; no per-cell uncertainty is included here."
+        },
+        "provenance": {
+          "source_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_night_2007.lbl",
+          "source_product_id": "GLOBAL_TI_NIGHT_2007",
+          "mask_url": "https://pds-geosciences.wustl.edu/mgs/mgs-m-tes-5-timap-v1/mgst_9001/data/global_ti_msk_night_2007.img"
+        }
+      },
+      "summary": {
+        "mean": 69.01587677001953,
+        "median": 68.0,
+        "p10": 40.20000076293945,
+        "p90": 95.80000305175781
+      },
+      "valid_sample_fraction": 0.984375,
+      "sample_count": 64,
+      "valid_sample_count": 63,
+      "context_size_m": 23692.301115521524,
+      "product_start_time": null,
+      "product_stop_time": null,
+      "source_description": "Nightside thermal inertia derived from TES bolometer temperature observations. The paired PDS mask identifies interpolated cells; only non-interpolated cells in the crop are summarized.",
+      "earth_comparison_status": "not_compared",
+      "scorecard_role": "environmental_evidence_only; excluded from terrain ranking",
+      "units": "J/(m^2*K*sqrt(s)); product values outside 5–5000 are not computed",
+      "observation_period": "TES observations, 1999-02 through 2004-04 (orbits 1583–24346)"
+    },
+    "geology_evidence": {
+      "dataset_id": "usgs-sim-1083-mars-global-geology",
+      "product_id": "USGS SIM 1083 / I1083_Mariner9_25M_Mars2000",
+      "source_url": "https://www.sciencebase.gov/catalog/file/get/65678461d34e17319ded0ac1?f=__disk__ff%2Fdc%2Fa6%2Fffdca6605404f9a397ba005fd8d20632b6b7445e",
+      "dataset_reference_url": "https://doi.org/10.5066/P9UGAC18",
+      "retrieved_at": "2026-11-13T23:17:35.074598+00:00",
+      "map_unit_code": "Hpr",
+      "classification_status": "mapped",
+      "nominal_cartographic_scale": "1:25,000,000 from 65°S to 65°N; approximately 1:5,000,000 poleward of 60°",
+      "source_description": "Global polygon unit classification from the Scott and Carr USGS geologic map, digitized and renovated against a semi-controlled THEMIS daytime IR 100 m/pixel basemap. Map-unit polygons generalize regional interpretations; this code is not a measurement of local soil, mineralogy, or engineering properties.",
+      "scorecard_role": "geology_context_only; excluded from terrain ranking"
+    },
+    "data_quality": "PDS documentation says bins without observations contain interpolated topography; these bins are masked from terrain metrics",
+    "data_coverage": {
+      "status": "partial",
+      "observed_cell_count": 153,
+      "grid_cell_count": 484,
+      "observed_cell_fraction": 0.31611570247933884,
+      "raster_valid_cell_count": null,
+      "note": "Zero-count MOLA bins are excluded; the observed-only regional range may miss unsampled extrema."
+    },
+    "source": {
+      "dataset_id": "mola-meg128",
+      "product_id": "urn:nasa:pds:mgs_mola_topography_derived:data_meg128:megt00n090hb",
+      "url": "https://pds-geosciences.wustl.edu/mgs/urn-nasa-pds-mgs_mola_topography_derived/meg128/megt00n090hb.img",
+      "support_url": "https://pds-geosciences.wustl.edu/mgs/urn-nasa-pds-mgs_mola_topography_derived/meg128/megc00n090hb.img",
+      "label_url": "https://pds-geosciences.wustl.edu/mgs/urn-nasa-pds-mgs_mola_topography_derived/meg128/megt00n090hb.xml",
+      "retrieved_at": null,
+      "observation_period": "MGS MOLA mapping data, 1999-03-08 through 2001-06-30"
+    },
+    "mission_suitability": {
+      "status": "insufficient_data",
+      "checks": [
+        {
+          "name": "slope_p90",
+          "value": null,
+          "units": "degree",
+          "maximum": 10.0,
+          "basis": "Reference only: a draft NASA VIPER requirement limits lander effective slope to 10°. This 926 m slope percentile is not the foot-scale effective-slope test.",
+          "basis_source_url": "https://assets.science.nasa.gov/content/dam/science/psd/lunar-science/documents/VIPER_Technical_Information_AFPP.pdf",
+          "status": "not_assessed"
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "value": null,
+          "units": "m",
+          "maximum": 60.0,
+          "basis": "60 m at 1.39 km scale is a research assumption; no vehicle-specific limit is validated.",
+          "basis_source_url": null,
+          "status": "not_assessed"
+        }
+      ],
+      "qualification": "Provisional terrain-only screening; criteria are configurable research assumptions, not validated vehicle or site-certification limits."
+    }
+  },
+  "mission_objective": "landing",
+  "mission_objective_name": "Landing-site terrain screening",
+  "weights": {
+    "elevation_range": 0.2,
+    "mean_slope": 0.28,
+    "slope_p90": 0.24,
+    "median_local_relief_3x3": 0.16,
+    "median_roughness_3x3": 0.12
+  },
+  "ranking_method": "Weighted mean of exp(-absolute difference / variable tolerance), normalized across available same-unit variables at matching scales.",
+  "candidates": [
+    {
+      "observation_id": "earth_reykjanes_nondune-01",
+      "name": "earth reykjanes nondune · Copernicus GLO-30",
+      "longitude_east_deg": -22.42038166641898,
+      "latitude_deg": 63.86296579174918,
+      "similarity_score": 0.9233606941045341,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 186.0529327392578,
+          "difference": -15.947067260742188,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 0.9233606941045341
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 1.4826578805020367,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 4.01388642804995,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 18.51831817626953,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 2.5645715395609505,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.923"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N63_00_W023_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N63_00_W023_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 1
+    },
+    {
+      "observation_id": "earth_namib_barchan-01",
+      "name": "earth namib barchan · Copernicus GLO-30",
+      "longitude_east_deg": 15.140724982692975,
+      "latitude_deg": -24.736192943213656,
+      "similarity_score": 0.8765721187690857,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 175.65274047851562,
+          "difference": -26.347259521484375,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 0.8765721187690857
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 2.7245744768303974,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 4.867406958460329,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 65.07785034179688,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 14.99998982747394,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.877"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_S25_00_E015_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 2
+    },
+    {
+      "observation_id": "earth_simpson_linear-01",
+      "name": "earth simpson linear · Copernicus GLO-30",
+      "longitude_east_deg": 136.94114388529664,
+      "latitude_deg": -25.036890811545092,
+      "similarity_score": 0.7242264099198678,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 137.46975708007812,
+          "difference": -64.53024291992188,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 0.7242264099198678
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.7927979109893252,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.7219366271474663,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.0,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.0,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.724"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_S25_00_E136_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_S25_00_E136_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 3
+    },
+    {
+      "observation_id": "earth_rubalkhali_linear-01",
+      "name": "earth rubalkhali linear · Copernicus GLO-30",
+      "longitude_east_deg": 53.55868737488894,
+      "latitude_deg": 20.57137897160008,
+      "similarity_score": 0.714021208558531,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 134.63147735595703,
+          "difference": -67.36852264404297,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 0.714021208558531
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 3.258139127702443,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 5.815349102618632,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 72.47210693359375,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 13.443523406982429,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.714"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N20_00_E053_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N20_00_E053_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 4
+    },
+    {
+      "observation_id": "earth_whitesands_otherdune-01",
+      "name": "earth whitesands otherdune · Copernicus GLO-30",
+      "longitude_east_deg": -106.36351669351404,
+      "latitude_deg": 32.76324591672003,
+      "similarity_score": 0.47915058540045824,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 54.8519287109375,
+          "difference": -147.1480712890625,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 0.4791505854004582
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.2937690180552888,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.8025915728812313,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 3.46954345703125,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.34977891710082076,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.479"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N32_00_W107_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N32_00_W107_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 5
+    },
+    {
+      "observation_id": "earth_badain_otherdune-01",
+      "name": "earth badain otherdune · Copernicus GLO-30",
+      "longitude_east_deg": 102.42825266323918,
+      "latitude_deg": 39.76611566143402,
+      "similarity_score": 0.4363458708453524,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 367.864013671875,
+          "difference": 165.864013671875,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 0.43634587084535237
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 7.703007309432787,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 12.964557073280053,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 174.0404052734375,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 19.258124457465442,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.436"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N39_00_E102_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N39_00_E102_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 6
+    },
+    {
+      "observation_id": "earth_uyuni_nondune-01",
+      "name": "earth uyuni nondune · Copernicus GLO-30",
+      "longitude_east_deg": -67.55707924217872,
+      "latitude_deg": -20.236615046490215,
+      "similarity_score": 0.36421897957152327,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 0.0,
+          "difference": -202.0,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 0.3642189795715233
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.0,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.0,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.0,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.0,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.364"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_S21_00_W068_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_S21_00_W068_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 7
+    },
+    {
+      "observation_id": "earth_capitolreef_layered-01",
+      "name": "earth capitolreef layered · Copernicus GLO-30",
+      "longitude_east_deg": -111.26839280903192,
+      "latitude_deg": 38.16381318751373,
+      "similarity_score": 0.03097272075648696,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 896.9296875,
+          "difference": 694.9296875,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 0.03097272075648696
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 6.420768497211015,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 11.816595472804902,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 137.3917236328125,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 20.05131022135447,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.031"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N38_00_W112_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 8
+    },
+    {
+      "observation_id": "earth_taklamakan_barchan-01",
+      "name": "earth taklamakan barchan · Copernicus GLO-30",
+      "longitude_east_deg": 82.92977102810873,
+      "latitude_deg": 38.9651419330448,
+      "similarity_score": 0.008727809607082743,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 1150.2481689453125,
+          "difference": 948.2481689453125,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 0.008727809607082743
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 5.804953482888617,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 7.615078538436146,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 20.5098876953125,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 3.8897501627604925,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.009"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N38_00_E082_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N38_00_E082_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 9
+    },
+    {
+      "observation_id": "earth_grandcanyon_layered-01",
+      "name": "earth grandcanyon layered · Copernicus GLO-30",
+      "longitude_east_deg": -112.1660693993286,
+      "latitude_deg": 36.01331426893455,
+      "similarity_score": 8.811716031807458e-05,
+      "score_interpretation": "0–1 terrain ranking index; not a probability or mission-suitability score",
+      "data_completeness": 0.2,
+      "matched_variable_count": 1,
+      "requested_variable_count": 5,
+      "variables": [
+        {
+          "name": "elevation_range",
+          "label": "10 km footprint relief range",
+          "availability": "available",
+          "reference_value": 202.0,
+          "earth_value": 2069.36865234375,
+          "difference": 1867.36865234375,
+          "units": "m",
+          "reference_spatial_scale_m": 10187.268677734402,
+          "earth_spatial_scale_m": 10187.268677734402,
+          "scale_match": true,
+          "weight": 0.2,
+          "tolerance": 200.0,
+          "score": 8.811716031807458e-05
+        },
+        {
+          "name": "mean_slope",
+          "label": "Mean slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 6.9628652945708005,
+          "weight": 0.28,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 5.0,
+          "scale_match": false
+        },
+        {
+          "name": "slope_p90",
+          "label": "90th percentile slope",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 10.115053326018423,
+          "weight": 0.24,
+          "score": null,
+          "difference": null,
+          "units": "degree",
+          "tolerance": 10.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_local_relief_3x3",
+          "label": "Median 3×3 local relief",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.0,
+          "weight": 0.16,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 60.0,
+          "scale_match": false
+        },
+        {
+          "name": "median_roughness_3x3",
+          "label": "Median 3×3 roughness",
+          "availability": "unmatched_or_missing",
+          "reference_value": null,
+          "earth_value": 0.0,
+          "weight": 0.12,
+          "score": null,
+          "difference": null,
+          "units": "m",
+          "tolerance": 20.0,
+          "scale_match": false
+        }
+      ],
+      "why_ranked": [
+        "10 km footprint relief range matched with a normalized score of 0.000"
+      ],
+      "mission_suitability": {
+        "status": "not_assessed",
+        "checks": [],
+        "qualification": "Earth candidate suitability as an analogue field/test site needs separate access, safety, process-specific and engineering criteria; terrain similarity does not assess it."
+      },
+      "source": {
+        "dataset_id": "cop-dem-glo-30",
+        "product_id": "Copernicus_DSM_COG_10_N35_00_W113_00_DEM",
+        "url": null,
+        "documentation_url": "https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30/items/Copernicus_DSM_COG_10_N35_00_W113_00_DEM",
+        "retrieved_at": null,
+        "processing_method": "STAC bbox intersection; COG warped to a metric grid over the context window, sampled at the corresponding MOLA posting",
+        "data_coverage": null,
+        "direct_srtm_source_fraction": null
+      },
+      "rank": 10
+    }
+  ],
+  "candidate_coverage": {
+    "indexed_earth_dem_contexts": 10,
+    "dataset_ids": [
+      "cop-dem-glo-30"
+    ],
+    "status": "partial_catalogue",
+    "note": "Ranks only Earth DEM product contexts ingested here; this is not global search or a new-analogue determination."
+  },
+  "limitations": [
+    "Terrain similarity is not probability, analogue validation, or site suitability.",
+    "LOLA LDEM_64 is a gridded shape/radius product; interpolation was used, and direct-observation coverage is not quantified in this crop.",
+    "MOLA MEG128 comparison uses observed-bin elevation range over the 10.19 km footprint as a regional-relief proxy; it does not estimate slope or roughness, and sparse count-grid support can miss local extrema.",
+    "Copernicus GLO-30 is a surface model with different acquisition and processing characteristics.",
+    "Contexts are resampled to 463.06 m cells over about 10.19 km, but scales and uncertainties still differ.",
+    "Mission thresholds are provisional research-screening assumptions documented in the methodology; they are not validated against a specific vehicle or engineering design.",
+    "A Moon-only Diviner nighttime regolith-temperature context is exposed where available but is not paired with Earth thermal data or scored. Mars sites also expose generalized USGS map-unit codes; these are not local material measurements. Mineralogy, radiation, illumination, and volatiles are not included."
+  ]
+}

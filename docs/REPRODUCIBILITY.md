@@ -8,9 +8,14 @@ dependencies. Rasterio wheels bundle the required geospatial libraries; a
 separate system GDAL installation should not be needed.
 
 ```sh
-uv sync --locked --extra dev --extra earthdata
+uv sync --locked --extra dev
 uv run uvicorn twinworld.api:app --host 127.0.0.1 --reload
 ```
+
+The API, UI, and test suite use the default dependencies plus `dev`. Add the
+`earthdata` extra for the STAC-based pilot builder; add `vision`
+for DINOv2 inference. These extras are installed together only for workflows
+that need both, such as rebuilding the pilot benchmark.
 
 In another terminal:
 

@@ -17,9 +17,9 @@ Latency is measured around direct in-process search handler calls on this workst
 
 | Mode | Median latency (ms) | P95 latency (ms) |
 |---|---:|---:|
-| visual | 0.85 | 1.23 |
-| terrain | 0.40 | 0.61 |
-| combined | 0.51 | 0.62 |
+| visual | 0.77 | 0.88 |
+| terrain | 0.37 | 0.55 |
+| combined | 0.46 | 0.57 |
 
 Combined ranking used equal weighting after min-max normalization of visual cosine within each gallery and robust scaling of terrain feature differences. Paired rank changes compare combined and visual order within the terrain-eligible candidate subset. Across 62 returned combined candidates in the eight-query sample, changes ranged from -5 to +6 places.
 
