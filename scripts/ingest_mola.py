@@ -5,14 +5,15 @@ from __future__ import annotations
 import argparse
 import json
 import math
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
 import rasterio
-import requests
 from affine import Affine
 from rasterio.crs import CRS
 
+from twinworld.pds import read_byte_range
 from twinworld.records import read_jsonl
 from twinworld.science import (
     Availability,
@@ -46,27 +47,7 @@ def tile_for(longitude_east_deg: float, latitude_deg: float) -> tuple[str, float
 
 def read_range_window(url: str, *, start_byte: int, end_byte: int) -> bytes:
     """Read one small verified HTTP range without accepting a full-file response."""
-    response = requests.get(
-        url,
-        headers={"Range": f"bytes={start_byte}-{end_byte}"},
-        stream=True,
-        timeout=60,
-    )
-    try:
-        if response.status_code != 206:
-            raise RuntimeError(
-                f"PDS server did not honor the byte-range request ({response.status_code})"
-            )
-        content_range = response.headers.get("Content-Range", "")
-        expected_prefix = f"bytes {start_byte}-{end_byte}/"
-        if not content_range.startswith(expected_prefix):
-            raise RuntimeError(f"Unexpected PDS Content-Range: {content_range}")
-        data = response.content
-        if len(data) != end_byte - start_byte + 1:
-            raise RuntimeError("PDS range response length does not match the requested interval")
-        return data
-    finally:
-        response.close()
+    return read_byte_range(url, start_byte, end_byte, timeout=60)
 
 
 def _read_crop(
@@ -214,6 +195,7 @@ def ingest(observation_id: str, output: Path, *, context_cells: int = 22) -> dic
         "dataset_reference_url": PDS_PAGE,
         "dataset_version": "PDS4 bundle label 1.1; MEGDR final topography product",
         "observation_period": "MGS MOLA mapping data, 1999-03-08 through 2001-06-30",
+        "retrieved_at": datetime.now(UTC).isoformat(),
         "native_resolution_m_at_equator": pixel_m,
         "grid_crs": crs.to_string(),
         "grid_convention": (

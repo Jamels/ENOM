@@ -19,6 +19,7 @@ from pystac_client import Client
 from rasterio.crs import CRS
 from rasterio.warp import transform
 
+from twinworld.geospatial import ring_contains
 from twinworld.patching import extract_metric_patch
 from twinworld.records import PatchRecord, write_jsonl
 
@@ -48,15 +49,6 @@ def projected_center(
     return x[0], y[0]
 
 
-def _ring_contains(ring: list[tuple[float, float]], x: float, y: float) -> bool:
-    inside = False
-    for index, (x2, y2) in enumerate(ring):
-        x1, y1 = ring[index - 1]
-        if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / (y2 - y1) + x1:
-            inside = not inside
-    return inside
-
-
 def seam_observation_at(path: Path, x: float, y: float) -> dict[str, object]:
     """Resolve the mosaic's seam-map observation at a projected map point."""
     reader = shapefile.Reader(str(path))
@@ -70,7 +62,7 @@ def seam_observation_at(path: Path, x: float, y: float) -> dict[str, object]:
         starts = list(geometry.parts) + [len(geometry.points)]
         contains = False
         for start, end in zip(starts[:-1], starts[1:], strict=True):
-            if _ring_contains(geometry.points[start:end], x, y):
+            if ring_contains(geometry.points[start:end], x, y):
                 contains = not contains
         if contains:
             matches.append(dict(zip(field_names, values, strict=True)))

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import planetary_computer as pc
@@ -98,6 +99,7 @@ def ingest(
         "source_product_id": item.id,
         "source_catalog_url": f"{STAC_URL}/collections/{COLLECTION}/items/{item.id}",
         "source_asset": "data",
+        "retrieved_at": datetime.now(UTC).isoformat(),
         "source_resolution_m": 30,
         "output_pixel_size_m": [pixel_x, pixel_y],
         "context_size_m": context_size_m,

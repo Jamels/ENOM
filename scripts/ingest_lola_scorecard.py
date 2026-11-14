@@ -10,11 +10,11 @@ from pathlib import Path
 
 import numpy as np
 import rasterio
-import requests
 from affine import Affine
 from rasterio.crs import CRS
 from rasterio.warp import Resampling, reproject
 
+from twinworld.pds import read_byte_range
 from twinworld.terrain import terrain_features
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,20 +57,13 @@ def fetch_lola_crop(
 
     start_byte = first_row * RECORD_BYTES + first_col * 2
     end_byte = (first_row + height - 1) * RECORD_BYTES + (first_col + width) * 2 - 1
-    response = requests.get(
+    raw = read_byte_range(
         PRODUCT_URL,
-        headers={"Range": f"bytes={start_byte}-{end_byte}"},
+        start_byte,
+        end_byte,
         timeout=90,
+        product_name="LOLA",
     )
-    response.raise_for_status()
-    expected_range = f"bytes {start_byte}-{end_byte}/"
-    if response.status_code != 206 or not response.headers.get("Content-Range", "").startswith(
-        expected_range
-    ):
-        raise RuntimeError("PDS did not honor the bounded LOLA byte-range request")
-    raw = response.content
-    if len(raw) != end_byte - start_byte + 1:
-        raise RuntimeError("LOLA byte-range response length does not match the requested window")
     rows = []
     for row_index in range(height):
         offset = row_index * RECORD_BYTES

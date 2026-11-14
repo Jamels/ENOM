@@ -12,7 +12,6 @@ import argparse
 import csv
 import hashlib
 import json
-import math
 import os
 import time
 import urllib.request
@@ -33,7 +32,7 @@ from rasterio.warp import transform
 from rasterio.windows import from_bounds
 
 from twinworld.annotations import merge_review_row
-from twinworld.geospatial import mars_projection_longitude, shape_contains
+from twinworld.geospatial import mars_projection_longitude, mars_surface_distance_m, shape_contains
 from twinworld.patching import extract_metric_patch
 from twinworld.records import PatchRecord, read_jsonl, write_jsonl
 from twinworld.spatial import ensure_no_overlaps
@@ -78,15 +77,6 @@ def geographic_center(x: float, y: float, source_crs: CRS, body: str) -> tuple[f
     if body == "mars":
         longitude %= 360.0
     return longitude, float(latitudes[0])
-
-
-def _distance_m(a: tuple[float, float], b: tuple[float, float]) -> float:
-    lon_a, lat_a = a
-    lon_b, lat_b = b
-    delta_lon = (lon_b - lon_a + 180.0) % 360.0 - 180.0
-    x = math.radians(delta_lon) * math.cos(math.radians((lat_a + lat_b) / 2))
-    y = math.radians(lat_b - lat_a)
-    return 6_371_000 * math.hypot(x, y)
 
 
 def ensure_mgd3(config: dict[str, Any]) -> Path:
@@ -223,23 +213,16 @@ def _mars_item(
 
 
 def _candidate_distance(candidate: dict[str, Any], selected: list[dict[str, Any]]) -> float:
-    point = (float(candidate["longitude"]), float(candidate["latitude"]))
-    if not selected:
-        return float(candidate["area_km2"])
+    longitude, latitude = float(candidate["longitude"]), float(candidate["latitude"])
     return min(
-        _distance_m(point, (float(row["longitude"]), float(row["latitude"]))) for row in selected
+        mars_surface_distance_m(
+            longitude,
+            latitude,
+            float(row["longitude"]),
+            float(row["latitude"]),
+        )
+        for row in selected
     )
-
-
-def _dune_category(row: dict[str, Any]) -> str | None:
-    types = {part.strip() for part in str(row["morphology_types"]).split(",")}
-    if "B" in types and "L" not in types:
-        return "barchan_crescent_dune"
-    if "L" in types and "B" not in types:
-        return "linear_dune"
-    if types & {"D", "S", "SS", "T"} and not types & {"B", "L"}:
-        return "other_dune"
-    return None
 
 
 def _dune_positions(
@@ -300,36 +283,15 @@ def _dune_positions(
     return chosen
 
 
-def discover_plan(config: dict[str, Any]) -> dict[str, Any]:
-    earth_catalog = Client.open(PC_STAC)
-    mars_catalog = Client.open(MARS_STAC)
-    shape_path = ensure_mgd3(config)
-    shape_reader = shapefile.Reader(str(shape_path))
-    shape_fields = [field[0] for field in shape_reader.fields[1:]]
-    dune_shapes: dict[str, shapefile.Shape] = {}
-    dune_rows: list[dict[str, Any]] = []
-    for geometry, values in zip(shape_reader.shapes(), shape_reader.records(), strict=True):
-        row = dict(zip(shape_fields, values, strict=True))
-        dune_id = str(row["Dune_ID"])
-        dune_shapes[dune_id] = geometry
-        dune_rows.append(
-            {
-                "dune_id": dune_id,
-                "longitude": float(row["Dune_Lon"]),
-                "latitude": float(row["Dune_Lat"]),
-                "area_km2": float(row["Area_sinu_"]),
-                "morphology_types": str(row["Dune_Type"]),
-                "confidence": str(row["Confidence"]),
-            }
-        )
-
+def _earth_plan_rows(
+    catalog: Any, sites: list[dict[str, Any]], config: dict[str, Any], extent_m: float
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """Turn configured Earth targets into source-backed patch proposals."""
     rows: list[dict[str, Any]] = []
     rejected: list[dict[str, str]] = []
-    extent_m = float(config["target_extent_m"])
-
-    for site in config["earth_sites"]:
+    for site in sites:
         try:
-            item, _href, center, gsd = _earth_candidates(earth_catalog, site, config)
+            item, _href, center, gsd = _earth_candidates(catalog, site, config)
             crs: str
             with rasterio.open(planetary_computer.sign(item).assets["visual"].href) as dataset:
                 crs = dataset.crs.to_string()
@@ -371,9 +333,15 @@ def discover_plan(config: dict[str, Any]) -> dict[str, Any]:
                 )
         except Exception as exc:
             rejected.append({"site_id": str(site["site_id"]), "reason": str(exc)})
+    return rows, rejected
 
-    # These contexts deliberately contribute 10 reviewed-candidate proposals:
-    # 4+3+3 layered, then five sites with two non-dune crops apiece.
+
+def _mars_context_plan_rows(
+    catalog: Any, sites: list[dict[str, Any]], extent_m: float
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """Turn configured Mars reference sites into CTX patch proposals."""
+    rows: list[dict[str, Any]] = []
+    rejected: list[dict[str, str]] = []
     context_allocations = {
         "mars_mawrth_layered": 4,
         "mars_eberswalde_layered": 3,
@@ -384,7 +352,7 @@ def discover_plan(config: dict[str, Any]) -> dict[str, Any]:
         "mars_medusae_nondune": 2,
         "mars_aeolis_nondune": 2,
     }
-    for site in config["mars_context_sites"]:
+    for site in sites:
         offsets = site["patch_offsets_m"]
         if len(offsets) != context_allocations[site["site_id"]]:
             rejected.append(
@@ -396,7 +364,7 @@ def discover_plan(config: dict[str, Any]) -> dict[str, Any]:
             continue
         try:
             item, asset_key, _href, center, gsd = _mars_item(
-                mars_catalog,
+                catalog,
                 float(site["longitude"]),
                 float(site["latitude"]),
                 offsets,
@@ -446,6 +414,29 @@ def discover_plan(config: dict[str, Any]) -> dict[str, Any]:
                     )
         except Exception as exc:
             rejected.append({"site_id": str(site["site_id"]), "reason": str(exc)})
+    return rows, rejected
+
+
+def discover_plan(config: dict[str, Any]) -> dict[str, Any]:
+    earth_catalog = Client.open(PC_STAC)
+    mars_catalog = Client.open(MARS_STAC)
+    shape_path = ensure_mgd3(config)
+    shape_reader = shapefile.Reader(str(shape_path))
+    shape_fields = [field[0] for field in shape_reader.fields[1:]]
+    dune_shapes: dict[str, shapefile.Shape] = {}
+    for geometry, values in zip(shape_reader.shapes(), shape_reader.records(), strict=True):
+        row = dict(zip(shape_fields, values, strict=True))
+        dune_shapes[str(row["Dune_ID"])] = geometry
+
+    extent_m = float(config["target_extent_m"])
+    earth_rows, rejected = _earth_plan_rows(
+        earth_catalog, config["earth_sites"], config, extent_m
+    )
+    mars_rows, mars_rejected = _mars_context_plan_rows(
+        mars_catalog, config["mars_context_sites"], extent_m
+    )
+    rows = earth_rows + mars_rows
+    rejected.extend(mars_rejected)
 
     # Parse the source manifest as plain dictionaries; its morphology fields are not PatchRecords.
     candidate_dicts = (
@@ -473,14 +464,21 @@ def discover_plan(config: dict[str, Any]) -> dict[str, Any]:
         selected: list[dict[str, Any]] = []
         remaining = list(candidates)
         while remaining and len(selected) < target_fields:
-            remaining.sort(
-                key=lambda row: (
-                    _candidate_distance(row, selected),
-                    float(row["area_km2"]),
-                    str(row["dune_id"]),
-                ),
-                reverse=True,
-            )
+            if selected:
+                # Maximize Mars surface separation after seeding with the largest field.
+                remaining.sort(
+                    key=lambda row: (
+                        _candidate_distance(row, selected),
+                        float(row["area_km2"]),
+                        str(row["dune_id"]),
+                    ),
+                    reverse=True,
+                )
+            else:
+                remaining.sort(
+                    key=lambda row: (float(row["area_km2"]), str(row["dune_id"])),
+                    reverse=True,
+                )
             candidate = remaining.pop(0)
             if any(row["dune_id"] == candidate["dune_id"] for row in selected):
                 continue
@@ -675,6 +673,20 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _cached_patch_matches(
+    row: dict[str, Any], record: PatchRecord | None, patch_path: Path
+) -> bool:
+    """Check whether a patch file still represents the planned source and center."""
+    return bool(
+        record
+        and patch_path.is_file()
+        and record.source_id == row["source_id"]
+        and float(record.processing.get("patch_center_x", "nan")) == float(row["center_x"])
+        and float(record.processing.get("patch_center_y", "nan")) == float(row["center_y"])
+        and _sha256(patch_path) == record.checksum_sha256
+    )
+
+
 def _mask_coverage(
     dataset: rasterio.DatasetReader,
     center_x: float,
@@ -866,14 +878,7 @@ def repair_plan_coverage(plan: dict[str, Any]) -> dict[str, Any]:
     for row in list(rows):
         prior = existing.get(str(row["image_id"]))
         destination = PATCH_DIR / f"{row['image_id']}.tif"
-        if (
-            prior
-            and destination.is_file()
-            and prior.source_id == row["source_id"]
-            and float(prior.processing.get("patch_center_x", "nan")) == float(row["center_x"])
-            and float(prior.processing.get("patch_center_y", "nan")) == float(row["center_y"])
-            and _sha256(destination) == prior.checksum_sha256
-        ):
+        if _cached_patch_matches(row, prior, destination):
             continue
         href = _source_href(row, earth_catalog, mars_catalog)
         bands = (1, 2, 3) if row["body"] == "earth" else (1,)
@@ -1006,14 +1011,7 @@ def build_patches(plan: dict[str, Any]) -> list[PatchRecord]:
     for row in plan["rows"]:
         destination = PATCH_DIR / f"{row['image_id']}.tif"
         prior = existing.get(row["image_id"])
-        if (
-            destination.is_file()
-            and prior
-            and prior.source_id == row["source_id"]
-            and float(prior.processing.get("patch_center_x", "nan")) == float(row["center_x"])
-            and float(prior.processing.get("patch_center_y", "nan")) == float(row["center_y"])
-            and _sha256(destination) == prior.checksum_sha256
-        ):
+        if _cached_patch_matches(row, prior, destination):
             continue
         patch_started = time.perf_counter()
         temp_destination = destination.with_suffix(".part.tif")
