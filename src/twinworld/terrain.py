@@ -24,12 +24,37 @@ def terrain_features(
     source_url: str,
     processing_method: str = "Central finite differences on projected DEM grid",
 ) -> list[PhysicalMeasurement]:
-    """Calculate elevation range, mean slope and 3x3 local relief from a projected DEM.
+    """Derive scale-explicit morphology measurements from a projected DEM.
 
-    The input's CRS must use metres. Geographic-degree rasters are rejected so that
-    pixel dimensions are never mistaken for physical ground distances.
+    Elevation range is max minus min over valid cells. Slope is the angle
+    ``atan(sqrt((dz/dx)^2 + (dz/dy)^2))`` from NumPy's finite differences;
+    this function reports the mean and 90th percentile in degrees. NumPy uses
+    central differences inside the raster and one-sided differences at its
+    boundary, so boundary cells are excluded from both slope summaries (see
+    https://numpy.org/doc/stable/reference/generated/numpy.gradient.html).
+    The 3x3 local relief is neighborhood max minus min. Roughness at cell ``i`` is
+    ``abs(z_i - mean(z_3x3))``; the reported statistic is its median.
+    Curvature is the Laplacian ``d²z/dx² + d²z/dy²``, with units of inverse
+    metres. Local relief and roughness are project descriptors, not claims to
+    implement a named standardized roughness index.
+
+    Derivative scales describe the grid support: slope uses a two-cell
+    central-difference baseline, while 3x3 statistics use three cells.
+    Incomplete neighborhoods are excluded from local relief, roughness, and
+    curvature summaries. For neighborhood calculations, nodata cells are
+    temporarily filled with the median valid elevation so filters can run;
+    incomplete neighborhoods are then masked from the reported statistics.
+    Slope also excludes non-finite
+    derivatives. Elevation range uses all valid cells.
+
+    The input CRS must use metres. Geographic-degree rasters are rejected so
+    pixel dimensions are not mistaken for physical ground distances. These
+    are DEM-derived descriptors, not uncertainty-propagated estimates; source
+    interpolation and vertical error are not modeled here.
     """
     with rasterio.open(dem_path) as src:
+        if src.width < 3 or src.height < 3:
+            raise ValueError("DEM grid must be at least 3x3 cells for terrain features")
         if src.crs is None or src.crs.is_geographic:
             raise ValueError("DEM must have a projected CRS with linear units")
         units = (src.crs.linear_units or "").lower()
@@ -54,6 +79,8 @@ def terrain_features(
     gy, gx = np.gradient(values, dy, dx)
     slope = np.degrees(np.arctan(np.hypot(gx, gy)))
     slope_valid = valid & np.isfinite(slope)
+    slope_valid[[0, -1], :] = False
+    slope_valid[:, [0, -1]] = False
     local_min = np.full(values.shape, np.nan)
     local_max = np.full(values.shape, np.nan)
     # The 3x3 footprint uses a physically explicit scale of approximately 3 pixels.

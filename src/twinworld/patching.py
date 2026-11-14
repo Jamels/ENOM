@@ -47,8 +47,13 @@ def extract_metric_patch(
     ``native_gsd_m`` is the source observation's native sampling, not the output
     grid size; output pixels can be resized later for model input.
     """
-    if extent_m <= 0 or native_gsd_m <= 0:
-        raise ValueError("extent_m and native_gsd_m must be positive")
+    if (
+        not math.isfinite(extent_m)
+        or extent_m <= 0
+        or not math.isfinite(native_gsd_m)
+        or native_gsd_m <= 0
+    ):
+        raise ValueError("extent_m and native_gsd_m must be finite and positive")
     if not math.isfinite(center_x) or not math.isfinite(center_y):
         raise ValueError("center coordinates must be finite")
     if not bands:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Literal
@@ -54,17 +55,24 @@ class PatchRecord:
             errors.append("image_id is empty")
         if self.body not in ("earth", "mars", "moon"):
             errors.append(f"invalid body: {self.body}")
-        if not -90.0 <= self.latitude <= 90.0:
+        if not math.isfinite(self.latitude) or not -90.0 <= self.latitude <= 90.0:
             errors.append("latitude is outside [-90, 90]")
-        if self.body == "earth" and not -180.0 <= self.longitude < 180.0:
+        if self.body == "earth" and (
+            not math.isfinite(self.longitude) or not -180.0 <= self.longitude < 180.0
+        ):
             errors.append("Earth longitude must be in [-180, 180)")
-        if self.body == "mars" and not -180.0 <= self.longitude < 360.0:
+        if self.body == "mars" and (
+            not math.isfinite(self.longitude) or not -180.0 <= self.longitude < 360.0
+        ):
             errors.append("Mars longitude must be in [-180, 360)")
-        if self.body == "moon" and not 0.0 <= self.longitude < 360.0:
+        if self.body == "moon" and (
+            not math.isfinite(self.longitude) or not 0.0 <= self.longitude < 360.0
+        ):
             errors.append("Moon east longitude must be in [0, 360)")
         for name in ("native_gsd_m", "width_m", "height_m"):
-            if getattr(self, name) <= 0:
-                errors.append(f"{name} must be positive")
+            value = getattr(self, name)
+            if not math.isfinite(value) or value <= 0:
+                errors.append(f"{name} must be finite and positive")
         for name in ("source_id", "provider", "source_url", "crs", "geographic_group"):
             if not getattr(self, name).strip():
                 errors.append(f"{name} is empty")

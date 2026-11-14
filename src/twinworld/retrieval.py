@@ -8,14 +8,19 @@ from twinworld.records import PatchRecord
 
 
 def normalize_rows(vectors: np.ndarray) -> np.ndarray:
-    """Return unit-length float32 vectors for cosine similarity via dot product."""
+    """Return finite, unit-length float32 rows for cosine scoring.
+
+    For each vector ``x``, return ``x / ||x||₂``. The dot product of two
+    normalized rows equals their cosine similarity.
+    """
     matrix = np.asarray(vectors, dtype=np.float32)
     if matrix.ndim != 2 or not np.isfinite(matrix).all():
         raise ValueError("vectors must be a finite 2D matrix")
-    norms = np.linalg.norm(matrix, axis=1, keepdims=True)
+    matrix64 = matrix.astype(np.float64)
+    norms = np.linalg.norm(matrix64, axis=1, keepdims=True)
     if np.any(norms == 0):
         raise ValueError("zero-length feature vector")
-    return matrix / norms
+    return (matrix64 / norms).astype(np.float32)
 
 
 def search(
@@ -27,7 +32,12 @@ def search(
     class_filter: str | None = None,
     exclude_groups: set[str] | None = None,
 ) -> list[tuple[int, float]]:
-    """Rank opposite-body records, optionally filtering labels and geographic groups."""
+    """Return opposite-body records ordered by descending embedding cosine.
+
+    Candidate filters are applied before scoring. A stable sort preserves the
+    input order when scores tie; returned indices address ``records`` and
+    ``vectors`` in their original shared order.
+    """
     if len(vectors) != len(records):
         raise ValueError("vector order/count must exactly match records")
     if not 0 <= query_index < len(records):

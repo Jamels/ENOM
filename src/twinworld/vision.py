@@ -28,6 +28,22 @@ def embedding_cache_stem(model_id: str) -> str:
     return "embeddings_dinov2" if model_slug == "dinov2_small" else f"embeddings_{model_slug}"
 
 
+def _valid_embedding_matrix(
+    matrix: np.ndarray, *, row_count: int, embedding_dimension: object
+) -> bool:
+    """Check cached vectors against the matrix shape and value contract."""
+    if (
+        isinstance(embedding_dimension, bool)
+        or not isinstance(embedding_dimension, int)
+        or embedding_dimension < 1
+        or matrix.ndim != 2
+        or matrix.shape != (row_count, embedding_dimension)
+        or not np.isfinite(matrix).all()
+    ):
+        return False
+    return bool(np.all(np.linalg.norm(matrix, axis=1) > 0))
+
+
 def embed_dinov2(
     records: list[PatchRecord],
     root: Path,
@@ -38,7 +54,19 @@ def embed_dinov2(
     device_preference: str = "auto",
     batch_size: int = 16,
 ) -> tuple[np.ndarray, dict[str, object]]:
-    """Generate CLS embeddings and metadata; reuse only an exact cache match."""
+    """Embed grayscale patches with the pinned DINOv2 model and cache their identity.
+
+    Each source is percentile-stretched (2nd–98th), resized to 224×224, copied
+    into three RGB channels, and passed through the model's image processor.
+    The final-layer CLS token is the global image descriptor; rows are L2
+    normalized so their dot product is cosine similarity. Cache reuse requires
+    the same ordered IDs, source checksums, model revision, and preprocessing
+    ID. Similarity is a visual retrieval signal, not a geological measurement.
+
+    DINOv2's self-supervised visual features follow Oquab et al.,
+    *DINOv2: Learning Robust Visual Features without Supervision*
+    (https://arxiv.org/abs/2304.07193).
+    """
     if not revision:
         raise ValueError("an immutable model revision is required")
     if not records:
@@ -68,7 +96,11 @@ def embed_dinov2(
             and cached.get("preprocessing_id") == preprocessing_id
         ):
             cached_matrix = np.load(cache_array_path, allow_pickle=False)
-            if cached_matrix.shape[0] == len(records) and np.isfinite(cached_matrix).all():
+            if _valid_embedding_matrix(
+                cached_matrix,
+                row_count=len(records),
+                embedding_dimension=cached.get("embedding_dimension"),
+            ):
                 return cached_matrix, cached
 
     device = select_device(device_preference)  # type: ignore[arg-type]
@@ -89,7 +121,12 @@ def embed_dinov2(
             result = model(**inputs).last_hidden_state[:, 0]
             embeddings.extend(result.float().cpu().numpy())
     matrix = np.asarray(embeddings, dtype=np.float32)
-    matrix /= np.maximum(np.linalg.norm(matrix, axis=1, keepdims=True), 1e-12)
+    if matrix.ndim != 2 or matrix.shape[0] != len(records) or not np.isfinite(matrix).all():
+        raise RuntimeError("DINOv2 produced an invalid embedding matrix")
+    norms = np.linalg.norm(matrix, axis=1, keepdims=True)
+    if np.any(norms == 0):
+        raise RuntimeError("DINOv2 produced a zero-length embedding vector")
+    matrix /= norms
     elapsed = time.perf_counter() - started
     metadata: dict[str, object] = {
         "image_ids": ids,

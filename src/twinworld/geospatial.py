@@ -2,7 +2,44 @@
 
 from __future__ import annotations
 
+import math
+
 import shapefile  # type: ignore[import-untyped]
+
+# JPL planetary parameters list the Mars mean radius as 3,396.19 km.
+# https://ssd.jpl.nasa.gov/planets/phys_par.html
+MARS_MEAN_RADIUS_M = 3_396_190.0
+
+
+def mars_surface_distance_m(
+    longitude_a_deg: float,
+    latitude_a_deg: float,
+    longitude_b_deg: float,
+    latitude_b_deg: float,
+) -> float:
+    """Return Mars great-circle distance in metres for east-positive lon/lat points.
+
+    Uses the haversine central angle, ``2 asin(sqrt(h))``, with
+    ``h = sin²(Δlat/2) + cos(lat_a) cos(lat_b) sin²(Δlon/2)`` and the IAU mean
+    Mars radius. This spherical approximation is for geographic spacing, not
+    precise geodetic surveying.
+    """
+    coordinates = (longitude_a_deg, latitude_a_deg, longitude_b_deg, latitude_b_deg)
+    if not all(math.isfinite(value) for value in coordinates):
+        raise ValueError("Mars coordinates must be finite")
+    if not -90 <= latitude_a_deg <= 90 or not -90 <= latitude_b_deg <= 90:
+        raise ValueError("Mars latitude must be between -90 and 90 degrees")
+
+    lon_a, lat_a, lon_b, lat_b = map(
+        math.radians, (longitude_a_deg, latitude_a_deg, longitude_b_deg, latitude_b_deg)
+    )
+    delta_lon = (lon_b - lon_a + math.pi) % (2 * math.pi) - math.pi
+    delta_lat = lat_b - lat_a
+    haversine = math.sin(delta_lat / 2) ** 2 + math.cos(lat_a) * math.cos(lat_b) * math.sin(
+        delta_lon / 2
+    ) ** 2
+    central_angle = 2 * math.asin(math.sqrt(min(1.0, haversine)))
+    return MARS_MEAN_RADIUS_M * central_angle
 
 
 def mars_projection_longitude(longitude: float) -> float:
@@ -11,7 +48,7 @@ def mars_projection_longitude(longitude: float) -> float:
     return normalized - 360.0 if normalized > 180.0 else normalized
 
 
-def _ring_contains(ring: list[tuple[float, float]], x: float, y: float) -> bool:
+def ring_contains(ring: list[tuple[float, float]], x: float, y: float) -> bool:
     """Apply the ray-crossing point-in-ring test to one polygon ring."""
     inside = False
     for index, (x2, y2) in enumerate(ring):
@@ -35,6 +72,6 @@ def shape_contains(geometry: shapefile.Shape, longitude: float, latitude: float)
     starts = list(geometry.parts) + [len(geometry.points)]
     contains = False
     for start, end in zip(starts[:-1], starts[1:], strict=True):
-        if _ring_contains(geometry.points[start:end], longitude, latitude):
+        if ring_contains(geometry.points[start:end], longitude, latitude):
             contains = not contains
     return contains
