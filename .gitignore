@@ -240,6 +240,8 @@ __marimo__/
 credentials.json
 secrets.*
 data/raw/
+# On-demand planetary windows fetched when a user clicks a point (regenerable cache)
+data/cache/
 data/downloads/
 data/patches/**/*.tif
 data/patches/**/*.tiff
@@ -249,6 +251,9 @@ data/terrain/**/*.tiff
 # analogue discovery; keep the global/raw terrain products ignored.
 !data/terrain/cop-dem-candidate-earth_*.tif
 !data/terrain/mola-candidate-mars_*.tif
+# Compact, source-backed MOLA example and paired count mask for offline discovery.
+!data/terrain/mola-meg128-mars_aeolis_nondune-01.tif
+!data/terrain/mola-meg128-mars_aeolis_nondune-01-counts.tif
 !data/terrain/moon_candidate_moon_*.tif
 !data/terrain/diviner_moon_mare_tranquillitatis_pit.tif
 !data/terrain/tes-mars_jezero.tif
@@ -259,6 +264,7 @@ data/**/*.vrt
 data/**/*.img
 data/**/*.cub
 artifacts/**/*.npy
+artifacts/discovery/
 artifacts/**/*.pt
 artifacts/**/*.bin
 artifacts/**/*.safetensors
@@ -295,6 +301,8 @@ test-results/
 apps/twinworld/src/lib/*
 !apps/twinworld/src/lib/globeImagery.ts
 !apps/twinworld/src/lib/globeTileStore.ts
+!apps/twinworld/src/lib/api.ts
+!apps/twinworld/src/lib/missions.ts
 
 # User-requested offline NASA tile package (local repository cache, not source code).
 apps/twinworld/public/tiles/offline/

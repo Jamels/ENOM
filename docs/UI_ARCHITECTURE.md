@@ -18,6 +18,14 @@ user flow, and current interface limitations.
 4. Submit `/api/search` in visual, terrain, or combined mode. Visual uses exact DINOv2 cosine ordering. Terrain requires adequate coverage and comparable units/scales. Combined keeps the visual and terrain evidence separately inspectable and reports ranking differences.
 5. Select a result to inspect its image, source and terrain evidence, measurement differences, uncertainty, quality coverage, and unavailable data from `/api/comparisons/{query}/{candidate}`.
 
+The selected target or clicked terrain context has a prominent coverage panel
+above the globes. It reports whether imagery and visual features are indexed,
+which terrain measurements are usable, observation support where quantified,
+linked context layers, evidence gaps, limitations, and source links. The terrain
+map also summarizes indexed regions by ranking eligibility. These states
+describe ENOM's indexed evidence, not whether a physical feature exists on the
+surface.
+
 ## Scientific representation
 
 Search outputs separate visual scores, terrain scores, and evidence availability. These values do not represent mission suitability or validated geological similarity. Sparse MOLA support is described using shot-count coverage; unobserved/interpolated cells are not treated as measurements. Unsupported objectives remain marked unavailable.
