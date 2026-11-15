@@ -8,6 +8,11 @@ A volcanic landscape in Iceland might resemble part of the lunar surface. A dese
 
 The project is being developed for the NASA Space Apps Challenge.
 
+## Live Demo
+
+[![Explore ENOM](https://img.shields.io/badge/Live_Demo-enom.earth-blue?style=for-the-badge)](https://enom.earth)
+
+
 ## What ENOM does
 
 ENOM brings planetary and terrestrial observations into one interface, making it easier to investigate possible Earth analogues.
