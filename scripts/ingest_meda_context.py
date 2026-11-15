@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 from datetime import UTC, datetime
 from html.parser import HTMLParser
 from pathlib import Path
-import subprocess
 
 from twinworld.meda import summarize_product, validate_sol_rows
 
@@ -29,7 +29,10 @@ SENSORS = (
         "name": "MEDA ATS local air temperature near mast sensor 1",
         "units": "K",
         "description": "Local air temperature measured near the Remote Sensing Mast at 50 degrees.",
-        "use_limit": "Calibrated one-sol rover measurement; not a seasonal climate statistic or illumination measure.",
+        "use_limit": (
+            "Calibrated one-sol rover measurement; not a seasonal climate "
+            "statistic or illumination measure."
+        ),
     },
     {
         "sensor": "WS",
@@ -40,9 +43,14 @@ SENSORS = (
         "uncertainty_column": "HORIZONTAL_WIND_SPEED_UNCERTAINTY",
         "name": "MEDA horizontal wind speed",
         "units": "m/s",
-        "description": "Derived horizontal wind speed; only rows with the rover stationary are summarized.",
+        "description": (
+            "Derived horizontal wind speed; only rows with the rover stationary are summarized."
+        ),
         "required_flags": {"ROVER_STILL": "1"},
-        "use_limit": "One sol of near-surface rover wind context; it does not measure dust movement or long-term wind climate.",
+        "use_limit": (
+            "One sol of near-surface rover wind context; it does not measure "
+            "dust movement or long-term wind climate."
+        ),
     },
     {
         "sensor": "RHS",
@@ -54,7 +62,12 @@ SENSORS = (
         "name": "MEDA near-surface atmospheric relative humidity",
         "units": "%RH",
         "description": "Derived local atmospheric relative humidity, reported with respect to ice.",
-        "use_limit": "Sol 100 is after the sensor team's sol-80 recommendation. Self-heating can affect continuous-mode readings; this is atmospheric water vapour context, not soil water, ice, or a usable resource.",
+        "use_limit": (
+            "Sol 100 is after the sensor team's sol-80 recommendation. "
+            "Self-heating can affect continuous-mode readings; this is "
+            "atmospheric water vapour context, not soil water, ice, or a "
+            "usable resource."
+        ),
     },
 )
 
@@ -85,8 +98,16 @@ def _sol_bucket(sol: int) -> str:
 def _fetch(url: str, *, max_bytes: int = MAX_PRODUCT_BYTES) -> bytes:
     result = subprocess.run(
         [
-            "curl", "--fail", "--silent", "--show-error", "--location",
-            "--max-time", "180", "--max-filesize", str(max_bytes), url,
+            "curl",
+            "--fail",
+            "--silent",
+            "--show-error",
+            "--location",
+            "--max-time",
+            "180",
+            "--max-filesize",
+            str(max_bytes),
+            url,
         ],
         check=True,
         capture_output=True,
@@ -143,7 +164,9 @@ def main() -> None:
             value_column=str(sensor["column"]),
             value_name=str(sensor["name"]),
             units=str(sensor["units"]),
-            uncertainty_column=(str(sensor["uncertainty_column"]) if sensor.get("uncertainty_column") else None),
+            uncertainty_column=(
+                str(sensor["uncertainty_column"]) if sensor.get("uncertainty_column") else None
+            ),
             uncertainty_units=str(sensor["units"]),
             required_flags=sensor.get("required_flags"),  # type: ignore[arg-type]
         )
@@ -162,50 +185,70 @@ def main() -> None:
             sensor_use_limit = str(sensor["use_limit"])
         first_time, last_time = _time_range(csv_text)
         record_id = f"mars2020-meda-sol-{SOL:04d}-{str(sensor['sensor']).lower()}"
-        records.append({
-            "observation_id": record_id,
-            "place_id": "mars-jezero",
-            "body": "mars",
-            "name": f"Perseverance MEDA {sensor['sensor']} · Mars sol {SOL}",
-            "dataset_id": "mars2020-meda",
-            "product_id": product_url.rsplit("/", 1)[-1],
-            "provider": "NASA Planetary Data System Atmospheres Node",
-            "source_url": product_url,
-            "dataset_reference_url": PDS_BUNDLE,
-            "units_reference_url": HUMIDITY_METHOD if sensor["sensor"] == "RHS" else None,
-            "acquired_at": f"Mars sol {SOL}; LMST {first_time} to {last_time}",
-            "kind": "measurement",
-            "dimensions": [str(sensor["dimension"])],
-            "latitude_deg": 18.44,
-            "longitude_east_deg": 77.45,
-            "location_precision": "rover_track_in_mission_region",
-            "spatial_relation": "Perseverance rover observation within the Jezero mission region; catalogue coordinates mark a regional locator, not the rover's exact position for every sample.",
-            "summary": str(sensor["description"]),
-            "use_limit": sensor_use_limit,
-            "evidence_kind": "measured" if sensor["sensor"] == "ATS" else "derived",
-            "quality_note": (
-                "PDS fill values and non-finite samples are excluded. "
-                f"{measurement['quality_filtered_row_count']} rows were excluded by the sensor quality filter. "
-                "This one-sol summary is displayed as context only and is not used for analogue scoring."
-            ),
-            "temporal_coverage": {
-                "martian_sol": SOL,
-                "local_mean_solar_time_start": first_time,
-                "local_mean_solar_time_stop": last_time,
-            },
-            "row_count": source_row_count,
-            "measurements": [measurement],
-            "retrieved_at": retrieved_at,
-            "processing_method": "One-sol median and p10–p90 summary from the current PDS derived/calibrated CSV product; raw CSV is not retained.",
-        })
+        records.append(
+            {
+                "observation_id": record_id,
+                "place_id": "mars-jezero",
+                "body": "mars",
+                "name": f"Perseverance MEDA {sensor['sensor']} · Mars sol {SOL}",
+                "dataset_id": "mars2020-meda",
+                "product_id": product_url.rsplit("/", 1)[-1],
+                "provider": "NASA Planetary Data System Atmospheres Node",
+                "source_url": product_url,
+                "dataset_reference_url": PDS_BUNDLE,
+                "units_reference_url": HUMIDITY_METHOD if sensor["sensor"] == "RHS" else None,
+                "acquired_at": f"Mars sol {SOL}; LMST {first_time} to {last_time}",
+                "kind": "measurement",
+                "dimensions": [str(sensor["dimension"])],
+                "latitude_deg": 18.44,
+                "longitude_east_deg": 77.45,
+                "location_precision": "rover_track_in_mission_region",
+                "spatial_relation": (
+                    "Perseverance rover observation within the Jezero mission "
+                    "region; catalogue coordinates mark a regional locator, not the "
+                    "rover's exact position for every sample."
+                ),
+                "summary": str(sensor["description"]),
+                "use_limit": sensor_use_limit,
+                "evidence_kind": "measured" if sensor["sensor"] == "ATS" else "derived",
+                "quality_note": (
+                    "PDS fill values and non-finite samples are excluded. "
+                    f"{measurement['quality_filtered_row_count']} rows were excluded "
+                    "by the sensor quality filter. This one-sol summary is displayed "
+                    "as context only and is not used for analogue scoring."
+                ),
+                "temporal_coverage": {
+                    "martian_sol": SOL,
+                    "local_mean_solar_time_start": first_time,
+                    "local_mean_solar_time_stop": last_time,
+                },
+                "row_count": source_row_count,
+                "measurements": [measurement],
+                "retrieved_at": retrieved_at,
+                "processing_method": (
+                    "One-sol median and p10–p90 summary from the current PDS "
+                    "derived/calibrated CSV product; raw CSV is not retained."
+                ),
+            }
+        )
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps({
-        "dataset_id": "mars2020-meda",
-        "bundle_url": PDS_BUNDLE,
-        "records": records,
-        "retrieved_at": retrieved_at,
-        "scope": "Selected Mars sol 100 only; not a Mars climate normal or full rover traverse archive.",
-    }, indent=2) + "\n", encoding="utf-8")
+    OUTPUT.write_text(
+        json.dumps(
+            {
+                "dataset_id": "mars2020-meda",
+                "bundle_url": PDS_BUNDLE,
+                "records": records,
+                "retrieved_at": retrieved_at,
+                "scope": (
+                    "Selected Mars sol 100 only; not a Mars climate normal or full "
+                    "rover traverse archive."
+                ),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"Saved {len(records)} MEDA sol-{SOL} summaries to {OUTPUT.relative_to(ROOT)}")
 
 

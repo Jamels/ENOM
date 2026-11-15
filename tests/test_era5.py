@@ -38,12 +38,16 @@ def test_invalid_or_missing_daily_columns_fail_clearly():
     with pytest.raises(ValueError, match="no daily dates"):
         era5.summarize_daily_response({"daily": {"time": []}})
     with pytest.raises(ValueError, match="inconsistent lengths"):
-        era5.summarize_daily_response({"daily": {
-            "time": ["1991-01-01"],
-            "temperature_2m_mean": [],
-            "wind_speed_10m_mean": [1],
-            "precipitation_sum": [1],
-        }})
+        era5.summarize_daily_response(
+            {
+                "daily": {
+                    "time": ["1991-01-01"],
+                    "temperature_2m_mean": [],
+                    "wind_speed_10m_mean": [1],
+                    "precipitation_sum": [1],
+                }
+            }
+        )
 
 
 def test_era5_source_is_context_in_all_three_earth_dimensions():
@@ -53,9 +57,13 @@ def test_era5_source_is_context_in_all_three_earth_dimensions():
         ("dust_processes", "ERA5 monthly mean 10 m wind speed"),
         ("water_resources", "ERA5 average monthly precipitation total"),
     ]:
-        dimension = next(row for row in result["results"][0]["dimension_scores"] if row["id"] == dimension_id)
+        dimension = next(
+            row for row in result["results"][0]["dimension_scores"] if row["id"] == dimension_id
+        )
         assert dimension["score"] is None
-        assert any(measurement["name"] == expected_name for measurement in dimension["measurements"])
+        assert any(
+            measurement["name"] == expected_name for measurement in dimension["measurements"]
+        )
 
     site = discover(ROOT, "mars-jezero", "polar_resources")
     earth = next(row for row in site["results"] if row["place"]["id"] == "earth-namib")
@@ -65,12 +73,19 @@ def test_era5_source_is_context_in_all_three_earth_dimensions():
         ("water_resources", "ERA5 average monthly precipitation total"),
     ]:
         dimension = next(row for row in earth["dimension_scores"] if row["id"] == dimension_id)
-        assert any(measurement["name"] == expected_name for measurement in dimension["measurements"])
+        assert any(
+            measurement["name"] == expected_name for measurement in dimension["measurements"]
+        )
         assert dimension["score"] is None
 
-    payload = json.loads((ROOT / "data/environment/era5-earth-candidate-climatology.json").read_text())
+    payload = json.loads(
+        (ROOT / "data/environment/era5-earth-candidate-climatology.json").read_text()
+    )
     assert len(payload["records"]) == 8
-    assert all(record["location_precision"] == "nearest_era5_0.25_degree_grid_point" for record in payload["records"])
+    assert all(
+        record["location_precision"] == "nearest_era5_0.25_degree_grid_point"
+        for record in payload["records"]
+    )
     coverage = dataset_coverage(era5.DATASET_ID)
     assert coverage["unique_place_count"] == 8
     source = next(row for row in source_inventory(ROOT) if row["id"] == "era5-temperature")

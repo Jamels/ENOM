@@ -21,12 +21,15 @@ def main() -> None:
         slug = target["id"].replace("-", "_")
         output = ROOT / "data/terrain" / f"mola-candidate-{slug}.tif"
         metadata = ingest(
-            target["id"], output,
+            target["id"],
+            output,
             longitude_east_deg=float(target["longitude_east_deg"]),
             latitude_deg=float(target["latitude_deg"]),
             place_name=str(target["name"]),
         )
-        completed.append({"site": target["id"], "observed_fraction": metadata["observed_cell_fraction"]})
+        completed.append(
+            {"site": target["id"], "observed_fraction": metadata["observed_cell_fraction"]}
+        )
     print(json.dumps(completed, indent=2))
 
 

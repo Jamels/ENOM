@@ -2557,7 +2557,10 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
+    { name = "httpx2" },
     { name = "mypy" },
+    { name = "planetary-computer" },
+    { name = "pystac-client" },
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -2574,11 +2577,14 @@ vision = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx2", marker = "extra == 'dev'", specifier = ">=2.16" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13" },
     { name = "numpy", specifier = ">=2.1" },
     { name = "pillow", specifier = ">=10" },
+    { name = "planetary-computer", marker = "extra == 'dev'", specifier = ">=1.0" },
     { name = "planetary-computer", marker = "extra == 'earthdata'", specifier = ">=1.0" },
     { name = "pyshp", specifier = ">=2.3" },
+    { name = "pystac-client", marker = "extra == 'dev'", specifier = ">=0.8" },
     { name = "pystac-client", marker = "extra == 'earthdata'", specifier = ">=0.8" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3" },
     { name = "pyyaml", specifier = ">=6.0" },

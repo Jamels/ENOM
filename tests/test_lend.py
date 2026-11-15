@@ -11,7 +11,9 @@ from twinworld.api import dataset_coverage, datasets
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _alds_record(latitude: float, longitude: float, exposure: float, rate: float, error: float) -> bytes:
+def _alds_record(
+    latitude: float, longitude: float, exposure: float, rate: float, error: float
+) -> bytes:
     row = bytearray(b" " * lend.ROW_BYTES)
     row[:23] = b"2009-09-15T00:00:00.000"
     row[23:46] = b"2011-12-11T00:00:00.000"
@@ -62,7 +64,12 @@ def test_lend_records_are_place_linked_context_not_scores():
     assert "not directly measure water or ice" in lend_items[0]["interpretation_note"]
     assert any(item["measurements"][0]["availability"] == "not_observed" for item in lend_items)
     assert all(
-        next(dimension for dimension in row["dimension_scores"] if dimension["id"] == "water_resources")["score"] is None
+        next(
+            dimension
+            for dimension in row["dimension_scores"]
+            if dimension["id"] == "water_resources"
+        )["score"]
+        is None
         for row in result["results"]
     )
 

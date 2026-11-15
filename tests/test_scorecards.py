@@ -38,6 +38,9 @@ def test_weights_reject_negative_nonfinite_unknown_and_zero_sum():
         {"mean_slope": math.inf},
         {"unregistered": 1.0},
         {"mean_slope": 0.0, "slope_p90": 0.0},
+        {"mean_slope": True},
+        {"mean_slope": "1"},
+        {"mean_slope": 1e308, "slope_p90": 1e308},
     ):
         with pytest.raises(ValueError):
             validate_weights(weights)
@@ -52,6 +55,15 @@ def test_missing_and_scale_mismatched_features_are_not_scored_or_called_dissimil
     assert result["similarity_score"] is None
     assert result["data_completeness"] == 0
     assert all(item["score"] is None for item in result["variables"])
+
+
+def test_same_wrong_units_cannot_enter_a_degree_based_score_or_screen():
+    wrong_units = measurement("mean_slope", 5.0, units="m")
+    comparison = compare_candidate([wrong_units], [wrong_units], {"mean_slope": 1.0})
+    assert comparison["similarity_score"] is None
+    assert comparison["data_completeness"] == 0
+    screen = mission_suitability([wrong_units], "base_construction")
+    assert screen["checks"][0]["status"] == "not_assessed"
 
 
 def test_measurements_marked_unavailable_do_not_affect_ranking_or_screening():

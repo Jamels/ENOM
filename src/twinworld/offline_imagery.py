@@ -13,8 +13,8 @@ from pathlib import Path
 from typing import Any
 
 import requests
-from requests.adapters import HTTPAdapter
 from PIL import Image
+from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,7 +29,17 @@ NS = {"wmts": WMTS, "ows": OWS}
 OFFLINE_MATRIX_DIMENSIONS: dict[str, list[tuple[int, int]]] = {
     "earth": [(2, 1), (3, 2), (5, 3), (10, 5), (20, 10), (40, 20), (80, 40), (160, 80)],
     "mars": [(2, 1), (4, 2), (8, 4), (16, 8), (32, 16), (64, 32), (128, 64), (256, 128)],
-    "moon": [(2, 1), (4, 2), (8, 4), (16, 8), (32, 16), (64, 32), (128, 64), (256, 128), (512, 256)],
+    "moon": [
+        (2, 1),
+        (4, 2),
+        (8, 4),
+        (16, 8),
+        (32, 16),
+        (64, 32),
+        (128, 64),
+        (256, 128),
+        (512, 256),
+    ],
 }
 
 SOURCES: dict[str, dict[str, str]] = {
@@ -64,8 +74,13 @@ _lock = threading.RLock()
 _stop_mode: str | None = None
 _worker_thread: threading.Thread | None = None
 _state: dict[str, Any] = {
-    "status": "idle", "completed": 0, "total": 0, "bytes": 0,
-    "required_bytes": ESTIMATED_BYTES, "error": None, "source_versions": SOURCE_VERSIONS,
+    "status": "idle",
+    "completed": 0,
+    "total": 0,
+    "bytes": 0,
+    "required_bytes": ESTIMATED_BYTES,
+    "error": None,
+    "source_versions": SOURCE_VERSIONS,
 }
 _metadata_cache: dict[str, list[dict[str, Any]]] = {}
 
@@ -86,7 +101,9 @@ def _read_metadata(body: str) -> list[dict[str, Any]]:
     if body in _metadata_cache:
         return _metadata_cache[body]
     source = SOURCES[body]
-    request = urllib.request.Request(source["capabilities"], headers={"User-Agent": "ENOM globe tile package"})
+    request = urllib.request.Request(
+        source["capabilities"], headers={"User-Agent": "ENOM globe tile package"}
+    )
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
             root = ET.fromstring(response.read())
@@ -97,7 +114,14 @@ def _read_metadata(body: str) -> list[dict[str, Any]]:
         ]
         _metadata_cache[body] = matrices
         return matrices
-    layer = next((node for node in root.findall(".//wmts:Layer", NS) if node.findtext("ows:Identifier", namespaces=NS) == source["layer"]), None)
+    layer = next(
+        (
+            node
+            for node in root.findall(".//wmts:Layer", NS)
+            if node.findtext("ows:Identifier", namespaces=NS) == source["layer"]
+        ),
+        None,
+    )
     if layer is None:
         raise RuntimeError(f"NASA WMTS layer missing for {body}")
     linked = {
@@ -107,7 +131,11 @@ def _read_metadata(body: str) -> list[dict[str, Any]]:
     if source["matrix_set"] not in linked:
         raise RuntimeError(f"NASA matrix set missing for {body}")
     matrix_set = next(
-        (node for node in root.findall(".//wmts:TileMatrixSet", NS) if node.findtext("ows:Identifier", namespaces=NS) == source["matrix_set"]),
+        (
+            node
+            for node in root.findall(".//wmts:TileMatrixSet", NS)
+            if node.findtext("ows:Identifier", namespaces=NS) == source["matrix_set"]
+        ),
         None,
     )
     if matrix_set is None:
@@ -125,7 +153,15 @@ def _read_metadata(body: str) -> list[dict[str, Any]]:
 
 def _tile_path(body: str, matrix_id: str, row: int, col: int) -> Path:
     source = SOURCES[body]
-    return TILE_ROOT / body / source["version"] / source["matrix_set"] / matrix_id / str(row) / f"{col}.{source['ext']}"
+    return (
+        TILE_ROOT
+        / body
+        / source["version"]
+        / source["matrix_set"]
+        / matrix_id
+        / str(row)
+        / f"{col}.{source['ext']}"
+    )
 
 
 def _missing_path(body: str, matrix_id: str, row: int, col: int) -> Path:
@@ -148,13 +184,22 @@ def _manifest() -> list[tuple[str, str, int, int]]:
 
 def _snapshot() -> dict[str, Any]:
     with _lock:
-        has_saved_tiles = TILE_ROOT.exists() and next((path for path in TILE_ROOT.rglob("*") if path.is_file()), None) is not None
-        return {**_state, "available_bytes": _available_bytes(), "persistent": None, "has_saved_tiles": has_saved_tiles}
+        has_saved_tiles = (
+            TILE_ROOT.exists()
+            and next((path for path in TILE_ROOT.rglob("*") if path.is_file()), None) is not None
+        )
+        return {
+            **_state,
+            "available_bytes": _available_bytes(),
+            "persistent": None,
+            "has_saved_tiles": has_saved_tiles,
+        }
 
 
 def _available_bytes() -> int | None:
     try:
         import shutil as disk_usage
+
         return disk_usage.disk_usage(ROOT).free
     except OSError:
         return None
@@ -193,21 +238,32 @@ def status() -> dict[str, Any]:
             saved = json.loads(state_file.read_text(encoding="utf-8"))
             with _lock:
                 _state.update(saved)
-                source_stale = _state.get("source_versions") != SOURCE_VERSIONS and _state.get("total", 0)
+                source_stale = _state.get("source_versions") != SOURCE_VERSIONS and _state.get(
+                    "total", 0
+                )
                 interrupted = _state["status"] in {"downloading", "preparing"}
             if source_stale:
                 with _lock:
-                    _state.update(status="stale", error="NASA source version changed. Start a new repository download to refresh saved tiles.")
+                    _state.update(
+                        status="stale",
+                        error=(
+                            "NASA source version changed. Start a new repository download to "
+                            "refresh saved tiles."
+                        ),
+                    )
                     _save_state()
             elif interrupted:
                 try:
                     items = _manifest()
                     complete = sum(
-                        1 for body, matrix_id, row, col in items
-                        if _tile_path(body, matrix_id, row, col).is_file() or _missing_path(body, matrix_id, row, col).is_file()
+                        1
+                        for body, matrix_id, row, col in items
+                        if _tile_path(body, matrix_id, row, col).is_file()
+                        or _missing_path(body, matrix_id, row, col).is_file()
                     )
                     total_bytes = sum(
-                        path.stat().st_size for path in TILE_ROOT.rglob("*")
+                        path.stat().st_size
+                        for path in TILE_ROOT.rglob("*")
                         if path.is_file() and path.suffix.lower() in {".jpg", ".jpeg"}
                     )
                     with _lock:
@@ -216,47 +272,75 @@ def status() -> dict[str, Any]:
                             completed=complete,
                             total=len(items),
                             bytes=total_bytes,
-                            error=None if complete == len(items) else "Server restarted; resume the local map download when ready.",
+                            error=None
+                            if complete == len(items)
+                            else "Server restarted; resume the local map download when ready.",
                         )
                         _save_state()
                 except Exception:
                     with _lock:
-                        _state.update(status="paused", error="Server restarted; resume the local map download when ready.")
+                        _state.update(
+                            status="paused",
+                            error="Server restarted; resume the local map download when ready.",
+                        )
         except (OSError, ValueError):
             pass
     return _snapshot()
 
 
 def _valid_tile(body: str, matrix_set: str, matrix_id: str, row: int, col: int) -> bool:
-    if body not in SOURCES or SOURCES[body]["matrix_set"] != matrix_set or not re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", matrix_id):
+    if (
+        body not in SOURCES
+        or SOURCES[body]["matrix_set"] != matrix_set
+        or not re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", matrix_id)
+    ):
         return False
     matrix = next((item for item in _read_metadata(body) if item["id"] == matrix_id), None)
     return matrix is not None and 0 <= row < matrix["height"] and 0 <= col < matrix["width"]
 
 
-def tile_file(body: str, version: str, matrix_set: str, matrix_id: str, row: int, col: int) -> Path | None:
+def tile_file(
+    body: str, version: str, matrix_set: str, matrix_id: str, row: int, col: int
+) -> Path | None:
     source = SOURCES.get(body)
-    if source is None or source["version"] != version or not _valid_tile(body, matrix_set, matrix_id, row, col):
+    if (
+        source is None
+        or source["version"] != version
+        or not _valid_tile(body, matrix_set, matrix_id, row, col)
+    ):
         return None
     path = _tile_path(body, matrix_id, row, col)
     return path if path.is_file() else None
 
 
-def tile_is_missing(body: str, version: str, matrix_set: str, matrix_id: str, row: int, col: int) -> bool:
+def tile_is_missing(
+    body: str, version: str, matrix_set: str, matrix_id: str, row: int, col: int
+) -> bool:
     source = SOURCES.get(body)
-    if source is None or source["version"] != version or not _valid_tile(body, matrix_set, matrix_id, row, col):
+    if (
+        source is None
+        or source["version"] != version
+        or not _valid_tile(body, matrix_set, matrix_id, row, col)
+    ):
         return False
     return _missing_path(body, matrix_id, row, col).is_file()
 
 
-def save_viewed_tile(body: str, version: str, matrix_set: str, matrix_id: str, row: int, col: int, content: bytes) -> bool:
+def save_viewed_tile(
+    body: str, version: str, matrix_set: str, matrix_id: str, row: int, col: int, content: bytes
+) -> bool:
     source = SOURCES.get(body)
-    if source is None or source["version"] != version or not _valid_tile(body, matrix_set, matrix_id, row, col):
+    if (
+        source is None
+        or source["version"] != version
+        or not _valid_tile(body, matrix_set, matrix_id, row, col)
+    ):
         return False
     if len(content) > 4 * 1024 * 1024:
         return False
     try:
         from io import BytesIO
+
         with Image.open(BytesIO(content)) as image:
             image.verify()
     except Exception:
@@ -288,9 +372,12 @@ def _fetch_one(item: tuple[str, str, int, int], session: requests.Session) -> tu
         return "missing", 0
     response.raise_for_status()
     content = response.content
-    if len(content) > 4 * 1024 * 1024 or not response.headers.get("Content-Type", "").startswith("image/"):
+    if len(content) > 4 * 1024 * 1024 or not response.headers.get("Content-Type", "").startswith(
+        "image/"
+    ):
         raise RuntimeError("NASA returned an invalid tile response")
     from io import BytesIO
+
     with Image.open(BytesIO(content)) as image:
         image.verify()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -306,7 +393,14 @@ def _run_download(items: list[tuple[str, str, int, int]]) -> None:
     bytes_saved = 0
     total = len(items)
     with _lock:
-        _state.update(status="downloading", completed=0, total=total, bytes=0, error=None, required_bytes=ESTIMATED_BYTES)
+        _state.update(
+            status="downloading",
+            completed=0,
+            total=total,
+            bytes=0,
+            error=None,
+            required_bytes=ESTIMATED_BYTES,
+        )
         _save_state()
     iterator = iter(items)
     iterator_lock = threading.Lock()
@@ -316,7 +410,11 @@ def _run_download(items: list[tuple[str, str, int, int]]) -> None:
         global _stop_mode
         nonlocal completed, bytes_saved
         retry = Retry(
-            total=5, connect=4, read=3, status=5, backoff_factor=0.35,
+            total=5,
+            connect=4,
+            read=3,
+            status=5,
+            backoff_factor=0.35,
             status_forcelist=(429, 500, 502, 503, 504),
             allowed_methods=frozenset({"GET"}),
             respect_retry_after_header=True,
@@ -388,7 +486,9 @@ def start() -> dict[str, Any]:
                         shutil.rmtree(old_version, ignore_errors=True)
     except OSError as error:
         with _lock:
-            _state.update(status="error", error=f"Could not prepare repository tile storage: {error}")
+            _state.update(
+                status="error", error=f"Could not prepare repository tile storage: {error}"
+            )
             _save_state()
         return _snapshot()
     try:
@@ -399,19 +499,34 @@ def start() -> dict[str, Any]:
             _save_state()
         return _snapshot()
     remaining = sum(
-        1 for body, matrix_id, row, col in items
-        if not _tile_path(body, matrix_id, row, col).is_file() and not _missing_path(body, matrix_id, row, col).is_file()
+        1
+        for body, matrix_id, row, col in items
+        if not _tile_path(body, matrix_id, row, col).is_file()
+        and not _missing_path(body, matrix_id, row, col).is_file()
     )
     remaining_estimate = int(ESTIMATED_BYTES * remaining / max(1, len(items)))
     available = _available_bytes()
     if available is not None and available < remaining_estimate:
         with _lock:
-            _state.update(status="error", error=f"Not enough free repository disk space for the remaining estimated {remaining_estimate / 1024 ** 2:.0f} MB of tiles.")
+            _state.update(
+                status="error",
+                error=(
+                    "Not enough free repository disk space for the remaining estimated "
+                    f"{remaining_estimate / 1024**2:.0f} MB of tiles."
+                ),
+            )
             _save_state()
         return _snapshot()
     with _lock:
-        _state.update(status="downloading", total=len(items), required_bytes=ESTIMATED_BYTES, source_versions=SOURCE_VERSIONS)
-        _worker_thread = threading.Thread(target=_run_download, args=(items,), daemon=True, name="enom-globe-map-download")
+        _state.update(
+            status="downloading",
+            total=len(items),
+            required_bytes=ESTIMATED_BYTES,
+            source_versions=SOURCE_VERSIONS,
+        )
+        _worker_thread = threading.Thread(
+            target=_run_download, args=(items,), daemon=True, name="enom-globe-map-download"
+        )
         _worker_thread.start()
     return _snapshot()
 
@@ -440,5 +555,13 @@ def clear() -> dict[str, Any]:
         _stop_mode = None
         shutil.rmtree(TILE_ROOT, ignore_errors=True)
         STATE_PATH.unlink(missing_ok=True)
-        _state.update(status="idle", completed=0, total=0, bytes=0, error=None, required_bytes=ESTIMATED_BYTES, source_versions=SOURCE_VERSIONS)
+        _state.update(
+            status="idle",
+            completed=0,
+            total=0,
+            bytes=0,
+            error=None,
+            required_bytes=ESTIMATED_BYTES,
+            source_versions=SOURCE_VERSIONS,
+        )
         return _snapshot()

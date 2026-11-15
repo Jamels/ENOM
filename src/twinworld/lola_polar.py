@@ -12,8 +12,7 @@ from twinworld.lunar import MOON_REFERENCE_RADIUS_M, polar_stereographic_crs
 from twinworld.pds import read_byte_range
 
 LOLA_POLAR_BASE = (
-    "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/"
-    "lrolol_1xxx/data/lola_gdr/polar/img"
+    "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img"
 )
 DEM_PRODUCT = "LDEM_75S_120M"
 COUNT_PRODUCT = "LDEC_75S_120M"
@@ -72,7 +71,12 @@ def read_lola_polar_crop(
     width = 2 * half_width_pixels
     first_col = center_col - half_width_pixels
     first_row = center_row - half_width_pixels
-    if first_col < 0 or first_row < 0 or first_col + width > GRID_SIZE or first_row + width > GRID_SIZE:
+    if (
+        first_col < 0
+        or first_row < 0
+        or first_col + width > GRID_SIZE
+        or first_row + width > GRID_SIZE
+    ):
         raise ValueError("requested crop crosses the LOLA polar product edge")
     start_byte = first_row * RECORD_BYTES + first_col * 2
     end_byte = (first_row + width - 1) * RECORD_BYTES + (first_col + width) * 2 - 1

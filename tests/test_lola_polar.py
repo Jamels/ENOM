@@ -4,8 +4,13 @@ from pathlib import Path
 import numpy as np
 
 from twinworld import lola_polar
-from twinworld.api import datasets, dataset_coverage, place_coverage_preview, place_elevation_preview
 from twinworld.analogue import discover, source_inventory
+from twinworld.api import (
+    dataset_coverage,
+    datasets,
+    place_coverage_preview,
+    place_elevation_preview,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -16,7 +21,9 @@ def test_lunar_candidate_coordinates_map_inside_native_south_polar_grid():
         (359.76422, -85.9948),
         (292.0679, -88.6834),
     ]
-    pixels = [lola_polar.lunar_polar_pixel(longitude, latitude) for longitude, latitude in candidates]
+    pixels = [
+        lola_polar.lunar_polar_pixel(longitude, latitude) for longitude, latitude in candidates
+    ]
     assert len(set(pixels)) == len(candidates)
     assert all(0 <= column < lola_polar.GRID_SIZE for column, _ in pixels)
     assert all(0 <= row < lola_polar.GRID_SIZE for _, row in pixels)
@@ -36,7 +43,9 @@ def test_polar_crop_reads_only_the_requested_window_and_masks_zero_shot_cells(mo
             start_offset = row * lola_polar.RECORD_BYTES
             payload[start_offset : start_offset + width * 2] = row_bytes
         if url == lola_polar.COUNT_URL:
-            payload[5 * lola_polar.RECORD_BYTES + 5 * 2 : 5 * lola_polar.RECORD_BYTES + 6 * 2] = np.array([0], dtype=dtype).tobytes()
+            payload[5 * lola_polar.RECORD_BYTES + 5 * 2 : 5 * lola_polar.RECORD_BYTES + 6 * 2] = (
+                np.array([0], dtype=dtype).tobytes()
+            )
         return bytes(payload)
 
     monkeypatch.setattr(lola_polar, "read_byte_range", fake_range)
@@ -59,7 +68,9 @@ def test_lola_polar_crops_are_place_linked_and_used_for_terrain_ranking():
     ]
     assert len(metadata) == 3
     assert {row["place_id"] for row in metadata} == {
-        "moon-shackleton-rim", "moon-malapert-massif", "moon-de-gerlache-rim"
+        "moon-shackleton-rim",
+        "moon-malapert-massif",
+        "moon-de-gerlache-rim",
     }
     assert all(row["observed_cell_fraction"] == 1 for row in metadata)
     assert all((ROOT / row["count_raster"]).is_file() for row in metadata)
@@ -68,13 +79,20 @@ def test_lola_polar_crops_are_place_linked_and_used_for_terrain_ranking():
     terrain = next(row for row in result["target_evidence"] if row["id"] == "terrain")
     assert terrain["status"] == "available"
     assert {row["name"] for row in terrain["measurements"]} >= {
-        "elevation_range", "mean_slope", "median_roughness_3x3"
+        "elevation_range",
+        "mean_slope",
+        "median_roughness_3x3",
     }
     assert any(row["score"] is not None for row in result["results"])
 
     source = next(row for row in source_inventory(ROOT) if row["id"] == "lola-polar-dem")
     assert source["status"] == "operational" and source["coverage_count"] == 3
-    assert next(row for row in datasets() if row["id"] == "lro-lola-gdr-polar-ldem-120m")["coverage_count"] == 3
+    assert (
+        next(row for row in datasets() if row["id"] == "lro-lola-gdr-polar-ldem-120m")[
+            "coverage_count"
+        ]
+        == 3
+    )
     coverage = dataset_coverage("lro-lola-gdr-polar-ldem-120m")
     assert set(coverage["place_ids"]) == {row["place_id"] for row in metadata}
     assert "not vertical uncertainty" in coverage["support_semantics"]

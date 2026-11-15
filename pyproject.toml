@@ -26,7 +26,14 @@ dependencies = [
 [project.optional-dependencies]
 vision = ["torch>=2.5", "torchvision>=0.20", "transformers>=4.46"]
 earthdata = ["pystac-client>=0.8", "planetary-computer>=1.0"]
-dev = ["pytest>=8.3", "ruff>=0.8", "mypy>=1.13"]
+dev = [
+  "pytest>=8.3",
+  "ruff>=0.8",
+  "mypy>=1.13",
+  "httpx2>=2.16",
+  "pystac-client>=0.8",
+  "planetary-computer>=1.0",
+]
 
 [project.scripts]
 twinworld = "twinworld.cli:app"

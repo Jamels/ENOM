@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import ssl
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import certifi
@@ -38,12 +38,18 @@ def main() -> None:
     )
     if not points:
         raise RuntimeError("No rover drive localizations were found near the Jezero candidate")
-    records = [{
-        "observation_id": f"mars-jezero:PLACES:site-{point['site']}:drive-{point['drive']}:pose-{point['pose']}",
-        "place_id": "mars-jezero",
-        "dataset_id": mars2020_places.DATASET_ID,
-        **point,
-    } for point in points]
+    records = [
+        {
+            "observation_id": (
+                f"mars-jezero:PLACES:site-{point['site']}:drive-{point['drive']}:"
+                f"pose-{point['pose']}"
+            ),
+            "place_id": "mars-jezero",
+            "dataset_id": mars2020_places.DATASET_ID,
+            **point,
+        }
+        for point in points
+    ]
     payload = {
         "dataset_id": mars2020_places.DATASET_ID,
         "product_id": "best_tactical.csv",
@@ -52,27 +58,39 @@ def main() -> None:
         "release_url": RELEASE_URL,
         "release": 16,
         "release_date": "2026-08-11",
-        "retrieved_at": datetime.now(timezone.utc).isoformat(),
+        "retrieved_at": datetime.now(UTC).isoformat(),
         "place_id": "mars-jezero",
         "body": "mars",
         "candidate_latitude_deg": site["latitude_deg"],
         "candidate_longitude_east_deg": site["longitude_east_deg"],
         "candidate_region_radius_km": SEARCH_RADIUS_KM,
-        "coordinate_system": "planetocentric latitude, east-positive longitude; Mars radius 3396.19 km for distance",
-        "position_uncertainty": "The table supplies localized coordinates but no per-position uncertainty field in this ENOM ingest.",
+        "coordinate_system": (
+            "planetocentric latitude, east-positive longitude; Mars radius 3396.19 km for distance"
+        ),
+        "position_uncertainty": (
+            "The table supplies localized coordinates but no per-position "
+            "uncertainty field in this ENOM ingest."
+        ),
         "known_source_gap": (
-            "PDS Release 16 notes that ROVER,n,0 entries are absent from best_tactical.csv; "
-            "those positions are represented by SITE rows, so ENOM's drive-position subset does not include them."
+            "PDS Release 16 notes that ROVER,n,0 entries are absent from "
+            "best_tactical.csv; those positions are represented by SITE "
+            "rows, so ENOM's drive-position subset does not include them."
         ),
         "interpretation_limit": (
-            "Positions are selected best-tactical rover localizations associated with drive records. "
-            "They are discrete location fixes, not a continuous wheel path, odometry track, hazard assessment, or vehicle-suitability result. "
-            "Release 16 omits ROVER,n,0 fixes from this table, leaving a gap at those drive starts."
+            "Positions are selected best-tactical rover localizations "
+            "associated with drive records. They are discrete location "
+            "fixes, not a continuous wheel path, odometry track, hazard "
+            "assessment, or vehicle-suitability result. Release 16 omits "
+            "ROVER,n,0 fixes from this table, leaving a gap at those drive "
+            "starts."
         ),
         "use_limit": (
-            "Positions are selected best-tactical rover localizations associated with drive records. "
-            "They are discrete location fixes, not a continuous wheel path, odometry track, hazard assessment, or vehicle-suitability result. "
-            "Release 16 omits ROVER,n,0 fixes from this table, leaving a gap at those drive starts."
+            "Positions are selected best-tactical rover localizations "
+            "associated with drive records. They are discrete location "
+            "fixes, not a continuous wheel path, odometry track, hazard "
+            "assessment, or vehicle-suitability result. Release 16 omits "
+            "ROVER,n,0 fixes from this table, leaving a gap at those drive "
+            "starts."
         ),
         "records": records,
     }

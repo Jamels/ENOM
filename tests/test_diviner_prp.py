@@ -10,23 +10,33 @@ from twinworld.api import dataset_coverage, datasets
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _prp_record(latitude: float, longitude: float, average: float = 110.0, maximum: float = 220.0, ice: float = 0.4) -> bytes:
+def _prp_record(
+    latitude: float,
+    longitude: float,
+    average: float = 110.0,
+    maximum: float = 220.0,
+    ice: float = 0.4,
+) -> bytes:
     return (
-        f"0,0,0,0,0,0,0,0,0,{longitude:15.9f},{latitude:15.9f},0,"
-        f"{average:8.3f},{maximum:8.3f},{ice:11.5f}\r\n"
-    ).encode("ascii").ljust(diviner_prp.ROW_BYTES, b" ")[: diviner_prp.ROW_BYTES]
+        (
+            f"0,0,0,0,0,0,0,0,0,{longitude:15.9f},{latitude:15.9f},0,"
+            f"{average:8.3f},{maximum:8.3f},{ice:11.5f}\r\n"
+        )
+        .encode("ascii")
+        .ljust(diviner_prp.ROW_BYTES, b" ")[: diviner_prp.ROW_BYTES]
+    )
 
 
 def test_south_polar_mesh_lookup_bounds_and_longitude_wrap():
-    assert diviner_prp._candidate_grid(-89.77, 188.13) == diviner_prp._candidate_grid(-89.77, -171.87)
+    assert diviner_prp._candidate_grid(-89.77, 188.13) == diviner_prp._candidate_grid(
+        -89.77, -171.87
+    )
     with pytest.raises(ValueError, match="covers latitudes"):
         diviner_prp._candidate_grid(-79.9, 0)
 
 
 def test_parse_prp_fields_and_preserve_excluded_ice_depth_as_missing():
-    parsed = diviner_prp._parse_record(
-        _prp_record(-89.77, 188.13, ice=-999.0), 12, -89.77, 188.13
-    )
+    parsed = diviner_prp._parse_record(_prp_record(-89.77, 188.13, ice=-999.0), 12, -89.77, 188.13)
     assert parsed["measurements"]["annual_average_surface_temperature_2cm"] == 110.0
     assert parsed["measurements"]["annual_maximum_surface_temperature"] == 220.0
     assert parsed["measurements"]["modeled_ice_stability_depth"] is None
@@ -51,16 +61,28 @@ def test_diviner_prp_is_context_evidence_not_cross_body_score():
     result = discover(ROOT, "moon-shackleton-rim", "polar_resources")
     thermal = next(row for row in result["target_evidence"] if row["id"] == "thermal_illumination")
     resources = next(row for row in result["target_evidence"] if row["id"] == "water_resources")
-    thermal_items = [item for item in thermal["evidence_items"] if item["dataset_id"] == diviner_prp.DATASET_ID]
-    resource_items = [item for item in resources["evidence_items"] if item["dataset_id"] == diviner_prp.DATASET_ID]
+    thermal_items = [
+        item for item in thermal["evidence_items"] if item["dataset_id"] == diviner_prp.DATASET_ID
+    ]
+    resource_items = [
+        item for item in resources["evidence_items"] if item["dataset_id"] == diviner_prp.DATASET_ID
+    ]
     assert len(thermal_items) == len(resource_items) == 1
     assert "thermal-model" in thermal["summary"]
     assert "not a direct detection" in resources["summary"]
     assert thermal_items[0]["spatial_coverage"]["spatial_scale_m"] == 500.0
-    assert thermal_items[0]["spatial_coverage"]["location_precision"] == "nearest_triangular_mesh_centroid"
+    assert (
+        thermal_items[0]["spatial_coverage"]["location_precision"]
+        == "nearest_triangular_mesh_centroid"
+    )
     assert "Nearest mesh centroid" in thermal_items[0]["spatial_relation"]
     assert all(
-        next(dimension for dimension in row["dimension_scores"] if dimension["id"] in {"thermal_illumination", "water_resources"})["score"] is None
+        next(
+            dimension
+            for dimension in row["dimension_scores"]
+            if dimension["id"] in {"thermal_illumination", "water_resources"}
+        )["score"]
+        is None
         for row in result["results"]
     )
 

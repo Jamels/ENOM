@@ -17,12 +17,12 @@ from twinworld.lola_polar import (
     DEM_LABEL_URL,
     DEM_PRODUCT,
     DEM_URL,
+    LINE_PROJECTION_OFFSET,
     MIN_DIRECT_SUPPORT_FRACTION,
     NATIVE_PIXEL_M,
     OUTPUT_PIXEL_M,
     OUTPUT_SIZE,
     SAMPLE_PROJECTION_OFFSET,
-    LINE_PROJECTION_OFFSET,
     read_lola_polar_crop,
 )
 from twinworld.lunar import polar_stereographic_crs
@@ -190,7 +190,9 @@ def ingest_candidate(candidate: dict[str, object]) -> dict[str, object]:
         "context_size_m": OUTPUT_SIZE * OUTPUT_PIXEL_M,
         "crs": source_crs.to_string(),
         "processing_crs": source_crs.to_string(),
-        "coordinate_frame": "Mean Earth / polar axis of DE421; planetocentric latitude; east-positive longitude",
+        "coordinate_frame": (
+            "Mean Earth / polar axis of DE421; planetocentric latitude; east-positive longitude"
+        ),
         "units": "m relative to the LOLA 1,737.4 km reference sphere",
         "observed_cell_count": observed_count,
         "grid_cell_count": int(valid.size),
@@ -199,16 +201,18 @@ def ingest_candidate(candidate: dict[str, object]) -> dict[str, object]:
         "minimum_direct_support_fraction_per_output_cell": MIN_DIRECT_SUPPORT_FRACTION,
         "count_raster": str(count_path.relative_to(ROOT)),
         "observation_coverage": (
-            "Paired LDEC product gives direct observation counts at 120 m. Output DEM cells "
-            "are retained only when at least 25% of the contributing native grid is directly observed."
+            "Paired LDEC product gives direct observation counts at 120 m. "
+            "Output DEM cells are retained only when at least 25% of the "
+            "contributing native grid is directly observed."
         ),
         "missing_data_semantics": (
             "LDEC count 0 means no direct LOLA observations contributed to that native cell; "
             "such cells are not used as elevation evidence."
         ),
         "uncertainty_note": (
-            "Direct-shot counts describe support, not vertical uncertainty. The PDS product "
-            "does not provide a per-cell elevation uncertainty layer; vertical error is not propagated."
+            "Direct-shot counts describe support, not vertical uncertainty. "
+            "The PDS product does not provide a per-cell elevation "
+            "uncertainty layer; vertical error is not propagated."
         ),
         "processing_method": (
             "Only the selected 96×96 native-cell windows were fetched by verified HTTP byte-range "
@@ -235,14 +239,18 @@ def main() -> None:
     for candidate in candidates:
         try:
             metadata = ingest_candidate(candidate)
-            results.append({
-                "place_id": candidate["id"],
-                "status": "available",
-                "observed_cell_fraction": metadata["observed_cell_fraction"],
-                "native_count_crop_fraction": metadata["native_count_crop_fraction"],
-            })
+            results.append(
+                {
+                    "place_id": candidate["id"],
+                    "status": "available",
+                    "observed_cell_fraction": metadata["observed_cell_fraction"],
+                    "native_count_crop_fraction": metadata["native_count_crop_fraction"],
+                }
+            )
         except Exception as error:
-            results.append({"place_id": candidate["id"], "status": "unavailable", "reason": str(error)})
+            results.append(
+                {"place_id": candidate["id"], "status": "unavailable", "reason": str(error)}
+            )
     print(json.dumps(results, indent=2))
 
 

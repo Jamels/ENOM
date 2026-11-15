@@ -41,9 +41,11 @@ def _candidate_grid(latitude_deg: float, longitude_east_deg: float) -> tuple[int
     return row, column
 
 
-def _parse_record(raw: bytes, record_index: int, candidate_lat: float, candidate_lon: float) -> dict[str, Any]:
+def _parse_record(
+    raw: bytes, record_index: int, candidate_lat: float, candidate_lon: float
+) -> dict[str, Any]:
     if len(raw) != ROW_BYTES:
-        raise IOError("Diviner PRP record did not match its 210-byte PDS row")
+        raise OSError("Diviner PRP record did not match its 210-byte PDS row")
     fields = raw.decode("ascii").strip().split(",")
     if len(fields) != 15:
         raise ValueError("Diviner PRP row did not contain the 15 PDS fields")
@@ -99,12 +101,14 @@ def read_nearest_triangle(latitude_deg: float, longitude_east_deg: float) -> dic
         )
         expected = (last_record - first_record + 1) * ROW_BYTES
         if len(raw) != expected:
-            raise IOError("Diviner PRP byte range did not match the requested local rows")
+            raise OSError("Diviner PRP byte range did not match the requested local rows")
         for offset in range(0, len(raw), ROW_BYTES):
             record_index = first_triangle + offset // ROW_BYTES
-            candidates.append(_parse_record(
-                raw[offset : offset + ROW_BYTES], record_index, latitude_deg, longitude_east_deg
-            ))
+            candidates.append(
+                _parse_record(
+                    raw[offset : offset + ROW_BYTES], record_index, latitude_deg, longitude_east_deg
+                )
+            )
     nearest = min(candidates, key=lambda item: item["distance_from_candidate_km"])
     if nearest["distance_from_candidate_km"] > MAX_SAMPLE_DISTANCE_KM:
         raise ValueError("Nearest Diviner PRP triangle is too far from the candidate place")
@@ -112,5 +116,8 @@ def read_nearest_triangle(latitude_deg: float, longitude_east_deg: float) -> dic
         **nearest,
         "candidate_grid_cell": {"row": row, "column": column},
         "search_triangle_count": len(candidates),
-        "mesh_resolution_note": "about 0.5 km triangle spacing; sample is the nearest triangle centroid, not a place-wide average",
+        "mesh_resolution_note": (
+            "about 0.5 km triangle spacing; sample is the nearest triangle "
+            "centroid, not a place-wide average"
+        ),
     }

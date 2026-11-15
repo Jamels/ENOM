@@ -1,0 +1,10 @@
+{
+  "version": "terrain-evidence-v7",
+  "minimum_observed_fraction": 0.25,
+  "minimum_valid_fraction": 0.9,
+  "multi_feature_minimum_count": 3,
+  "multi_feature_minimum_direct_fraction": 0.9,
+  "maximum_footprint_ratio": 1.05,
+  "ranking_tie_tolerance": 0.01,
+  "diversity_distance_m": 20000
+}

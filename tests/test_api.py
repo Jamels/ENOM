@@ -6,19 +6,19 @@ from fastapi import HTTPException
 
 from twinworld import api as api_module
 from twinworld.api import (
-    SearchRequest,
     AnalogueDiscoveryRequest,
+    SearchRequest,
     analogue_profiles,
     analogue_sources,
     catalogue,
     comparison,
     dataset_coverage,
     datasets,
+    discover_analogues,
+    places,
     planets,
     region,
     search,
-    discover_analogues,
-    places,
 )
 from twinworld.retrieval import search as visual_search
 from twinworld.science import Availability, PhysicalMeasurement
@@ -40,9 +40,7 @@ def test_visual_api_order_matches_shared_retrieval():
     query_id = "mars-dune-barchan_crescent_dune-0067+071"
     records, indexes, vectors = api_module._load()
     expected = visual_search(vectors, records, indexes[query_id], top_k=50)
-    actual = search(
-        SearchRequest(observation_id=query_id, method="visual", limit=50)
-    )
+    actual = search(SearchRequest(observation_id=query_id, method="visual", limit=50))
 
     assert [item.observation_id for item in actual.results] == [
         records[index].image_id for index, _ in expected
@@ -97,6 +95,53 @@ def test_candidate_catalogue_and_lunar_coverage_are_separate_from_image_index():
     earth_geology = dataset_coverage("usgs-earth-sgmc")
     assert earth_geology["coverage_count"] == 3
     assert earth_geology["candidate_site_query_count"] == 8
+    assert all(isinstance(note, str) for note in earth_geology["coverage_notes"])
+
+
+def test_discovery_rank_contract_preserves_dimension_rows():
+    from pydantic import ValidationError
+
+    from twinworld.analogue import DIMENSIONS
+    from twinworld.api import DiscoveryComparison, DiscoveryRankRequest
+
+    request = DiscoveryRankRequest(
+        index_id="release",
+        context_id="target",
+        weights={name: 1.0 for name in api_module.VARIABLES},
+        dimension_weights={name: 1.0 for name in DIMENSIONS},
+    )
+    assert request.result_limit == 10
+    assert set(request.dimension_weights) == set(DIMENSIONS)
+    with pytest.raises(ValidationError):
+        DiscoveryRankRequest(
+            index_id="release",
+            context_id="target",
+            weights={name: 1.0 for name in api_module.VARIABLES},
+            dimension_weights={"terrain": 1.0},
+        )
+
+    row = {
+        "dimension_id": "terrain",
+        "score": 0.8,
+        "evidence_status": "partial_coverage",
+        "source_url": "https://example.invalid/source",
+        "extra_provenance": {"observation_id": "obs-1"},
+    }
+    comparison_payload = {
+        "context": {},
+        "evidence_class": "limited_evidence",
+        "terrain_support_class": "limited_evidence",
+        "similarity_score": 0.8,
+        "score_interpretation": "index",
+        "data_completeness": 0.5,
+        "matched_variable_count": 1,
+        "requested_variable_count": 5,
+        "variables": [],
+        "dimension_scores": [row],
+        "rank": 1,
+    }
+    parsed = DiscoveryComparison.model_validate(comparison_payload)
+    assert parsed.dimension_scores == [row]
     assert any(row["id"] == "usgs-earth-sgmc" for row in datasets())
 
 
@@ -108,34 +153,48 @@ def test_mars_api_longitude_is_normalized_to_east_positive_range():
 def test_place_and_analogue_api_exposes_profiles_evidence_and_source_status():
     profile_rows = analogue_profiles()
     assert {row["id"] for row in profile_rows} == {
-        "dunes", "polar_resources", "geology_materials", "subsurface_targets", "mission_operations"
+        "dunes",
+        "polar_resources",
+        "geology_materials",
+        "subsurface_targets",
+        "mission_operations",
     }
-    result = discover_analogues(AnalogueDiscoveryRequest(
-        target_site_id="moon_mare_tranquillitatis_01", profile_id="mission_operations", limit=10
-    ))
+    result = discover_analogues(
+        AnalogueDiscoveryRequest(
+            target_site_id="moon_mare_tranquillitatis_01", profile_id="mission_operations", limit=10
+        )
+    )
     assert result["unique_place_count"] == len({row["place"]["id"] for row in result["results"]})
     assert len(result["target_evidence"]) == 8
     assert result["target"]["id"] == "observed-moon_mare_tranquillitatis_01"
-    assert any(item["id"] == "cop-dem-glo-30" and item["coverage_count"] == 18 for item in analogue_sources())
+    assert any(
+        item["id"] == "cop-dem-glo-30" and item["coverage_count"] == 18
+        for item in analogue_sources()
+    )
     assert dataset_coverage("nasa-power-climatology")["coverage_count"] == 8
-    assert any(item["id"] == "nasa-power-humidity" and item["coverage_count"] == 8 for item in analogue_sources())
+    assert any(
+        item["id"] == "nasa-power-humidity" and item["coverage_count"] == 8
+        for item in analogue_sources()
+    )
     cave_context = dataset_coverage("candidate-subsurface-context")
     assert cave_context["status"] == "context_only"
     assert cave_context["coverage_count"] == 5
     assert cave_context["body_counts"] == {"earth": 3, "moon": 2}
-    assert all(row["measurement_status"] == "no_measurement" for row in cave_context["observations"])
+    assert all(
+        row["measurement_status"] == "no_measurement" for row in cave_context["observations"]
+    )
     mission_context = dataset_coverage("candidate-mission-site-context")
     assert mission_context["coverage_count"] == 3
     assert mission_context["body_counts"] == {"mars": 3}
     meda = dataset_coverage("mars2020-meda")
     assert meda["coverage_count"] == 3
     assert meda["unique_place_count"] == 1
-    assert meda["scope"] == "Selected Mars sol 100 only; not a Mars climate normal or full rover traverse archive."
-    assert any(item["id"] == "mars2020-meda" for item in datasets())
-    assert any(
-        item["id"] == "observed-moon_mare_tranquillitatis_01"
-        for item in places()["places"]
+    assert (
+        meda["scope"]
+        == "Selected Mars sol 100 only; not a Mars climate normal or full rover traverse archive."
     )
+    assert any(item["id"] == "mars2020-meda" for item in datasets())
+    assert any(item["id"] == "observed-moon_mare_tranquillitatis_01" for item in places()["places"])
 
 
 def test_analogue_api_rejects_partial_dimension_weight_sets():
@@ -146,19 +205,29 @@ def test_analogue_api_rejects_partial_dimension_weight_sets():
         discover_analogues(request)
     assert error.value.status_code == 422
     with pytest.raises(ValueError, match="must be a number"):
-        AnalogueDiscoveryRequest(target_site_id="mars-jezero", profile_id="dunes", weights={"terrain": True})
+        AnalogueDiscoveryRequest(
+            target_site_id="mars-jezero", profile_id="dunes", weights={"terrain": True}
+        )
 
 
 def test_candidate_geology_and_elevation_layers_are_available_when_rasters_exist():
-    result = discover_analogues(AnalogueDiscoveryRequest(
-        target_site_id="mars-jezero", profile_id="mission_operations", limit=10
-    ))
+    result = discover_analogues(
+        AnalogueDiscoveryRequest(
+            target_site_id="mars-jezero", profile_id="mission_operations", limit=10
+        )
+    )
     geology = next(item for item in result["target_evidence"] if item["id"] == "geology_materials")
     assert geology["status"] == "available"
     assert geology["interpretations"][0]["map_unit_code"] == "Nhc"
-    assert any(layer["id"] == "geology_context" and layer["status"] == "point_context" for layer in result["target_layers"])
+    assert any(
+        layer["id"] == "geology_context" and layer["status"] == "point_context"
+        for layer in result["target_layers"]
+    )
     assert result["target_layers"]
-    if next(item for item in result["target_layers"] if item["id"] == "terrain_dem")["status"] == "available":
+    if (
+        next(item for item in result["target_layers"] if item["id"] == "terrain_dem")["status"]
+        == "available"
+    ):
         preview = api_module.place_elevation_preview("mars-jezero")
         assert preview.media_type == "image/png"
         assert preview.body.startswith(b"\x89PNG\r\n\x1a\n")
@@ -168,11 +237,17 @@ def test_candidate_geology_and_elevation_layers_are_available_when_rasters_exist
         coverage = api_module.place_coverage_preview("mars-jezero")
         assert coverage.media_type == "image/png"
         assert coverage.body.startswith(b"\x89PNG\r\n\x1a\n")
-        coverage_layer = next(item for item in result["target_layers"] if item["id"] == "terrain_coverage")
+        coverage_layer = next(
+            item for item in result["target_layers"] if item["id"] == "terrain_coverage"
+        )
         assert coverage_layer["observations"][0]["coverage_fraction"] == pytest.approx(0.4772727273)
-        thermal = next(item for item in result["target_evidence"] if item["id"] == "thermal_illumination")
+        thermal = next(
+            item for item in result["target_evidence"] if item["id"] == "thermal_illumination"
+        )
         assert thermal["measurements"][0]["units"] == "J/(m^2*K*sqrt(s))"
-        thermal_layer = next(item for item in result["target_layers"] if item["id"] == "thermal_context")
+        thermal_layer = next(
+            item for item in result["target_layers"] if item["id"] == "thermal_context"
+        )
         assert thermal_layer["status"] == "available"
         thermal_preview = api_module.place_thermal_preview("mars-jezero")
         assert thermal_preview.media_type == "image/png"
@@ -181,7 +256,9 @@ def test_candidate_geology_and_elevation_layers_are_available_when_rasters_exist
         assert roughness.media_type == "image/png"
         assert roughness.body.startswith(b"\x89PNG\r\n\x1a\n")
         namib = next(row for row in result["results"] if row["place"]["id"] == "earth-namib")
-        roughness_layer = next(item for item in namib["layers"] if item["id"] == "terrain_roughness")
+        roughness_layer = next(
+            item for item in namib["layers"] if item["id"] == "terrain_roughness"
+        )
         assert roughness_layer["status"] == "available"
 
 
@@ -190,17 +267,23 @@ def test_body_layers_keep_separate_coordinates_and_mark_unavailable_products():
         ("mars-jezero", "mars"),
         ("moon-mare-tranquillitatis-pit", "moon"),
     ):
-        result = discover_analogues(AnalogueDiscoveryRequest(
-            target_site_id=site_id, profile_id="mission_operations", limit=10
-        ))
+        result = discover_analogues(
+            AnalogueDiscoveryRequest(
+                target_site_id=site_id, profile_id="mission_operations", limit=10
+            )
+        )
         dem = next(layer for layer in result["target_layers"] if layer["id"] == "terrain_dem")
         assert dem["body"] == body
         assert "never overlaid directly" in dem["alignment_note"]
         assert dem["status"] in {"available", "metadata_only"}
 
-    result = discover_analogues(AnalogueDiscoveryRequest(
-        target_site_id="moon-mare-tranquillitatis-pit", profile_id="mission_operations", limit=10
-    ))
+    result = discover_analogues(
+        AnalogueDiscoveryRequest(
+            target_site_id="moon-mare-tranquillitatis-pit",
+            profile_id="mission_operations",
+            limit=10,
+        )
+    )
     earth_candidate = next(row for row in result["results"] if row["place"]["id"] == "earth-namib")
     assert all(layer["body"] == "earth" for layer in earth_candidate["layers"] if "body" in layer)
 
@@ -223,11 +306,15 @@ def test_lola_south_polar_products_are_exposed_as_supported_candidate_layers():
     coverage = api_module.dataset_coverage("lro-lola-gdr-polar-ldem-120m")
     assert coverage["coverage_count"] == 3
     assert set(coverage["place_ids"]) == {
-        "moon-shackleton-rim", "moon-malapert-massif", "moon-de-gerlache-rim"
+        "moon-shackleton-rim",
+        "moon-malapert-massif",
+        "moon-de-gerlache-rim",
     }
-    result = api_module.discover_analogues(AnalogueDiscoveryRequest(
-        target_site_id="moon-malapert-massif", profile_id="polar_resources", limit=10
-    ))
+    result = api_module.discover_analogues(
+        AnalogueDiscoveryRequest(
+            target_site_id="moon-malapert-massif", profile_id="polar_resources", limit=10
+        )
+    )
     terrain = next(row for row in result["target_evidence"] if row["id"] == "terrain")
     assert terrain["status"] == "available"
     assert any(row["score"] is not None for row in result["results"])
@@ -237,7 +324,9 @@ def test_lola_south_polar_products_are_exposed_as_supported_candidate_layers():
     assert dem["crs"] == ["Moon south-polar stereographic (DE421 frame)"]
     assert support["status"] == "available"
     assert support["observations"][0]["coverage_kind"] == "direct_lola_shot_count"
-    assert api_module.place_elevation_preview("moon-malapert-massif").body.startswith(b"\x89PNG\r\n\x1a\n")
+    assert api_module.place_elevation_preview("moon-malapert-massif").body.startswith(
+        b"\x89PNG\r\n\x1a\n"
+    )
 
 
 def test_terrain_and_combined_modes_return_inspectable_scores_and_rank_changes():

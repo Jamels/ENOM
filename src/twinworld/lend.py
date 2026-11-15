@@ -9,10 +9,7 @@ from typing import Any
 from twinworld.pds import read_byte_range as _read_pds_byte_range
 
 DATASET_ID = "lro-lend-south-polar-alds"
-BASE_URL = (
-    "https://pds-geosciences.wustl.edu/lro/"
-    "lro-l-lend-2-edr-v1/lrolen_0xxx/data"
-)
+BASE_URL = "https://pds-geosciences.wustl.edu/lro/lro-l-lend-2-edr-v1/lrolen_0xxx/data"
 ALDS_PRODUCTS = (
     {
         "product_id": "LEND_RDR_ALDS_20090915_DAT",
@@ -65,19 +62,27 @@ def read_alds_cell(
         product_name=product["product_id"],
     )
     if len(raw) != ROW_BYTES:
-        raise IOError("LEND ALDS record did not match the 310-byte PDS row")
+        raise OSError("LEND ALDS record did not match the 310-byte PDS row")
     start = raw[:23].decode("ascii").strip()
     stop = raw[23:46].decode("ascii").strip()
     cell_latitude, cell_longitude = struct.unpack(">ff", raw[46:54])
     expected_latitude = -89.75 + lat_band * GRID_STEP_DEG
     expected_longitude = 0.25 + lon_band * GRID_STEP_DEG
-    if abs(cell_latitude - expected_latitude) > 1e-4 or abs(cell_longitude - expected_longitude) > 1e-4:
+    if (
+        abs(cell_latitude - expected_latitude) > 1e-4
+        or abs(cell_longitude - expected_longitude) > 1e-4
+    ):
         raise ValueError("LEND ALDS record coordinates do not match the requested grid cell")
     exposure, rate, error = struct.unpack(
         ">fff",
         raw[CSETN_EXPOSURE_OFFSET : CSETN_ERROR_OFFSET + 4],
     )
-    observed = all(math.isfinite(item) for item in (exposure, rate, error)) and exposure > 0 and rate >= 0 and error >= 0
+    observed = (
+        all(math.isfinite(item) for item in (exposure, rate, error))
+        and exposure > 0
+        and rate >= 0
+        and error >= 0
+    )
     return {
         "product_id": product["product_id"],
         "source_url": url.replace(".dat", ".lbl"),
@@ -92,9 +97,12 @@ def read_alds_cell(
         "measurement_name": "LEND CSETN normalized neutron count rate",
         "units": "counts/s",
         "uncertainty": (
-            "CSETN_ERR is the product's statistical error for this map cell; it does not include all spatial-footprint or systematic uncertainty."
+            "CSETN_ERR is the product's statistical error for this map cell; it "
+            "does not include all spatial-footprint or systematic uncertainty."
         ),
         "interpretation": (
-            "LEND neutron measurements can provide indirect context for lunar hydrogen. This count-rate product does not directly measure water or ice, and it is not a usable-resource estimate."
+            "LEND neutron measurements can provide indirect context for lunar "
+            "hydrogen. This count-rate product does not directly measure water "
+            "or ice, and it is not a usable-resource estimate."
         ),
     }

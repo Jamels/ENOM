@@ -121,11 +121,16 @@ def validate_weights(weights: dict[str, float]) -> dict[str, float]:
         raise ValueError(f"Unknown terrain weight(s): {', '.join(sorted(unknown))}")
     normalized_input: dict[str, float] = {}
     for name, raw_value in weights.items():
+        if isinstance(raw_value, bool) or not isinstance(raw_value, (int, float)):
+            raise ValueError(f"Weight '{name}' must be a finite, non-negative number")
         value = float(raw_value)
         if not math.isfinite(value) or value < 0:
             raise ValueError(f"Weight '{name}' must be a finite, non-negative number")
         normalized_input[name] = value
-    if sum(normalized_input.values()) <= 0:
+    total = sum(normalized_input.values())
+    if not math.isfinite(total):
+        raise ValueError("Total terrain weight must be finite")
+    if total <= 0:
         raise ValueError("At least one terrain weight must be greater than zero")
     return normalized_input
 
@@ -139,6 +144,7 @@ def measurements_by_name(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]
         scale = row.get("spatial_scale_m")
         if (
             name not in VARIABLES
+            or row.get("units") != VARIABLES[name]["units"]
             or row.get("availability") != "available"
             or isinstance(value, bool)
             or not isinstance(value, (int, float))
