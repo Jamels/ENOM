@@ -46,6 +46,14 @@ const SHORT_VARIABLE_LABELS: Record<string, string> = {
   median_roughness_3x3: "Roughness",
 };
 
+const VARIABLE_EXPLANATIONS: Record<string, string> = {
+  elevation_range: "Highest minus lowest measured elevation across the ~10 km context; a broad relief measure.",
+  mean_slope: "Average steepness across the DEM context; useful as a broad terrain descriptor.",
+  slope_p90: "Steepness below which 90% of sampled cells fall; highlights steeper terrain without using only the maximum.",
+  median_local_relief_3x3: "Median height range in 3×3-cell windows; describes nearby height changes at the grid’s scale.",
+  median_roughness_3x3: "Median absolute deviation from each 3×3-cell mean; a project-specific roughness descriptor.",
+};
+
 export function ComparisonModal({
   open,
   onOpenChange,
@@ -209,10 +217,31 @@ export function ComparisonModal({
                 </section>
               </div>
 
+              <section aria-label="How to read this comparison" className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4 space-y-3">
+                  <div>
+                    <h3 className="font-display text-sm font-medium text-[var(--text-primary)]">How to read these scores</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                    <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3">
+                      <div className="font-medium text-[var(--text-primary)]">Terrain similarity · 0–1</div>
+                      <p className="mt-1 text-[var(--text-secondary)]">A weighted ranking index using measurements with matching units and similar spatial scales; not a probability.</p>
+                    </div>
+                    <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3">
+                      <div className="font-medium text-[var(--text-primary)]">Image comparison</div>
+                      <p className="mt-1 text-[var(--text-secondary)]">Ranks image features; lighting and resolution differences can skew results.</p>
+                    </div>
+                    <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3">
+                      <div className="font-medium text-[var(--text-primary)]">Mission screen · separate check</div>
+                      <p className="mt-1 text-[var(--text-secondary)]">Checks terrain against provisional limits; it does not establish mission safety.</p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">Missing or incompatible measurements are omitted, not treated as zero.</p>
+              </section>
+
               {(sc || sr) && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4">
-                    <div className="text-xs text-[var(--text-muted)]">Terrain similarity</div>
+                    <div className="text-xs text-[var(--text-muted)]">Terrain similarity · ranking index</div>
                     <div className="mt-1 font-display text-2xl font-medium font-mono-tabular text-[var(--text-primary)]">
                       {sc?.similarity_score !== null && sc?.similarity_score !== undefined
                         ? sc.similarity_score.toFixed(3)
@@ -226,7 +255,7 @@ export function ComparisonModal({
                   </div>
 
                   <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4">
-                    <div className="text-xs text-[var(--text-muted)]">DINOv2 cosine</div>
+                    <div className="text-xs text-[var(--text-muted)]">Image similarity · DINOv2 cosine</div>
                     <div className="mt-1 font-display text-2xl font-medium font-mono-tabular text-[var(--text-primary)]">
                       {sr ? sr.cosine_similarity.toFixed(4) : "Not indexed"}
                     </div>
@@ -236,7 +265,7 @@ export function ComparisonModal({
                   </div>
 
                   <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-4">
-                    <div className="text-xs text-[var(--text-muted)]">Mission screen</div>
+                    <div className="text-xs text-[var(--text-muted)]">Target mission screen</div>
                     <div className="mt-1 font-display text-xl font-medium capitalize text-[var(--text-primary)]">
                       {site ? site.mission_suitability.status.replaceAll("_", " ") : "Not assessed"}
                     </div>
@@ -305,6 +334,7 @@ export function ComparisonModal({
                             <tr key={v.name}>
                               <td className="px-4 py-3">
                                 <div className="font-medium text-[var(--text-primary)]">{SHORT_VARIABLE_LABELS[v.name] ?? v.label}</div>
+                                <div className="mt-1 max-w-48 leading-relaxed text-[var(--text-muted)]">{VARIABLE_EXPLANATIONS[v.name] ?? "A derived terrain descriptor from the available elevation data."}</div>
                                 <div className="text-xs text-[var(--text-muted)] font-mono-tabular">
                                   w={v.weight.toFixed(2)} · ±{v.tolerance} {v.units}
                                 </div>

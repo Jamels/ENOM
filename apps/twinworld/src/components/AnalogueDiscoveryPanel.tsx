@@ -76,19 +76,21 @@ export function AnalogueDiscoveryPanel({ targetId, targetName, targetBody, profi
         <div className="max-h-[430px] overflow-y-auto divide-y divide-[var(--border-subtle)]">
           {result.results.map((candidate) => {
             const open = expanded === candidate.place.id;
-            const scored = candidate.dimension_scores.filter((dimension) => dimension.scored);
+            const requested = candidate.dimension_scores.filter((dimension) => (dimension.weight ?? 0) > 0);
+            const contributing = requested.filter((dimension) => dimension.scored && dimension.score !== null && dimension.score !== undefined && (dimension.score_coverage ?? 0) > 0);
             return <div key={candidate.place.id}>
               <button type="button" onClick={() => { setExpanded(open ? null : candidate.place.id); onSelectPlace?.(candidate.place); }} className="w-full p-3 text-left hover:bg-[var(--bg-hover)]">
                 <span className="flex items-start justify-between gap-2">
                   <span className="flex items-start gap-2 min-w-0">
                     <span className="pt-0.5 text-[10px] font-mono-tabular text-[var(--text-muted)]">{candidate.rank ? `#${candidate.rank}` : "—"}</span>
-                    <span className="min-w-0"><span className="block truncate text-xs font-medium" style={{ color: "var(--planet-earth-primary)" }}>{candidate.place.name}</span><span className="mt-0.5 block text-[10px] text-[var(--text-muted)]">{scored.length} of 8 dimensions scored · {Math.round(candidate.evidence_coverage * 100)}% weighted coverage</span></span>
+                    <span className="min-w-0"><span className="block truncate text-xs font-medium" style={{ color: "var(--planet-earth-primary)" }}>{candidate.place.name}</span><span className="mt-0.5 block text-[10px] text-[var(--text-muted)]">{contributing.length} of {requested.length} weighted dimensions contribute · {Math.round(candidate.evidence_coverage * 100)}% profile evidence coverage</span></span>
                   </span>
                   <span className="flex items-center gap-2 shrink-0">{candidate.score === null ? <span className="text-[10px] text-amber-300">Not scored</span> : <span className="font-mono-tabular text-xs text-[var(--text-primary)]">{candidate.score.toFixed(3)}</span>}{open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
                 </span>
               </button>
               {open && <div className="px-3 pb-3 space-y-2">
                 <p className="text-[10px] text-[var(--text-muted)]">{candidate.place.basis ?? candidate.mission_suitability.note}</p>
+                <p className="rounded-md border border-[var(--border-subtle)] bg-[#0b1119] p-2 text-[9px] leading-relaxed text-[var(--text-secondary)]">The overall index combines scored dimensions using profile weight × comparison coverage. Expand a scored dimension below to inspect the values, spatial scales, tolerances, and component scores behind it. Unscored dimensions do not count as zero.</p>
                 <SideBySideLayers targetLayers={result.target_layers} candidateLayers={candidate.layers} targetName={result.target.name} candidateName={candidate.place.name} targetBody={targetBody === "moon" ? "moon" : "mars"} />
                 {candidate.dimension_scores.map((dimension) => <DimensionRow key={dimension.id} dimension={dimension} body="earth" />)}
                 {candidate.place.source_url && <a href={candidate.place.source_url} target="_blank" rel="noreferrer" className="planetary-source inline-flex items-center gap-1 text-[10px]" style={planetarySourceStyle("earth")}>Place source <ExternalLink size={11} /></a>}
@@ -97,7 +99,7 @@ export function AnalogueDiscoveryPanel({ targetId, targetName, targetBody, profi
             </div>;
           })}
         </div>
-        <p className="px-3 py-2 border-t border-[var(--border-subtle)] text-[10px] leading-relaxed text-[var(--text-muted)]">{result.search_scope} Similarity is not proof that a place is a good mission site.</p>
+        <p className="px-3 py-2 border-t border-[var(--border-subtle)] text-[10px] leading-relaxed text-[var(--text-muted)]">{result.search_scope}</p>
       </>}
     </section>
   );
@@ -111,7 +113,7 @@ function SideBySideLayers({ targetLayers, candidateLayers, targetName, candidate
   targetBody: "mars" | "moon";
 }) {
   return <div className="rounded-lg border border-[var(--border-subtle)] p-2.5 space-y-2">
-    <div><p className="text-[10px] font-medium text-[var(--text-primary)]">Compare source layers side by side</p><p className="text-[9px] text-[var(--text-muted)]">Each view stays in its own body’s map coordinates. These are separate local windows, not a pixel overlay.</p></div>
+    <div><p className="text-[10px] font-medium text-[var(--text-primary)]">Source layers</p><p className="text-[9px] text-[var(--text-muted)]">Separate local views; not pixel-aligned.</p></div>
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       <LayerPreview title={targetName} layers={targetLayers} body={targetBody} />
       <LayerPreview title={candidateName} layers={candidateLayers} body="earth" />
@@ -167,7 +169,7 @@ function LayerPreview({ title, layers, body }: { title: string; layers: Analogue
       {(contextSize || crs) && <p className="break-all font-mono-tabular text-[8px] text-[var(--text-muted)]">{contextSize ? `${(contextSize / 1000).toFixed(1)} km context` : ""}{contextSize && crs ? " · " : ""}{crs ?? ""}</p>}
       {observation?.coverage_fraction != null && <p className="text-[9px] text-[var(--text-secondary)]">Indexed coverage: {Math.round(observation.coverage_fraction * 100)}% ({observation.coverage_kind?.replaceAll("_", " ")})</p>}
       {observation?.source_url && <a href={observation.source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[9px] text-sky-300">Open source product <ExternalLink size={9} /></a>}
-      {!previewUrl && <p className="text-[9px] text-amber-200">Metadata only; this source has no map image to show at this location.</p>}
+      {!previewUrl && <p className="text-[9px] text-amber-200">No map image available here.</p>}
     </>}
     {!selected && <p className="text-[9px] text-[var(--text-muted)]">No source layer is linked to this place.</p>}
   </div>;
@@ -197,7 +199,7 @@ function LayerStatus({ layers, body }: { layers: AnalogueDiscovery["target_layer
       <p className="mt-1 text-[var(--text-muted)]">{selected.alignment_note}</p>
       {(contextSize || crs || coords) && <p className="mt-1 font-mono-tabular text-[var(--text-muted)]">{contextSize ? `${(contextSize / 1000).toFixed(1)} km patch` : ""}{contextSize && (crs || coords) ? " · " : ""}{crs ?? ""}{crs && coords ? " · " : ""}{coords ?? ""}</p>}
       {observation?.source_url && <a href={observation.source_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sky-300">Open source product <ExternalLink size={10} /></a>}
-      {!previewUrl && <p className="mt-1 text-amber-200">The source metadata is indexed, but its raster file is not present for map display.</p>}
+      {!previewUrl && <p className="mt-1 text-amber-200">No map image available here.</p>}
     </div>
   </div>;
 }
@@ -210,24 +212,33 @@ function formatUncertainty(value: string | { description?: string | null; value?
 }
 
 function DimensionRow({ dimension, body }: { dimension: AnalogueDimension; body: "mars" | "moon" | "earth" }) {
-  return <details className="rounded-lg border border-[var(--border-subtle)] bg-[#0b1119]">
+  const [expanded, setExpanded] = useState(Boolean(dimension.scored));
+  const scored = Boolean(dimension.scored && dimension.score !== null && dimension.score !== undefined);
+  const weight = dimension.weight ?? 0;
+  const coverage = dimension.score_coverage ?? 0;
+  return <details open={expanded} onToggle={(event) => setExpanded(event.currentTarget.open)} className="rounded-lg border border-[var(--border-subtle)] bg-[#0b1119]">
     <summary className="cursor-pointer list-none px-2.5 py-2 text-[10px] flex items-center justify-between gap-2">
-      <span className="text-[var(--text-primary)]">{dimension.label}<span className="ml-1.5 text-[var(--text-muted)]">{dimension.status === "available" ? "evidence linked" : dimension.status === "not_observed" ? "no linked measurement" : dimension.status.replaceAll("_", " ")}</span></span>
+      <span className="text-[var(--text-primary)]">{dimension.label}<span className="ml-1.5 text-[var(--text-muted)]">{scored ? weight > 0 ? "scored" : "scored · zero weight" : dimension.status === "available" ? "evidence linked · not scored" : dimension.status === "not_observed" ? "no linked measurement" : `${dimension.status.replaceAll("_", " ")} · not scored`}</span></span>
       <span className="shrink-0 font-mono-tabular text-[var(--text-secondary)]">{dimension.score === null || dimension.score === undefined ? "—" : dimension.score.toFixed(3)}</span>
     </summary>
     <div className="px-2.5 pb-2.5 space-y-2 text-[10px] text-[var(--text-secondary)]">
       <p>{dimension.summary}</p>
+      {scored && <p className="font-mono-tabular text-[var(--text-muted)]">Profile weight {weight.toFixed(2)} · comparable measurement coverage {Math.round(coverage * 100)}% · effective weight {(weight * coverage).toFixed(3)}</p>}
       {dimension.score_note && <p className="text-amber-200">Not scored: {dimension.score_note}</p>}
       {dimension.evidence_items?.map((item) => <div key={item.id} className="rounded border border-[var(--border-subtle)] p-2 space-y-1"><p className="text-[var(--text-primary)]">{item.provider ?? item.dataset_id ?? "Source"} · {item.kind.replaceAll("_", " ")} evidence</p><p>{item.summary ?? item.interpretation?.summary ?? item.interpretation?.map_unit_name ?? item.product_id ?? "Source-linked observation"}</p>{item.measurement_semantics && <p>{item.measurement_semantics}</p>}{item.interpretation_note && <p>{item.interpretation_note}</p>}{item.study_region && <p>Study area: {item.study_region}</p>}<p className="text-[var(--text-muted)]">{item.location.body}{item.spatial_coverage.location_precision ? ` · ${item.spatial_coverage.location_precision.replaceAll("_", " ")}` : ""}: {item.location.latitude_deg?.toFixed(3) ?? "?"}°, {item.location.longitude_east_deg?.toFixed(3) ?? "?"}°E{item.spatial_coverage.context_size_m ? ` · ${(item.spatial_coverage.context_size_m / 1000).toFixed(1)} km window` : ""}{item.spatial_coverage.nominal_cartographic_scale ? ` · map scale ${item.spatial_coverage.nominal_cartographic_scale}` : ""}{item.temporal_coverage ? ` · ${item.temporal_coverage}` : ""}</p>{item.spatial_coverage.sample_count != null && <p className="text-[var(--text-muted)]">Valid samples: {item.spatial_coverage.sample_count.toLocaleString()}</p>}{item.units.length > 0 && <p className="text-[var(--text-muted)]">Units: {item.units.join(", ")}</p>}{item.spatial_relation && <p className="text-[var(--text-muted)]">Location match: {item.spatial_relation}</p>}{item.uncertainty && <p className="text-[var(--text-muted)]">Uncertainty: {formatUncertainty(item.uncertainty)}</p>}{item.quality_note && <p className="text-[var(--text-muted)]">Data quality: {item.quality_note}</p>}{item.use_limit && <p className="text-[var(--text-muted)]">Use: {item.use_limit}</p>}{item.source_url && <a href={item.source_url} target="_blank" rel="noreferrer" className="text-sky-300">Open source record <ExternalLink size={9} className="inline" /></a>}</div>)}
       {dimension.context_evidence?.map((item) => <div key={item.id} className="rounded border border-amber-900/50 bg-amber-950/20 p-2 space-y-1"><p className="text-amber-100">{item.label} · {item.kind}</p><p>{item.summary}</p><p className="text-[var(--text-muted)]">Uncertainty: {item.uncertainty}</p><p className="text-[var(--text-muted)]">Location: {item.location.body}, {item.location.latitude_deg?.toFixed(3) ?? "?"}°, {item.location.longitude_east_deg?.toFixed(3) ?? "?"}°E</p>{item.source_url && <a href={item.source_url} target="_blank" rel="noreferrer" className="text-sky-300">Open catalogue source <ExternalLink size={9} className="inline" /></a>}</div>)}
       {dimension.interpretations?.map((item) => <div key={item.observation_id} className="rounded border border-[var(--border-subtle)] p-2 space-y-1"><p className="text-[var(--text-primary)]">Map unit: {item.map_unit_code ?? item.candidate_unit_codes?.join(", ") ?? "not classified"}{item.map_unit_name ? ` · ${item.map_unit_name}` : ""}{item.map_unit_age ? ` · ${item.map_unit_age}` : ""}{formatAgeRange(item.map_unit_age_min, item.map_unit_age_max)}</p>{item.map_unit_interpretation && <p>{item.map_unit_interpretation}</p>}{item.major_materials?.length ? <p>Mapped major materials: {item.major_materials.join(", ")}</p> : null}{item.map_unit_description && <p>{item.map_unit_description}</p>}{item.state && <p>Mapped state: {item.state}</p>}{item.nominal_cartographic_scale && <p>Map scale: {item.nominal_cartographic_scale}</p>}{item.map_reference && <p>{item.map_reference}</p>}{item.ngmdb_urls?.map((url) => <a key={url} href={url} target="_blank" rel="noreferrer" className="block text-sky-300">USGS map record <ExternalLink size={9} className="inline" /></a>)}{item.digital_data_url && <a href={item.digital_data_url} target="_blank" rel="noreferrer" className="block text-sky-300">Source map data <ExternalLink size={9} className="inline" /></a>}{item.source_description && <p className="text-[var(--text-muted)]">{item.source_description}</p>}</div>)}
       {dimension.measurements.slice(0, 5).map((measurement, index) => <div key={`${measurement.name}-${index}`}><p className="font-mono-tabular">{measurement.name}: {measurement.value ?? "unavailable"} {measurement.units}{measurement.spatial_scale_m ? ` · ${measurement.spatial_scale_m.toFixed(0)} m scale` : ""}</p>{measurement.sample_count != null && <p className="text-[var(--text-muted)]">{measurement.summary_statistic ?? "Summary"}: {measurement.sample_count.toLocaleString()} valid rows{measurement.source_row_count != null ? ` of ${measurement.source_row_count.toLocaleString()}` : ""}</p>}{measurement.sample_percentiles && measurement.sample_range && <p className="font-mono-tabular text-[var(--text-muted)]">Sample p10–p90: {measurement.sample_percentiles.p10}–{measurement.sample_percentiles.p90} {measurement.units} · range {measurement.sample_range.minimum}–{measurement.sample_range.maximum} {measurement.units}</p>}{measurement.temporal_coverage && <p className="text-[var(--text-muted)]">Period: {measurement.temporal_coverage}</p>}{measurement.uncertainty && <p className="text-[var(--text-muted)]">Uncertainty: {formatUncertainty(measurement.uncertainty)}</p>}{measurement.monthly_values && <details className="mt-1"><summary className="cursor-pointer text-sky-300">Monthly values</summary><p className="mt-1 font-mono-tabular text-[var(--text-muted)]">{Object.entries(measurement.monthly_values).map(([month, value]) => `${month}: ${value ?? "—"}`).join(" · ")}</p></details>}</div>)}
-      {dimension.comparison_variables?.map((variable) => <p key={variable.name} className="font-mono-tabular">{variable.label}: {variable.availability === "available" ? `${variable.reference_value} vs ${variable.earth_value} ${variable.units} · ${variable.reference_spatial_scale_m?.toFixed(0)} m / ${variable.earth_spatial_scale_m?.toFixed(0)} m scales · score ${variable.score?.toFixed(3)}` : "not comparable at matching units and spatial scale"}</p>)}
+      {dimension.comparison_variables?.map((variable) => <p key={variable.name} className="rounded border border-[var(--border-subtle)] p-2 font-mono-tabular">{variable.label}: {variable.availability === "available" ? <>Target {formatComparisonValue(variable.reference_value)} {variable.units} → Earth {formatComparisonValue(variable.earth_value)} {variable.units}{variable.difference !== null && variable.difference !== undefined ? ` · Δ ${variable.difference > 0 ? "+" : ""}${formatComparisonValue(variable.difference)} ${variable.units}` : ""} · scales {variable.reference_spatial_scale_m?.toFixed(0) ?? "?"} m / {variable.earth_spatial_scale_m?.toFixed(0) ?? "?"} m · tolerance {variable.tolerance !== undefined ? `${formatComparisonValue(variable.tolerance)} ${variable.units}` : "not supplied"} · component score {variable.score?.toFixed(3) ?? "—"}</> : <>Not compared: a value is missing or units/spatial scales are incompatible{variable.reference_value !== null ? ` · target ${formatComparisonValue(variable.reference_value)} ${variable.units}` : " · target value unavailable"}{variable.earth_value !== null ? ` · Earth ${formatComparisonValue(variable.earth_value)} ${variable.units}` : " · Earth value unavailable"}</>}</p>)}
       {dimension.sources.map((source, index) => source.url && <a key={`${source.dataset_id}-${index}`} href={source.url} target="_blank" rel="noreferrer" className="planetary-source block" style={planetarySourceStyle(body)}>{source.provider ?? source.dataset_id ?? "Dataset source"} <ExternalLink size={10} className="inline" /></a>)}
       {dimension.source_connections?.length ? <div className="pt-1 space-y-1"><p className="text-[var(--text-muted)]">Dataset connection status</p>{dimension.source_connections.map((source) => <p key={source.id} className="flex items-start justify-between gap-2"><a href={source.url} target="_blank" rel="noreferrer" className="planetary-source" style={planetarySourceStyle(body)}>{source.name}</a><span className="shrink-0 text-[var(--text-muted)]">{source.place_status.replaceAll("_", " ")}{source.coverage_count > 0 ? ` · ${source.coverage_count}` : ""}</span></p>)}</div> : null}
       {!dimension.sources.length && dimension.source_guides.slice(0, 3).map((source) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="planetary-source block" style={planetarySourceStyle(body)}>{source.name} <ExternalLink size={10} className="inline" /></a>)}
     </div>
   </details>;
+}
+
+function formatComparisonValue(value: number | null): string {
+  return value === null ? "—" : new Intl.NumberFormat(undefined, { maximumFractionDigits: 3 }).format(value);
 }
 
 function formatAgeRange(minimum?: string | null, maximum?: string | null) {

@@ -91,7 +91,7 @@ export function OfflineMapsDialog({ open, onOpenChange }: { open: boolean; onOpe
 
               {insufficientSpace && <p className="text-xs text-amber-200">The current estimate is below the package size. Free repository disk space before downloading.</p>}
               {state.error && <p role="alert" className="text-xs text-rose-200">{state.error}</p>}
-              <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">Files are saved under <code className="font-mono-tabular">apps/twinworld/public/tiles/offline/</code> and served by ENOM’s local backend. Unavailable tiles and uncached higher zoom levels continue using the globe’s base texture. Earth’s Blue Marble is a historical global composite, not a live image; its source may contain some cloud affected pixels.</p>
+              <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">Unavailable tiles and uncached zoom levels use the globe’s base texture. Earth’s Blue Marble is a 2004 composite, not live imagery.</p>
 
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 {running ? (

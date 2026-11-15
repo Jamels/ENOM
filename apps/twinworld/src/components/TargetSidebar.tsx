@@ -133,6 +133,10 @@ export function TargetSidebar({
           filteredTargets.map((target) => {
             const isSelected = target.id === selectedTargetId;
             const tier = TIER_META[target.tier];
+            const provisionalImage = Boolean(target.pilotRegion && target.pilotRegion.label_status !== "verified");
+            const tierLabel = provisionalImage
+              ? target.tier === "scorecard_imagery" ? "DEM + provisional image" : "Provisional image"
+              : tier.label;
             const matchesEquip = target.equipmentTags.includes(equipmentId);
             return (
               <button
@@ -173,7 +177,7 @@ export function TargetSidebar({
                     </span>
                     <span className="inline-flex items-center gap-1.5 text-[var(--text-secondary)] shrink-0">
                       <span className={"w-1.5 h-1.5 rounded-full " + tier.dotClass} />
-                      {tier.label}
+                      {tierLabel}
                     </span>
                   </div>
                 </div>

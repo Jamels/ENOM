@@ -32,6 +32,8 @@ type PlanetaryGlobeProps = {
   selectedId: string | null;
   focusCoords: { lat: number; lon: number; token: number } | null;
   onSelectMarker: (id: string) => void;
+  onSelectSurface?: (coords: { lat: number; lon: number }) => void;
+  footprint?: number[][] | null;
   defaultCoords?: { lat: number; lon: number };
   className?: string;
 };
@@ -120,11 +122,16 @@ export function PlanetaryGlobe({
   selectedId,
   focusCoords,
   onSelectMarker,
+  onSelectSurface,
+  footprint,
   defaultCoords = { lat: 12, lon: 25 },
   className = "",
 }: PlanetaryGlobeProps) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const footprintRef = useRef<THREE.Line | null>(null);
+  const pressRef = useRef<{ x: number; y: number; moved: boolean } | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [showGrid, setShowGrid] = useState(true);
   const [textureReady, setTextureReady] = useState(false);
@@ -178,9 +185,28 @@ export function PlanetaryGlobe({
   markerVectorsRef.current = markerVectors;
 
   useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    if (footprintRef.current) {
+      scene.remove(footprintRef.current);
+      footprintRef.current.geometry.dispose();
+      (footprintRef.current.material as THREE.Material).dispose();
+      footprintRef.current = null;
+    }
+    if (footprint && footprint.length > 1) {
+      const geometry = new THREE.BufferGeometry().setFromPoints(
+        footprint.map(([lon, lat]) => latLonToVec3(lat, lon, 1.008)),
+      );
+      const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0xffffff }));
+      scene.add(line);
+      footprintRef.current = line;
+    }
+  }, [footprint]);
+
+  useEffect(() => {
     if (!focusCoords) return;
     const st = camStateRef.current;
-    const clampedLat = Math.max(-86, Math.min(86, focusCoords.lat));
+    const clampedLat = Math.max(-89.99, Math.min(89.99, focusCoords.lat));
     const targetLon = normalizeLonSigned(focusCoords.lon);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
@@ -285,6 +311,7 @@ export function PlanetaryGlobe({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 20);
+    cameraRef.current = camera;
 
     const sun = new THREE.DirectionalLight(0xfff8ee, 2.2);
     sun.position.set(4, 2.2, 4.5);
@@ -418,7 +445,7 @@ export function PlanetaryGlobe({
             st.targetLon = null;
           }
         } else if (Math.abs(st.velLat) > 0.001 || Math.abs(st.velLon) > 0.001) {
-          st.lat = Math.max(-86, Math.min(86, st.lat + st.velLat * dt * 60));
+          st.lat = Math.max(-89.99, Math.min(89.99, st.lat + st.velLat * dt * 60));
           st.lon = normalizeLonSigned(st.lon + st.velLon * dt * 60);
           const friction = Math.pow(0.92, dt * 60);
           st.velLat *= friction;
@@ -540,6 +567,7 @@ export function PlanetaryGlobe({
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest("button[data-marker='true']")) return;
+    pressRef.current = camStateRef.current.pointers.size ? null : { x: e.clientX, y: e.clientY, moved: false };
     e.currentTarget.setPointerCapture(e.pointerId);
     const st = camStateRef.current;
     st.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -561,6 +589,7 @@ export function PlanetaryGlobe({
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const st = camStateRef.current;
     if (!st.pointers.has(e.pointerId)) return;
+    if (pressRef.current && Math.hypot(e.clientX - pressRef.current.x, e.clientY - pressRef.current.y) > 5) pressRef.current.moved = true;
     st.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (st.pointers.size === 2) {
       const pts = Array.from(st.pointers.values());
@@ -582,13 +611,22 @@ export function PlanetaryGlobe({
     const dLon = -dx * sensitivity;
     const dLat = dy * sensitivity;
     st.lon = normalizeLonSigned(st.lon + dLon);
-    st.lat = Math.max(-86, Math.min(86, st.lat + dLat));
+    st.lat = Math.max(-89.99, Math.min(89.99, st.lat + dLat));
     st.velLon = dLon * 0.65;
     st.velLat = dLat * 0.65;
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     const st = camStateRef.current;
+    const press = pressRef.current;
+    pressRef.current = null;
+    if (e.type === "pointerup" && press && !press.moved && onSelectSurface && cameraRef.current && canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const ray = new THREE.Raycaster();
+      ray.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, 1 - (e.clientY - rect.top) / rect.height * 2), cameraRef.current);
+      const hit = ray.ray.intersectSphere(new THREE.Sphere(new THREE.Vector3(), 1), new THREE.Vector3());
+      if (hit) onSelectSurface({ lat: Math.asin(hit.y) * 180 / Math.PI, lon: ((Math.atan2(-hit.z, hit.x) * 180 / Math.PI) + 360) % 360 });
+    }
     st.pointers.delete(e.pointerId);
     if (st.pointers.size < 2) st.pinchDist = null;
     if (st.pointers.size === 0) st.dragging = false;
@@ -634,7 +672,7 @@ export function PlanetaryGlobe({
             <h2 className="font-display text-sm font-medium truncate" style={{ color: palette.accent }}>
               {title}
             </h2>
-            <p className="text-[10px] leading-4 text-[var(--text-muted)] truncate" title={subtitle}>
+            <p className="line-clamp-2 text-xs leading-4 text-[var(--text-secondary)]" title={subtitle}>
               {subtitle}
               {body === "earth" && imageryDate ? ` · ${imageryDate}` : ""}
             </p>
@@ -733,7 +771,27 @@ export function PlanetaryGlobe({
                 }}
                 onMouseEnter={() => setHoveredId(m.id)}
                 onMouseLeave={() => setHoveredId((prev) => (prev === m.id ? null : prev))}
-                onFocus={() => setHoveredId(m.id)}
+                onFocus={(event) => {
+                  setHoveredId(m.id);
+                  // Keyboard users can focus markers on the far side of the globe.
+                  // Bring that marker into view before they activate it.
+                  if (event.currentTarget.matches(":focus-visible")) {
+                    const camera = camStateRef.current;
+                    const latitude = Math.max(-89.99, Math.min(89.99, m.lat));
+                    const longitude = normalizeLonSigned(m.lon);
+                    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                      camera.lat = latitude;
+                      camera.lon = longitude;
+                      camera.targetLat = null;
+                      camera.targetLon = null;
+                    } else {
+                      camera.targetLat = latitude;
+                      camera.targetLon = longitude;
+                    }
+                    camera.velLat = 0;
+                    camera.velLon = 0;
+                  }
+                }}
                 onBlur={() => setHoveredId((prev) => (prev === m.id ? null : prev))}
                 aria-label={m.label + " (" + formatCoords(m.lat, m.lon, body) + ")"}
                 style={{
@@ -797,7 +855,7 @@ export function PlanetaryGlobe({
       </div>
 
       <div className="relative z-10 flex items-center justify-between gap-2 border-t border-[var(--border-subtle)] bg-[var(--bg-void)]/60 px-4 py-2 text-xs text-[var(--text-muted)]">
-        <span className="font-mono-tabular truncate">
+        <span className="font-mono-tabular truncate" data-testid={`${body}-view`} data-lat={viewHud.lat} data-lon={viewHud.lon}>
           {hoveredMarker
             ? hoveredMarker.label + " · " + formatCoords(hoveredMarker.lat, hoveredMarker.lon, body)
             : formatCoords(viewHud.lat, viewHud.lon, body) + " · " + viewHud.zoom.toFixed(1) + "×"}

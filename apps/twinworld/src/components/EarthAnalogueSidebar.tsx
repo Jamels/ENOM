@@ -8,8 +8,8 @@ import type {
   SearchResponse,
 } from "../types";
 import { formatCoords } from "../lib/missions";
-import { AnalogueDiscoveryPanel } from "./AnalogueDiscoveryPanel";
-import type { AnalogueDiscovery, AnalogueProfile } from "../lib/api";
+import { CoordinateDiscoveryPanel } from "./CoordinateDiscoveryPanel";
+import type { AnalogueProfile, DiscoveryRank, DiscoveryRankRow } from "../lib/api";
 import { planetaryColor, planetarySourceStyle } from "../planetaryTokens";
 
 type EarthAnalogueSidebarProps = {
@@ -27,19 +27,20 @@ type EarthAnalogueSidebarProps = {
   discoveryProfiles: AnalogueProfile[];
   discoveryProfileId: string;
   discoveryWeights: Record<string, number>;
-  discoveryResult: AnalogueDiscovery | null;
+  discoveryResult: DiscoveryRank | null;
   discoveryBusy: boolean;
   discoveryError: string;
   onDiscoveryProfileChange: (id: string) => void;
   onDiscoveryWeightChange: (id: string, value: number) => void;
   onResetDiscoveryWeights: () => void;
-  onSelectDiscoveredPlace: (place: AnalogueDiscovery["results"][number]["place"]) => void;
+  onSelectDiscoveredPlace: (row: DiscoveryRankRow) => void;
   className?: string;
 };
 
 export function EarthAnalogueSidebar({
   selectedTarget,
   scorecard,
+  searchResponse,
   earthCandidates,
   earthCatalogue,
   selectedEarthId,
@@ -115,8 +116,7 @@ export function EarthAnalogueSidebar({
       </div>
 
       <div className="scroll-contain flex-1 min-h-0 overflow-y-auto">
-        <AnalogueDiscoveryPanel
-          targetId={selectedTarget?.id ?? null}
+        <CoordinateDiscoveryPanel
           targetName={selectedTarget?.name ?? null}
           targetBody={selectedTarget?.body ?? null}
           profiles={discoveryProfiles}
@@ -149,7 +149,7 @@ export function EarthAnalogueSidebar({
                 <div className="text-xs space-y-1">
                   <p className="font-medium text-[var(--text-primary)]">Candidate place context</p>
                   <p className="text-[var(--text-secondary)] leading-relaxed">{selectedTarget.catalogueEntry?.basis}</p>
-                  <p className="text-[var(--text-secondary)] leading-relaxed">Open Analogue discovery above to see which measurements are linked here and which are still missing.</p>
+                  <p className="text-[var(--text-secondary)] leading-relaxed">Measurement details are in Analogue discovery.</p>
                 </div>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
@@ -172,13 +172,19 @@ export function EarthAnalogueSidebar({
 
         {!busy && earthCandidates.length > 0 && (
           <details className="mx-3 mb-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-            <summary className="cursor-pointer px-3 py-2 text-[10px] text-[var(--text-muted)]">Legacy indexed results (individual patches and DEM contexts)</summary>
+            <summary className="cursor-pointer px-3 py-2 text-[10px] text-[var(--text-muted)]">Indexed results</summary>
             <div className="divide-y divide-[var(--border-subtle)]">
             {earthCandidates.map((candidate, idx) => {
               const isSelected = candidate.id === selectedEarthId;
               const sc = candidate.scorecardCandidate;
               const sr = candidate.searchResult;
-              const scoreVal = sc?.similarity_score ?? sr?.combined_score ?? sr?.terrain_similarity ?? null;
+              const scoreVal = sr
+                ? searchResponse?.method === "visual"
+                  ? sr.cosine_similarity
+                  : searchResponse?.method === "terrain"
+                    ? sr.terrain_similarity
+                    : sr.combined_score ?? sr.cosine_similarity
+                : sc?.similarity_score ?? null;
               const visualVal = sr?.cosine_similarity ?? null;
               const completeness = sc ? Math.round(sc.data_completeness * 100) : null;
               const metaParts: string[] = [];
