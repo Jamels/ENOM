@@ -67,14 +67,14 @@ export function OfflineMapsDialog({ open, onOpenChange }: { open: boolean; onOpe
             <div className="p-5 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-3">
-                  <div className="text-[11px] text-[var(--text-muted)]">Estimated package</div>
+                  <div className="text-[14.3px] text-[var(--text-muted)]">Estimated package</div>
                   <div className="mt-1 text-sm font-medium">{formatBytes(state.required_bytes || 600 * 1024 * 1024)}</div>
-                  <div className="mt-1 text-[11px] text-[var(--text-secondary)]">26,117 image tiles · approximate</div>
+                  <div className="mt-1 text-[14.3px] text-[var(--text-secondary)]">26,117 image tiles · approximate</div>
                 </div>
                 <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-void)] p-3">
-                  <div className="text-[11px] text-[var(--text-muted)]">Available disk space</div>
+                  <div className="text-[14.3px] text-[var(--text-muted)]">Available disk space</div>
                   <div className="mt-1 text-sm font-medium">{formatBytes(state.available_bytes)}</div>
-                  <button type="button" onClick={() => void refreshStorage()} disabled={storageRefreshing} className="mt-1 text-[11px] text-[var(--text-secondary)] underline underline-offset-2">{storageRefreshing ? "Checking…" : "Refresh estimate"}</button>
+                  <button type="button" onClick={() => void refreshStorage()} disabled={storageRefreshing} className="mt-1 text-[14.3px] text-[var(--text-secondary)] underline underline-offset-2">{storageRefreshing ? "Checking…" : "Refresh estimate"}</button>
                 </div>
               </div>
 
@@ -85,13 +85,13 @@ export function OfflineMapsDialog({ open, onOpenChange }: { open: boolean; onOpe
                     <span className="font-mono-tabular">{state.completed.toLocaleString()} / {state.total.toLocaleString()}</span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-[var(--bg-hover)]"><div className="h-full rounded-full bg-cyan-400 transition-[width]" style={{ width: `${progress}%` }} /></div>
-                  <div className="text-[11px] text-[var(--text-muted)]">{formatBytes(state.bytes)} stored so far</div>
+                  <div className="text-[14.3px] text-[var(--text-muted)]">{formatBytes(state.bytes)} stored so far</div>
                 </section>
               )}
 
               {insufficientSpace && <p className="text-xs text-amber-200">The current estimate is below the package size. Free repository disk space before downloading.</p>}
               {state.error && <p role="alert" className="text-xs text-rose-200">{state.error}</p>}
-              <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">Unavailable tiles and uncached zoom levels use the globe’s base texture. Earth’s Blue Marble is a 2004 composite, not live imagery.</p>
+              <p className="text-[14.3px] leading-relaxed text-[var(--text-muted)]">Unavailable tiles and uncached zoom levels use the globe’s base texture. Earth’s Blue Marble is a 2004 composite, not live imagery.</p>
 
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 {running ? (

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Red Planet, Home Ground: Earth Analogs for Mars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d14; --panel:#141824; --panel2:#1b2030; --line:#2a3145;
+    --text:#e8eaf0; --muted:#9aa3b8;
+    --earth:#4fa3e0; --earth-soft:rgba(79,163,224,.14);
+    --mars:#e2683c; --mars-soft:rgba(226,104,60,.14);
+    --good:#4cc38a; --target:var(--mars); --target-soft:var(--mars-soft); --mid:#e8b04a; --low:#e5566b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;line-height:1.5}
+  h1,h2,h3{font-family:"Space Grotesk",sans-serif;margin:0}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  header{padding:42px 0 24px;background:
+    radial-gradient(600px 300px at 15% 0%,rgba(79,163,224,.18),transparent 70%),
+    radial-gradient(600px 300px at 85% 0%,rgba(226,104,60,.2),transparent 70%)}
+  .eyebrow{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  h1{font-size:clamp(1.9rem,4vw,3rem);margin:6px 0 10px}
+  h1 .e{color:var(--earth)} h1 .m{color:var(--target)}
+  .lede{max-width:720px;color:var(--muted)}
+  /* planet comparison */
+  .compare{display:grid;grid-template-columns:1fr auto 1fr;gap:0;margin:26px 0 8px;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .compare .col{padding:16px 20px}
+  .compare .col.earth{background:linear-gradient(90deg,var(--earth-soft),transparent)}
+  .compare .col.mars{background:linear-gradient(270deg,var(--target-soft),transparent);text-align:right}
+  .compare .mid{padding:16px 10px;text-align:center;color:var(--muted);font-size:.82rem;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  .compare .row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:.92rem}
+  .compare .row:last-child{border-bottom:0}
+  .compare .mid div{padding:5px 0;border-bottom:1px dashed var(--line)}
+  .compare .mid div:last-child{border-bottom:0}
+  .ptitle{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-family:"Space Grotesk";font-weight:700;font-size:1.15rem}
+  .mars .ptitle{justify-content:flex-end}
+  .orb{width:26px;height:26px;border-radius:50%}
+  .orb.e{background:radial-gradient(circle at 35% 35%,#9fd3ff,#2f78b8 55%,#163e66)}
+  .orb.m{background:radial-gradient(circle at 35% 35%,#ffb08a,#c4502a 55%,#6e2512)}
+  .val{font-weight:600}
+  /* steps */
+  .steps{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 12px}
+  .step{font-size:.8rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .step.on{color:var(--text);border-color:var(--target);background:var(--target-soft)}
+  section{padding:10px 0 26px}
+  h2{font-size:1.35rem;margin-bottom:12px}
+  /* equipment tiles */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;text-align:left;color:var(--text);font:inherit;transition:.15s}
+  .tile:hover{border-color:#47506a;transform:translateY(-2px)}
+  .tile.active{border-color:var(--target);background:linear-gradient(180deg,var(--target-soft),var(--panel))}
+  .tile svg{width:44px;height:44px;margin-bottom:8px}
+  .tile b{display:block;font-family:"Space Grotesk";font-size:1.02rem}
+  .tile span{font-size:.82rem;color:var(--muted)}
+  /* locations */
+  .locs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .loc{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;text-align:left;color:var(--text);font:inherit;padding:0;transition:.15s}
+  .loc:hover{border-color:#47506a;transform:translateY(-2px)}
+  .loc .pair{display:grid;grid-template-columns:1fr 1fr;height:110px}
+  .loc .pair svg{width:100%;height:100%;display:block}
+  .loc .body{padding:12px 14px 14px}
+  .loc .names{font-family:"Space Grotesk";font-weight:700}
+  .loc .names .e{color:var(--earth)} .loc .names .m{color:var(--target)}
+  .loc .sub{font-size:.84rem;color:var(--muted);margin:4px 0 10px}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:999px}
+  .b-good{background:rgba(76,195,138,.15);color:var(--good)}
+  .b-mid{background:rgba(232,176,74,.15);color:var(--mid)}
+  .b-low{background:rgba(229,86,107,.15);color:var(--low)}
+  .hint{color:var(--muted);font-size:.9rem;padding:22px;border:1px dashed var(--line);border-radius:14px;text-align:center}
+  /* detail */
+  .overlay{position:fixed;inset:0;background:rgba(5,6,10,.75);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;overflow:auto;z-index:20}
+  .overlay.open{display:flex}
+  .detail{background:var(--panel);border:1px solid var(--line);border-radius:18px;max-width:1000px;width:100%;overflow:hidden}
+  .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .dhead h3{font-size:1.4rem}
+  .close{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:6px 12px;cursor:pointer;font:inherit}
+  .sides{display:grid;grid-template-columns:1fr 1fr}
+  .side{padding:16px 20px}
+  .side.earth{border-right:1px solid var(--line)}
+  .side h4{margin:0 0 4px;font-family:"Space Grotesk";font-size:1.05rem}
+  .side.earth h4{color:var(--earth)} .side.mars h4{color:var(--target)}
+  .coords{font-family:ui-monospace,Menlo,monospace;font-size:.86rem;color:var(--muted);margin-bottom:10px}
+  .scene{border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+  .scene svg{display:block;width:100%;height:auto}
+  .cap{font-size:.76rem;color:var(--muted);margin-top:6px}
+  .mapbox{margin-top:12px}
+  .mapbox svg{width:100%;height:auto;display:block;border-radius:8px}
+  .about{font-size:.9rem;margin-top:10px}
+  .analysis{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:6px 20px 18px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .card h5{margin:0 0 8px;font-family:"Space Grotesk";font-size:1rem}
+  .card ul{margin:0;padding-left:18px;font-size:.9rem}
+  .card li{margin-bottom:5px}
+  .sim h5{color:var(--good)} .dif h5{color:var(--low)}
+  .feas{grid-column:1/-1;display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:center}
+  .gauge{text-align:center}
+  .gauge .num{font-family:"Space Grotesk";font-size:2.4rem;font-weight:700;line-height:1}
+  .bars .bar{display:grid;grid-template-columns:150px 1fr 40px;gap:10px;align-items:center;font-size:.85rem;margin-bottom:7px}
+  .track{height:8px;background:#0e1119;border-radius:99px;overflow:hidden}
+  .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--earth),var(--target))}
+  .verdict{font-size:.92rem;margin-top:8px}
+  .limits{grid-column:1/-1;font-size:.84rem;color:var(--muted);border-left:3px solid var(--mid);padding:8px 12px;background:rgba(232,176,74,.06);border-radius:0 8px 8px 0}
+  footer{color:var(--muted);font-size:.8rem;padding:24px 0 40px;border-top:1px solid var(--line);margin-top:10px}
+  @media (max-width:760px){
+    .compare{grid-template-columns:1fr 1fr}.compare .mid{display:none}
+    .sides,.analysis{grid-template-columns:1fr}.side.earth{border-right:0;border-bottom:1px solid var(--line)}
+    .feas{grid-template-columns:1fr}.bars .bar{grid-template-columns:110px 1fr 36px}
+  }
+  body.moon{--target:#c9ccd6;--target-soft:rgba(201,204,214,.13)}
+  .orb.moon{background:radial-gradient(circle at 35% 35%,#f1f2f5,#9a9ca5 55%,#4b4d55)}
+  .world{display:inline-flex;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;margin-top:6px}
+  .world button{font:inherit;font-weight:600;font-size:.9rem;color:var(--muted);background:none;border:0;padding:7px 18px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:8px}
+  .world button.on{background:var(--target-soft);color:var(--text);outline:1px solid var(--target)}
+  .world .orb{width:16px;height:16px}
+  .tile svg{color:var(--target)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="eyebrow">NASA Space Apps Challenge 2026 · Terrestrial analogs</div>
+    <h1><span class="e">Home</span> Ground: finding <span class="m" id="wname">Mars</span> on Earth</h1>
+    <p class="lede">Choose the Moon or Mars, then pick a piece of exploration equipment to see Earth locations where it could be tested, matched to the <span id="wlede">Mars</span> sites they resemble. Every match shows what lines up, where the analogy breaks down, and how feasible the site is as a test ground.</p>
+    <div class="world" id="world">
+      <button data-w="moon"><span class="orb moon"></span>Moon</button>
+      <button data-w="mars" class="on"><span class="orb m"></span>Mars</button>
+    </div>
+
+    <div class="compare" id="compare"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="steps" id="steps">
+    <div class="step on">1 · Choose equipment</div>
+    <div class="step">2 · Choose a location</div>
+    <div class="step" id="step3">3 · Compare Earth and Mars</div>
+  </div>
+
+  <section>
+    <h2>What do you want to test?</h2>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section>
+    <h2 id="locTitle">Potential locations</h2>
+    <div id="locs"><div class="hint">Choose a piece of equipment above to see matching Earth and Mars locations.</div></div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+  <div class="detail" id="detail"></div>
+</div>
+
+<footer class="wrap">
+  Prototype. Coordinates are approximate (Mars in planetocentric latitude, east longitude 0 to 360°; Moon in selenographic latitude and longitude). Pictures are illustrations: swap in real imagery such as NASA Earth Observatory / Landsat scenes for Earth, LROC (Lunar Reconnaissance Orbiter Camera) images for the Moon, and HiRISE or CTX images for Mars. Similarity scores are the team's judgement for now and could later be calculated from datasets (elevation, temperature, mineralogy).
+</footer>
+
+<script>
+/* ---------- Planet facts ---------- */
+const FACTS = {
+  mars:[
+    ["Gravity","9.81 m/s²","3.71 m/s² (38%)"],
+    ["Length of day","24 h","24 h 37 min"],
+    ["Temperature","15 °C average","−63 °C average"],
+    ["Surface pressure","1013 hPa","≈ 6 hPa (<1%)"],
+    ["Atmosphere","78% N₂, 21% O₂","95% CO₂, very thin"],
+    ["Diameter","12,742 km","6,779 km"]],
+  moon:[
+    ["Gravity","9.81 m/s²","1.62 m/s² (17%)"],
+    ["Length of day","24 h","29.5 Earth days"],
+    ["Temperature","15 °C average","−173 °C to 127 °C"],
+    ["Surface pressure","1013 hPa","Near vacuum"],
+    ["Atmosphere","78% N₂, 21% O₂","None (trace exosphere)"],
+    ["Diameter","12,742 km","3,474 km"]]
+};
+const WNAME = {mars:"Mars", moon:"Moon"};
+let WORLD = "mars";
+function renderCompare(){
+  const F = FACTS[WORLD], orb = WORLD==="mars" ? "m" : "moon";
+  document.getElementById('compare').innerHTML = `
+    <div class="col earth"><div class="ptitle"><span class="orb e"></span>Earth</div>
+      ${F.map(f=>`<div class="row"><span class="val">${f[1]}</span></div>`).join('')}</div>
+    <div class="mid"><div style="height:34px;border:0"></div>${F.map(f=>`<div>${f[0]}</div>`).join('')}</div>
+    <div class="col mars"><div class="ptitle">${WNAME[WORLD]}<span class="orb ${orb}"></span></div>
+      ${F.map(f=>`<div class="row" style="justify-content:flex-end"><span class="val">${f[2]}</span></div>`).join('')}</div>`;
+}
+
+/* ---------- Equipment icons ---------- */
+const ICONS = {
+  rover:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="10" y="18" width="26" height="10" rx="2"/><path d="M30 18v-8h6M36 10l4 3"/><circle cx="13" cy="35" r="4"/><circle cx="24" cy="35" r="4"/><circle cx="35" cy="35" r="4"/><path d="M13 28v3M24 28v3M35 28v3"/></svg>`,
+  lander:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M16 14h16l4 12H12z"/><path d="M14 26l-6 12M34 26l6 12M24 26v12M5 38h6M37 38h6"/><path d="M20 8h8"/></svg>`,
+  habitat:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 36a18 16 0 0 1 36 0z"/><path d="M20 36v-8h8v8M4 36h40"/></svg>`,
+  drill:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6h12v8H18zM24 14v22M20 20l8 4M20 26l8 4M20 32l8 4"/><path d="M8 40h32"/></svg>`,
+  drone:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 12h28M24 12v6M14 8h20"/><rect x="18" y="18" width="12" height="9" rx="2"/><path d="M18 27l-5 9M30 27l5 9"/></svg>`,
+  suit:`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="24" cy="12" r="7"/><path d="M20 12h8"/><path d="M15 22h18l2 12h-6v8h-10v-8h-6z"/></svg>`
+};
+
+/* ---------- Data ---------- */
+const EQUIP = [
+  {id:"rover",  name:"Rovers",          desc:"Driving, navigation, science on wheels"},
+  {id:"lander", name:"Landers",         desc:"Safe touchdown and landing ellipses"},
+  {id:"habitat",name:"Habitats & caves",desc:"Shelter, radiation shielding, building"},
+  {id:"drill",  name:"Drills & ice",    desc:"Subsurface sampling, water resources"},
+  {id:"drone",  name:"Aerial drones",   desc:"Scouting from the air like Ingenuity",
+                moonName:"Hoppers",         moonDesc:"Rocket hops into craters (no air to fly in)"},
+  {id:"suit",   name:"Spacesuits & EVA",desc:"Human field geology and walking"}
+];
+
+const SITES = [
+ { id:"pilbara", equip:["rover","drill"],
+   earth:{name:"Dresser Formation, Pilbara", region:"Western Australia", lat:-21.17, lon:119.42, scene:"layers", pal:"redrock",
+     about:"Some of the oldest evidence of life on Earth: 3.48 billion year old stromatolites and microbial textures preserved in hot spring and shallow water deposits."},
+   mars:{name:"Jezero Crater", region:"Perseverance landing site", lat:18.38, lon:77.58, scene:"delta", pal:"mars",
+     about:"An ancient lake with a river delta, chosen because sediments like these are the best places to look for signs of past microbial life."},
+   short:"Ancient life in old rocks: practise finding biosignatures.",
+   sim:["Both preserve rocks over 3.5 billion years old from a time when both planets had liquid water","Layered sediments laid down in water, the kind Perseverance samples","Dry, dusty, rocky terrain with little vegetation, good for rover driving trials","Great for testing instruments that hunt for fossil microbial textures"],
+   dif:["Pilbara rocks have been heated and folded by plate tectonics, Mars has none","Daytime temperatures above 40 °C versus −20 °C on a warm Mars day","Earth's thick atmosphere and magnetic field block radiation that Mars receives","Living microbes today contaminate samples, Mars is (as far as we know) sterile"],
+   scores:{Geology:9,Terrain:7,Temperature:2,Atmosphere:1,"Water/ice":4},
+   feas:8.2, verdict:"Highly feasible. Remote but accessible by road, with existing research partnerships and a strong science case for biosignature instrument tests."},
+
+ { id:"kati", equip:["rover","lander"],
+   earth:{name:"Kati Thanda–Lake Eyre", region:"South Australia", lat:-28.37, lon:137.37, scene:"saltflat", pal:"salt",
+     about:"Australia's largest salt lake, usually a dry crust of salt over mud that floods only every few years."},
+   mars:{name:"Gale Crater", region:"Curiosity landing site", lat:-5.40, lon:137.80, scene:"mound", pal:"mars",
+     about:"A crater containing Mount Sharp, built from layers of sediment including sulfate salts left as an ancient lake dried out."},
+   short:"Drying lakes and salt crusts: test traction on soft ground.",
+   sim:["Both record a lake that dried out, leaving evaporite salts such as sulfates and chlorides","Salt crust over soft sediment is a real mobility hazard, just like Curiosity's sand traps","Very flat surface is ideal for testing navigation software with few landmarks","Salt preserves organic molecules, useful for testing detection instruments"],
+   dif:["Earth's salt lake is younger (thousands of years) than Gale's (over 3 billion years)","Occasional flooding and active microbes, Gale has been dry for billions of years","No large central mound like Mount Sharp to climb","Air pressure 160 times higher changes how dust and wind behave"],
+   scores:{Geology:7,Terrain:6,Temperature:3,Atmosphere:1,"Water/ice":5},
+   feas:7.4, verdict:"Feasible with planning. It is protected and culturally significant to the Arabana people, so access needs permission and the right season (dry winter months)."},
+
+ { id:"gilmore", equip:["rover","suit"],
+   earth:{name:"Acid saline lakes, Yilgarn Craton", region:"Western Australia (e.g. Lake Gilmore)", lat:-32.60, lon:121.60, scene:"lakes", pal:"acid",
+     about:"Shallow, very acidic and salty lakes where jarosite and hematite form, minerals also found by the Opportunity rover."},
+   mars:{name:"Meridiani Planum", region:"Opportunity landing site", lat:-1.95, lon:354.47, scene:"plains", pal:"mars",
+     about:"Flat plains where Opportunity found hematite 'blueberries' and jarosite, proof of acidic, salty water in the past."},
+   short:"Same unusual minerals: hematite spheres and jarosite.",
+   sim:["Jarosite forms only in acidic water, found in both places","Hematite concretions similar to Opportunity's 'blueberries'","Flat plains with scattered small rocks, good for long rover drives","Shows how groundwater rising and evaporating changes rocks over time"],
+   dif:["The lakes still hold water today, Meridiani is bone dry","Much warmer, with plants around the lake edges","Earth's lakes are thousands of years old, Meridiani's rocks billions","No cosmic radiation breaking down organic matter at the surface"],
+   scores:{Geology:9,Terrain:7,Temperature:3,Atmosphere:1,"Water/ice":5},
+   feas:7.0, verdict:"Feasible. Less studied than Atacama or Iceland, which makes it a strong 'new analog' pitch for the challenge."},
+
+ { id:"nullarbor", equip:["lander"],
+   earth:{name:"Nullarbor Plain", region:"South and Western Australia", lat:-31.00, lon:129.00, scene:"flat", pal:"plain",
+     about:"One of the flattest large areas on Earth: about 200,000 km² of treeless limestone with almost no relief."},
+   mars:{name:"Elysium Planitia", region:"InSight landing site", lat:4.50, lon:135.62, scene:"flat", pal:"mars",
+     about:"Chosen for InSight because it is flat, smooth and low in elevation, giving the safest possible landing."},
+   short:"Flat, smooth and rock-poor: rehearse safe landings.",
+   sim:["Very flat, low slope ground, exactly what a landing ellipse needs","Few large boulders over huge areas","Wide open sky is good for testing descent cameras and hazard avoidance","Thin soil over hard bedrock, similar to InSight's experience hammering its heat probe"],
+   dif:["Limestone (made in the sea), while Elysium is volcanic basalt","Shrubs and saltbush give the ground cameras a different texture","Air is far thicker, so parachutes behave very differently than on Mars","Fireballs aside, there are no fresh impact craters dotting the ground"],
+   scores:{Geology:3,Terrain:9,Temperature:3,Atmosphere:1,"Water/ice":2},
+   feas:8.5, verdict:"Highly feasible. Large, remote and flat, with the Nullarbor already used for meteorite searches and aerospace testing nearby (Woomera)."},
+
+ { id:"undara", equip:["habitat","suit"],
+   earth:{name:"Undara Lava Tubes", region:"Queensland", lat:-18.20, lon:144.60, scene:"tube", pal:"basalt",
+     about:"Lava tubes formed about 190,000 years ago, some sections over 20 m wide, with collapsed openings like skylights."},
+   mars:{name:"Arsia Mons skylights", region:"Tharsis volcanic region", lat:-6.0, lon:239.0, scene:"skylight", pal:"mars",
+     about:"Dark pits on the flanks of a giant volcano, thought to be openings into lava tubes or caves (approximate location)."},
+   short:"Lava tubes as ready-made, radiation-safe shelters.",
+   sim:["Both are basalt lava tubes with roof collapses that open to the surface","A rock roof can shield astronauts from radiation and temperature swings","Good place to test cave-mapping robots, lidar and communications underground","Stable cave temperatures, like those expected inside Martian tubes"],
+   dif:["Martian tubes could be far larger because lower gravity lets wider roofs stay up","Undara has plants, bats and humidity, which Mars caves lack","Breathable air in the cave, Mars needs sealed habitats","Tropical climate outside is nothing like Tharsis at −60 °C"],
+   scores:{Geology:8,Terrain:7,Temperature:4,Atmosphere:1,"Water/ice":2},
+   feas:7.8, verdict:"Feasible. Run as a national park with guided access, so tests need a permit, but infrastructure (roads, accommodation) already exists."},
+
+ { id:"svalbard", equip:["drill","habitat"],
+   earth:{name:"Adventdalen permafrost", region:"Svalbard, Norway", lat:78.20, lon:15.80, scene:"ice", pal:"arctic",
+     about:"An Arctic valley with ground frozen to hundreds of metres deep, ice wedges and patterned ground."},
+   mars:{name:"Arcadia Planitia", region:"Mid-latitude ice plains", lat:40.0, lon:195.0, scene:"polygon", pal:"marsice",
+     about:"Plains with ice a metre or less below the surface, a leading candidate for future human landing sites with water."},
+   short:"Shallow ground ice: test drills and water extraction.",
+   sim:["Ice-cemented ground just below the surface in both places","Polygon patterns caused by freezing and thawing","Long, cold, dark seasons test power systems and equipment","Ideal for drilling and melting ice into water (ISRU)"],
+   dif:["Svalbard's air is far thicker, so ice melts to liquid rather than turning straight to vapour","Temperatures around −15 °C in winter versus −80 °C on Mars","Polar bears and wildlife, a real safety risk for field teams","Liquid water at the surface in summer, which Mars lacks"],
+   scores:{Geology:6,Terrain:7,Temperature:6,Atmosphere:1,"Water/ice":9},
+   feas:6.8, verdict:"Feasible but expensive. Good research base at Longyearbyen (UNIS), but travel costs, cold and wildlife rules add complexity."},
+
+ { id:"kings", equip:["drone","rover"],
+   earth:{name:"Watarrka (Kings Canyon)", region:"Northern Territory", lat:-24.25, lon:131.57, scene:"canyon", pal:"redrock",
+     about:"A 100 m deep sandstone canyon with sheer red walls, gullies and rock domes."},
+   mars:{name:"Candor Chasma", region:"Valles Marineris", lat:-6.5, lon:288.5, scene:"canyon", pal:"mars",
+     about:"Part of the largest canyon system in the solar system, with layered walls kilometres high."},
+   short:"Canyon walls rovers cannot reach: scout from the air.",
+   sim:["Steep layered walls where rovers can't drive, so a drone is the only way to look","Iron oxide makes both landscapes red","Practise flying close to cliffs and picking safe landing spots","Wind gusts funnelled through canyons, a known Ingenuity challenge"],
+   dif:["Candor is about 50 times deeper and far wider","Mars air is about 1% as dense, so Ingenuity's blades spun at 2,500 rpm, a normal drone would not fly","Sandstone formed from wind-blown sand, Valles Marineris formed by crust splitting","Vegetation and tourists, permits needed for flying"],
+   scores:{Geology:5,Terrain:8,Temperature:3,Atmosphere:0,"Water/ice":2},
+   feas:6.5, verdict:"Partly feasible. Good for navigation and imaging tests, but drone flight physics on Earth cannot copy Mars, so test in a vacuum chamber too."},
+
+ { id:"victoria", equip:["suit","rover","habitat"],
+   earth:{name:"Newer Volcanics Province", region:"Western Victoria (e.g. Mt Elephant)", lat:-37.95, lon:143.20, scene:"cones", pal:"basalt",
+     about:"Over 400 small volcanoes, lava plains and maars across western Victoria, some only 5,000 years old."},
+   mars:{name:"Gusev Crater plains", region:"Spirit landing site", lat:-14.57, lon:175.47, scene:"plains", pal:"mars",
+     about:"Basalt plains and the Columbia Hills, where Spirit found volcanic rocks and hot-spring silica."},
+   short:"Basalt plains close to home: train geologists in suits.",
+   sim:["Both are plains covered in basalt lava flows and scattered volcanic rocks","Scoria cones and craters give practice reading volcanic landscapes","Close to Melbourne, so students and teams can actually do field trials","Good for rehearsing spacesuit field geology: sampling, photographing, navigating"],
+   dif:["Farmland and grass cover most of the rock, unlike bare Martian ground","Mild, wet climate, Gusev is frozen and dry","Young volcanoes (thousands of years) versus billions of years on Mars","Mostly private land, so access needs landholder permission"],
+   scores:{Geology:8,Terrain:6,Temperature:2,Atmosphere:1,"Water/ice":1},
+   feas:7.6, verdict:"Feasible and cheap. The most practical site for a local team: day-trip distance, public reserves like Mt Elephant, low cost."},
+
+ /* ===================== MOON ===================== */
+ { id:"wolfe", equip:["rover","lander"],
+   earth:{name:"Wolfe Creek Crater (Kandimalal)", region:"Western Australia", lat:-19.17, lon:127.80, scene:"crater", pal:"redrock",
+     about:"One of the best-preserved meteorite craters on Earth: a bowl about 880 m wide with a raised rim, formed roughly 120,000 years ago."},
+   moon:{name:"Shackleton Crater rim", region:"Lunar south pole (Artemis candidate region)", lat:-89.67, lon:129.78, scene:"polar", pal:"moon",
+     about:"Parts of the rim are sunlit most of the year, ideal for solar power, while the crater floor is in permanent shadow and may hold water ice. A leading choice for a permanent base."},
+   short:"Crater rims and slopes: rehearse driving around a base site.",
+   sim:["Both are simple bowl-shaped impact craters with a raised rim and steep inner walls","Test rover traction and safety on crater slopes like those around Shackleton","Rim-to-floor height differences let teams test radio line-of-sight and relay links","Dry, rocky and almost bare of plants, so the ground is easy to image and map"],
+   dif:["Shackleton is about 21 km wide and over 4 km deep, Wolfe Creek is under 1 km wide","At the lunar pole the Sun skims the horizon, making long, extreme shadows; in WA it is often overhead","Lunar regolith is sharp, glassy dust, Wolfe Creek is weathered rock and sand","Shadowed parts of Shackleton drop below −200 °C, Wolfe Creek can top 40 °C"],
+   scores:{Geology:5,Terrain:7,Temperature:1,Lighting:2,"Water/ice":1},
+   feas:7.3, verdict:"Feasible. A national park reached by the Tanami Road, on Jaru and Walmajarri Country, so work with Traditional Owners and visit in the dry season."},
+
+ { id:"antrim", equip:["lander"],
+   earth:{name:"Antrim Plateau basalts", region:"Northern Territory and Western Australia", lat:-17.50, lon:129.00, scene:"flat", pal:"basalt",
+     about:"Huge sheets of flood basalt that erupted over 500 million years ago, forming wide, flat-lying plains and plateaus."},
+   moon:{name:"Mare Tranquillitatis", region:"Apollo 11 landing site", lat:0.67, lon:23.47, scene:"maria", pal:"moon",
+     about:"A dark 'sea' of flat basalt lava where Apollo 11 landed in 1969, chosen because it was smooth and safe."},
+   short:"Flat basalt plains: test landing pads and rocket blast.",
+   sim:["Both are flood basalts: runny lava that spread out into very flat sheets","Low slopes and wide open ground suit landing zone and landing pad tests","Dark basalt has similar brightness to the maria, useful for camera and lidar tests","Good place to measure how rocket exhaust blasts loose rock and soil"],
+   dif:["Weathered into soil with grass and trees, while the maria are covered in impact-made regolith","With no air on the Moon, blasted dust flies kilometres at high speed, Earth's air slows it quickly","Far fewer small craters than the heavily bombarded maria","About 510 million years old versus around 3.6 billion for the maria"],
+   scores:{Geology:7,Terrain:8,Temperature:2,Lighting:3,"Water/ice":1},
+   feas:6.9, verdict:"Feasible. Remote pastoral country, so it needs landholder permission and a dry-season trip, but large flat areas are easy to find."},
+
+ { id:"byaduk", equip:["habitat","suit"],
+   earth:{name:"Byaduk Caves, Budj Bim lava flow", region:"South-west Victoria", lat:-37.92, lon:141.95, scene:"tube", pal:"basalt",
+     about:"Lava tubes with collapsed roofs, part of the Budj Bim volcanic landscape, a UNESCO World Heritage area on Gunditjmara Country."},
+   moon:{name:"Marius Hills skylight", region:"Oceanus Procellarum", lat:14.09, lon:-56.77, scene:"skylight", pal:"moon",
+     about:"A pit about 65 m wide spotted by Japan's Kaguya orbiter in 2009, thought to open into an underground lava tube."},
+   short:"Lava tube shelters close to Melbourne.",
+   sim:["Both are basalt lava tubes with collapsed roofs that open to the surface","A rock roof shields a base from radiation, tiny meteorites and huge temperature swings","Great place to test cave-mapping robots, lighting and underground communications","Easy for a Victorian team to visit in person"],
+   dif:["Lunar tubes may be hundreds of metres wide because low gravity lets wider roofs stay up","Byaduk is damp, with ferns, moss and protected bats, the Moon's tubes are dry and lifeless","Breathable air inside, a lunar tube would still need a sealed habitat","Much younger rock (tens of thousands of years) than lunar lava (billions)"],
+   scores:{Geology:8,Terrain:7,Temperature:4,Lighting:3,"Water/ice":2},
+   feas:7.9, verdict:"Highly practical. About 3.5 hours from Melbourne, managed by Parks Victoria with Gunditjmara people. Some caves close to protect bats, so check access first."},
+
+ { id:"svalbard-moon", equip:["drill","habitat"],
+   earth:{name:"Adventdalen permafrost", region:"Svalbard, Norway", lat:78.20, lon:15.80, scene:"ice", pal:"arctic",
+     about:"An Arctic valley with ground frozen hundreds of metres deep and months of polar night each winter."},
+   moon:{name:"Shoemaker Crater", region:"Permanently shadowed region, south pole", lat:-88.10, lon:44.90, scene:"psr", pal:"moon",
+     about:"A crater floor that never sees sunlight. Orbiter data suggest water ice mixed into the soil, one of the coldest places in the solar system."},
+   short:"Ice-cemented ground in darkness: test drills and water mining.",
+   sim:["Ice is mixed into the ground like cement, not a clean ice sheet, in both places","Drilling and digging frozen, rock-hard ground uses the same tools","Practise turning ice into water, oxygen and rocket fuel (resource use)","Months of polar night test lights, batteries and navigation without sunlight"],
+   dif:["Shoemaker sits near −230 °C, Svalbard's winter is around −15 °C","In a vacuum exposed ice turns straight to vapour; on Earth it melts","Lunar ice may be a thin patchy frost making up only a few per cent of the soil","Polar bears mean field teams need armed guards, no such risk on the Moon"],
+   scores:{Geology:3,Terrain:6,Temperature:4,Lighting:7,"Water/ice":8},
+   feas:6.6, verdict:"Feasible but expensive. The university centre in Longyearbyen (UNIS) supports research, but travel, cold and wildlife rules add cost."},
+
+ { id:"tnorala", equip:["drone"],
+   earth:{name:"Tnorala (Gosses Bluff)", region:"Northern Territory", lat:-23.82, lon:132.31, scene:"crater", pal:"redrock",
+     about:"The eroded remains of a large impact crater about 142 million years old; a ring of hills about 5 km wide marks the uplifted centre."},
+   moon:{name:"Tycho Crater", region:"Southern highlands", lat:-43.31, lon:-11.36, scene:"peak", pal:"moon",
+     about:"A young 85 km crater with a central peak and bright rays, a classic example of a complex crater."},
+   short:"Complex crater: plan hopper routes from above.",
+   sim:["Both are complex craters, where the centre bounced back up after the impact","Drone surveys can practise mapping crater structure and picking safe hop landing spots","Rough, steep central hills challenge autonomous hazard detection","Exposed rock layers show what impacts do to the ground underneath"],
+   dif:["The Moon has no air, so scouting uses rocket hoppers, not propellers","Tnorala is deeply eroded, Tycho is fresh and sharp","Tycho is about 17 times wider","Drones on Earth use GPS, there is none on the Moon yet"],
+   scores:{Geology:6,Terrain:6,Temperature:2,Lighting:3,"Water/ice":1},
+   feas:5.8, verdict:"Limited. A sacred site for Western Arrernte people with flying restricted, so ask permission early, and test hopper flight physics in simulations instead."},
+
+ { id:"henbury", equip:["suit","rover"],
+   earth:{name:"Henbury Meteorites Reserve", region:"Northern Territory", lat:-24.57, lon:133.15, scene:"craters", pal:"redrock",
+     about:"A field of 12 small craters made when a meteorite broke apart about 4,700 years ago."},
+   moon:{name:"Taurus-Littrow Valley", region:"Apollo 17 landing site", lat:20.19, lon:30.77, scene:"valley", pal:"moon",
+     about:"A valley between mountains where Apollo 17 astronauts explored on foot and by rover over three moonwalks in 1972."},
+   short:"Crater-pocked ground: rehearse moonwalks and rover traverses.",
+   sim:["Ground dotted with small impact craters, like most of the Moon's surface","Practise suited sampling, photographing and navigating between craters","Rough, rocky, sparsely vegetated ground for rover driving","Good for planning moonwalk timelines and return-to-base routes"],
+   dif:["Craters are thousands of years old, not billions","Walking in 17% gravity needs a completely different 'bunny hop' style","Lunar dust is sharp and clings to everything, desert sand is rounded","Daytime heat of 40 °C instead of a vacuum that swings from −170 °C to 120 °C"],
+   scores:{Geology:6,Terrain:7,Temperature:2,Lighting:3,"Water/ice":1},
+   feas:7.5, verdict:"Feasible. About 145 km from Alice Springs with road access. Collecting meteorite pieces is illegal, so plan non-sampling tests."}
+];
+const TGT = s => s.mars || s.moon;
+const WOF = s => s.mars ? "mars" : "moon";
+
+/* ---------- Scene illustrations (placeholder for real imagery) ---------- */
+const PAL = {
+  mars:   {sky1:"#d9a07a",sky2:"#f2c9a5",g1:"#b8572e",g2:"#8a3b1c",acc:"#6e2c14"},
+  marsice:{sky1:"#cfa080",sky2:"#efd2b8",g1:"#b67a5c",g2:"#8b543a",acc:"#e9e3dc"},
+  redrock:{sky1:"#5ea3d6",sky2:"#cde6f6",g1:"#c1592c",g2:"#8c3a1a",acc:"#5b2a14"},
+  salt:   {sky1:"#6fb0de",sky2:"#e2f0f8",g1:"#efe9df",g2:"#c9bfae",acc:"#9b8f7b"},
+  acid:   {sky1:"#6aaedb",sky2:"#dbeef8",g1:"#c98a4b",g2:"#9a5f2e",acc:"#d64d5c"},
+  plain:  {sky1:"#5fa5da",sky2:"#d8ecf8",g1:"#c8a777",g2:"#8f7a54",acc:"#6f7b45"},
+  basalt: {sky1:"#5a9fd4",sky2:"#d2e8f6",g1:"#5b5450",g2:"#3a3431",acc:"#7f8c4a"},
+  arctic: {sky1:"#8fb7d6",sky2:"#e9f2f8",g1:"#e6edf2",g2:"#a9b8c4",acc:"#6b7680"},
+  moon:   {sky1:"#020308",sky2:"#0b0e18",g1:"#b4b6bd",g2:"#6c6e76",acc:"#3a3c43"}
+};
+function stars(){ let s=""; for(let i=0;i<40;i++) s+=`<circle cx="${(i*97)%400}" cy="${(i*37)%110}" r="${i%5?0.7:1.3}" fill="#fff" opacity="${.4+(i%3)*.2}"/>`; return s; }
+function bowl(cx,cy,rx,ry,p){ return `<ellipse cx="${cx}" cy="${cy}" rx="${rx*1.12}" ry="${ry*1.25}" fill="${p.g1}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${p.acc}"/><path d="M${cx-rx} ${cy} A${rx} ${ry} 0 0 0 ${cx+rx} ${cy}" fill="${p.g2}" opacity=".7"/>`; }
+let uid=0;
+function scene(type, palName){
+  const p = PAL[palName]; const id = "g"+(uid++);
+  const defs = `<defs><linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.sky1}"/><stop offset="1" stop-color="${p.sky2}"/></linearGradient>
+    <linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.g1}"/><stop offset="1" stop-color="${p.g2}"/></linearGradient></defs>`;
+  const sky = `<rect width="400" height="220" fill="url(#${id}s)"/>${palName==="moon"?stars():""}`;
+  const G = `url(#${id}g)`;
+  let f = "";
+  switch(type){
+    case "layers": f = `<path d="M0 120 L80 95 L150 105 L230 80 L320 100 L400 88 V220 H0z" fill="${p.g2}"/>
+      ${[0,1,2,3,4].map(i=>`<path d="M0 ${130+i*16} Q100 ${120+i*16} 200 ${132+i*16} T400 ${126+i*16} V${144+i*16} H0z" fill="${i%2?p.g1:p.acc}" opacity=".85"/>`).join('')}`; break;
+    case "delta": f = `<rect y="120" width="400" height="100" fill="${G}"/><path d="M0 120 Q60 70 130 100 L170 120z" fill="${p.g2}"/><path d="M240 120 Q320 60 400 95 V120z" fill="${p.g2}"/>
+      <path d="M200 220 L180 160 L150 130 M180 160 L210 130 M180 160 L240 140" stroke="${p.acc}" stroke-width="4" fill="none" opacity=".7"/><path d="M120 220 Q200 150 290 220z" fill="${p.acc}" opacity=".35"/>`; break;
+    case "saltflat": f = `<rect y="125" width="400" height="95" fill="${G}"/>${Array.from({length:14},(_,i)=>`<path d="M${i*30} ${150+(i%3)*18} l40 ${(i%2?8:-6)} l25 14" stroke="${p.acc}" stroke-width="1.2" fill="none"/>`).join('')}<path d="M0 125 L400 125" stroke="${p.g2}" stroke-width="3"/>`; break;
+    case "mound": f = `<path d="M0 130 Q60 110 120 128 L400 128 V220 H0z" fill="${p.g2}"/><path d="M130 130 Q230 40 330 130z" fill="${p.acc}"/>${[0,1,2,3].map(i=>`<path d="M${150+i*12} ${120-i*18} Q230 ${110-i*18} ${310-i*12} ${120-i*18}" stroke="${p.g1}" stroke-width="2" fill="none"/>`).join('')}<rect y="130" width="400" height="90" fill="${G}"/>`; break;
+    case "lakes": f = `<rect y="120" width="400" height="100" fill="${G}"/><ellipse cx="120" cy="165" rx="80" ry="16" fill="${p.acc}" opacity=".8"/><ellipse cx="300" cy="185" rx="70" ry="12" fill="${p.acc}" opacity=".65"/><ellipse cx="230" cy="145" rx="40" ry="7" fill="#e8e1d2"/>${Array.from({length:18},(_,i)=>`<circle cx="${(i*53)%400}" cy="${200+(i%4)*4}" r="2.5" fill="#4a2a1a"/>`).join('')}`; break;
+    case "plains": f = `<rect y="125" width="400" height="95" fill="${G}"/><path d="M0 125 Q100 115 200 124 T400 120 V128 H0z" fill="${p.g2}"/>${Array.from({length:26},(_,i)=>`<ellipse cx="${(i*67)%400}" cy="${140+(i*13)%75}" rx="${3+(i%4)}" ry="${2+(i%3)}" fill="${p.acc}"/>`).join('')}`; break;
+    case "flat": f = `<rect y="135" width="400" height="85" fill="${G}"/>${palName==="plain"?Array.from({length:30},(_,i)=>`<circle cx="${(i*41)%400}" cy="${150+(i*17)%60}" r="${2+(i%3)}" fill="${p.acc}"/>`).join(''):Array.from({length:8},(_,i)=>`<circle cx="${(i*57+20)%400}" cy="${160+(i*11)%45}" r="2" fill="${p.acc}"/>`).join('')}<line x1="0" y1="135" x2="400" y2="135" stroke="${p.g2}" stroke-width="2"/>`; break;
+    case "tube": f = `<rect width="400" height="220" fill="#1c1715"/><path d="M0 220 V90 Q200 -10 400 90 V220z" fill="${p.g2}"/><path d="M40 220 V110 Q200 20 360 110 V220z" fill="#141010"/><ellipse cx="200" cy="40" rx="60" ry="18" fill="${p.sky2}"/><path d="M150 55 L200 220 L250 55z" fill="${p.sky2}" opacity=".15"/><path d="M120 220 Q200 180 280 220z" fill="${p.acc}" opacity=".6"/>`; break;
+    case "skylight": f = `<rect y="110" width="400" height="110" fill="${G}"/><path d="M0 110 Q200 70 400 110" fill="${p.g2}"/><ellipse cx="200" cy="160" rx="70" ry="26" fill="#1a0c06"/><ellipse cx="200" cy="155" rx="70" ry="22" fill="none" stroke="${p.acc}" stroke-width="3"/>`; break;
+    case "ice": f = `<path d="M0 110 L70 60 L120 95 L190 50 L260 100 L330 65 L400 105 V220 H0z" fill="#8f9ea9"/><path d="M60 68 L70 60 L80 68z M180 58 L190 50 L200 58z M320 72 L330 65 L340 72z" fill="#fff"/><rect y="130" width="400" height="90" fill="${G}"/>${polygons(p.acc)}`; break;
+    case "polygon": f = `<rect y="110" width="400" height="110" fill="${G}"/>${polygons(p.acc)}`; break;
+    case "canyon": f = `<path d="M0 60 H140 L170 220 H0z" fill="${p.g1}"/><path d="M400 70 H250 L220 220 H400z" fill="${p.g2}"/>${[0,1,2,3,4].map(i=>`<path d="M0 ${80+i*26} H${144+i*5}" stroke="${p.acc}" stroke-width="3"/><path d="M400 ${90+i*26} H${246-i*5}" stroke="${p.acc}" stroke-width="3"/>`).join('')}<path d="M170 220 L195 180 L220 220z" fill="${p.acc}"/>`; break;
+    case "crater": f = `<rect y="115" width="400" height="105" fill="${G}"/>${bowl(200,165,120,30,p)}`; break;
+    case "craters": f = `<rect y="115" width="400" height="105" fill="${G}"/>${bowl(110,160,55,14,p)}${bowl(270,180,70,17,p)}${bowl(330,140,28,7,p)}${bowl(40,195,24,6,p)}`; break;
+    case "polar": f = `<circle cx="20" cy="112" r="10" fill="#fff8e0"/><path d="M0 120 L60 105 L130 112 L400 100 V220 H0z" fill="${p.g1}"/><path d="M120 125 Q260 95 400 118 V220 H120z" fill="#050608"/><path d="M0 120 L120 125 L400 118" stroke="#fff" stroke-width="1.5" opacity=".7" fill="none"/><path d="M0 220 V150 L140 220z" fill="${p.g2}"/>`; break;
+    case "maria": f = `<rect y="120" width="400" height="100" fill="${p.g2}"/>${Array.from({length:10},(_,i)=>bowl((i*83)%400,135+(i*19)%75,6+(i%4)*4,2+(i%4),p)).join('')}`; break;
+    case "psr": f = `<path d="M0 120 L90 80 L160 110 L240 75 L320 105 L400 90 V220 H0z" fill="${p.g1}"/><path d="M0 120 L90 80 L160 110 L240 75 L320 105 L400 90" stroke="#fff" stroke-width="1.5" opacity=".8" fill="none"/><ellipse cx="200" cy="170" rx="190" ry="48" fill="#030305"/><ellipse cx="200" cy="175" rx="120" ry="22" fill="#0d1018"/>${Array.from({length:12},(_,i)=>`<circle cx="${110+(i*37)%180}" cy="${165+(i*7)%20}" r="1.6" fill="#9fc8ff" opacity=".55"/>`).join('')}`; break;
+    case "peak": f = `<rect y="125" width="400" height="95" fill="${G}"/>${bowl(200,170,170,36,p)}<path d="M160 175 L195 120 L210 135 L240 175z" fill="${p.g1}"/>`; break;
+    case "valley": f = `<path d="M0 140 L50 70 L120 140z" fill="${p.g1}"/><path d="M260 140 L340 60 L400 120 V140z" fill="${p.g1}"/><path d="M120 140 L170 105 L220 140z" fill="${p.g2}"/><rect y="138" width="400" height="82" fill="${G}"/>${bowl(90,175,30,7,p)}${bowl(280,195,40,9,p)}<path d="M150 210 l60 -40 l40 10" stroke="${p.acc}" stroke-width="1.5" stroke-dasharray="4 4" fill="none"/>`; break;
+    case "cones": f = `<rect y="130" width="400" height="90" fill="${p.acc}"/><path d="M60 132 L120 70 L180 132z" fill="${p.g1}"/><path d="M104 86 L136 86" stroke="${p.g2}" stroke-width="5"/><path d="M230 132 L280 92 L330 132z" fill="${p.g1}"/>${Array.from({length:16},(_,i)=>`<ellipse cx="${(i*61)%400}" cy="${150+(i*13)%60}" rx="4" ry="3" fill="${p.g2}"/>`).join('')}`; break;
+  }
+  return `<svg viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice">${defs}${sky}${f}</svg>`;
+}
+function polygons(c){ let s=""; for(let r=0;r<4;r++) for(let k=0;k<9;k++){const x=k*48+(r%2)*24, y=140+r*20; s+=`<path d="M${x} ${y} l24 -6 l24 6 l-6 14 h-36z" fill="none" stroke="${c}" stroke-width="1.4" opacity=".8"/>`;} return s; }
+
+/* ---------- Coordinate map ---------- */
+function miniMap(lat, lon, planet){
+  // equirectangular, lon -180..180 for Earth; 0..360 east for Mars
+  const W=360,H=180;
+  let x = planet==="mars" ? lon : (lon+180); // mars lon already 0..360 east
+  const y = 90 - lat;
+  const C = {earth:["#12304a","#2b5677","#9fd3ff"], mars:["#4a1f10","#7a3a22","#ffcc99"], moon:["#26272c","#4a4c55","#ffffff"]}[planet];
+  const [bg,grid,dot] = C;
+  let lines = "";
+  for(let g=30; g<W; g+=30) lines += `<line x1="${g}" y1="0" x2="${g}" y2="${H}" stroke="${grid}" stroke-width=".6"/>`;
+  for(let g=30; g<H; g+=30) lines += `<line x1="0" y1="${g}" x2="${W}" y2="${g}" stroke="${grid}" stroke-width=".6"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="${bg}"/>${lines}
+    <line x1="0" y1="90" x2="${W}" y2="90" stroke="${grid}" stroke-width="1.4"/>
+    <circle cx="${x}" cy="${y}" r="12" fill="${dot}" opacity=".25"/><circle cx="${x}" cy="${y}" r="4.5" fill="${dot}" stroke="#000" stroke-width="1"/>
+    <text x="6" y="${H-6}" font-size="10" fill="${dot}" font-family="monospace">${{earth:"Earth",mars:"Mars",moon:"Moon"}[planet]} · lat/long grid 30°</text></svg>`;
+}
+const fmt = (lat,lon,planet) => {
+  const la = `${Math.abs(lat).toFixed(2)}°${lat>=0?"N":"S"}`;
+  if(planet==="mars") return `${la}, ${lon.toFixed(2)}°E`;
+  return `${la}, ${Math.abs(lon).toFixed(2)}°${lon>=0?"E":"W"}`;
+};
+const band = s => s>=8 ? ["b-good","Highly feasible"] : s>=6.5 ? ["b-mid","Feasible"] : ["b-low","Limited"];
+const colour = s => s>=8 ? "var(--good)" : s>=6.5 ? "var(--mid)" : "var(--low)";
+
+/* ---------- UI ---------- */
+const tilesEl = document.getElementById('tiles'), locsEl = document.getElementById('locs');
+const steps = [...document.querySelectorAll('.step')];
+const setStep = n => steps.forEach((s,i)=>s.classList.toggle('on', i<=n));
+const eqName = e => WORLD==="moon" && e.moonName ? e.moonName : e.name;
+const eqDesc = e => WORLD==="moon" && e.moonDesc ? e.moonDesc : e.desc;
+const HINT = `<div class="hint">Choose a piece of equipment above to see matching Earth locations.</div>`;
+const IMG = {earth:"a Landsat / Earth Observatory image", mars:"a HiRISE / CTX image", moon:"an LROC (Lunar Reconnaissance Orbiter) image"};
+const LIMITS = {
+  mars:"no site on Earth can copy Mars gravity (38%), its thin CO₂ atmosphere (under 1% of Earth's pressure) or its radiation. Tests here cover equipment and methods, then vacuum chambers and simulations fill the gaps.",
+  moon:"no site on Earth can copy the Moon's gravity (17%), its vacuum, its 14-day nights or its radiation and razor-sharp dust. Tests here cover equipment and methods, then vacuum chambers, regolith simulants and simulations fill the gaps."
+};
+
+function renderTiles(){
+  tilesEl.innerHTML = EQUIP.map(e=>`<button class="tile" data-id="${e.id}">${ICONS[e.id]}<b>${eqName(e)}</b><span>${eqDesc(e)}</span></button>`).join('');
+}
+tilesEl.addEventListener('click', ev=>{
+  const t = ev.target.closest('.tile'); if(!t) return;
+  [...tilesEl.children].forEach(c=>c.classList.toggle('active', c===t));
+  showLocations(t.dataset.id);
+});
+
+function setWorld(w){
+  WORLD = w;
+  document.body.classList.toggle('moon', w==="moon");
+  document.querySelectorAll('#world button').forEach(b=>b.classList.toggle('on', b.dataset.w===w));
+  document.getElementById('wname').textContent = w==="moon" ? "the Moon" : "Mars";
+  document.getElementById('step3').textContent = `3 · Compare Earth and ${WNAME[w]}`;
+  document.getElementById('wlede').textContent = w==="moon" ? "Moon" : "Mars";
+  renderCompare(); renderTiles();
+  document.getElementById('locTitle').textContent = "Potential locations";
+  locsEl.innerHTML = HINT; setStep(0);
+}
+document.getElementById('world').addEventListener('click', ev=>{ const b = ev.target.closest('button'); if(b) setWorld(b.dataset.w); });
+
+function showLocations(eq){
+  const e = EQUIP.find(x=>x.id===eq);
+  document.getElementById('locTitle').textContent = `Potential locations for ${eqName(e).toLowerCase()} on the ${WNAME[WORLD]}`;
+  const list = SITES.filter(s=>WOF(s)===WORLD && s.equip.includes(eq)).sort((a,b)=>b.feas-a.feas);
+  if(!list.length){ locsEl.innerHTML = `<div class="hint">No ${WNAME[WORLD]} sites for this equipment yet.</div>`; return; }
+  locsEl.innerHTML = `<div class="locs">${list.map(s=>{const [cls,lab]=band(s.feas), t=TGT(s); return `
+    <button class="loc" data-id="${s.id}">
+      <div class="pair">${scene(s.earth.scene,s.earth.pal)}${scene(t.scene,t.pal)}</div>
+      <div class="body"><div class="names"><span class="e">${s.earth.name}</span> ↔ <span class="m">${t.name}</span></div>
+      <div class="sub">${s.short}</div><span class="badge ${cls}">● ${lab} · ${s.feas.toFixed(1)}/10</span></div>
+    </button>`}).join('')}</div>`;
+  setStep(1);
+  locsEl.scrollIntoView({behavior:'smooth', block:'start'});
+}
+locsEl.addEventListener('click', ev=>{ const c = ev.target.closest('.loc'); if(c) openDetail(c.dataset.id); });
+
+const overlay = document.getElementById('overlay'), detail = document.getElementById('detail');
+function openDetail(id){
+  const s = SITES.find(x=>x.id===id); const [cls,lab]=band(s.feas); const t = TGT(s), w = WOF(s);
+  const side = (pl, d, label) => `<div class="side ${pl==="earth"?"earth":"mars"}">
+      <h4>${label} · ${d.name}</h4>
+      <div class="coords">${d.region}<br>${fmt(d.lat,d.lon,pl)}</div>
+      <div class="scene">${scene(d.scene,d.pal)}</div>
+      <div class="cap">Illustration. Replace with ${IMG[pl]}.</div>
+      <div class="about">${d.about}</div>
+      <div class="mapbox">${miniMap(d.lat,d.lon,pl)}</div></div>`;
+  detail.innerHTML = `
+    <div class="dhead"><div><div class="eyebrow">Earth ↔ ${WNAME[w]} analog match</div><h3>${s.earth.name} ↔ ${t.name}</h3></div>
+      <button class="close" id="closeBtn">Close ✕</button></div>
+    <div class="sides">${side("earth",s.earth,"Earth")}${side(w,t,WNAME[w])}</div>
+    <div class="analysis">
+      <div class="card sim"><h5>✓ Similarities</h5><ul>${s.sim.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div class="card dif"><h5>✗ Differences</h5><ul>${s.dif.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div class="card feas">
+        <div class="gauge"><div class="num" style="color:${colour(s.feas)}">${s.feas.toFixed(1)}</div><div style="color:var(--muted);font-size:.8rem">out of 10</div><div style="margin-top:8px"><span class="badge ${cls}">${lab}</span></div></div>
+        <div><h5 style="margin-bottom:10px">How close is the match?</h5>
+          <div class="bars">${Object.entries(s.scores).map(([k,v])=>`<div class="bar"><span>${k}</span><div class="track"><div class="fill" style="width:${v*10}%"></div></div><span>${v}/10</span></div>`).join('')}</div>
+          <div class="verdict"><b>Is it feasible?</b> ${s.verdict}</div></div>
+      </div>
+      <div class="limits"><b>Earth's limits:</b> ${LIMITS[w]}</div>
+    </div>`;
+  overlay.classList.add('open'); setStep(2);
+  document.getElementById('closeBtn').onclick = closeDetail;
+}
+function closeDetail(){ overlay.classList.remove('open'); setStep(1); }
+overlay.addEventListener('click', e=>{ if(e.target===overlay) closeDetail(); });
+document.addEventListener('keydown', e=>{ if(e.key==="Escape") closeDetail(); });
+
+setWorld("mars");
+</script>
+</body>
+</html>

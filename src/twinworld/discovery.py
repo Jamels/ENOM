@@ -14,7 +14,7 @@ from twinworld.scorecards import VARIABLES, compare_candidate, validate_weights
 POLICY_PATH = Path(__file__).resolve().parents[2] / "configs/discovery-policy.json"
 POLICY = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
 POLICY_VERSION = POLICY["version"]
-SCORING_METHOD = "evidence-aware-eight-dimension-v2"
+SCORING_METHOD = "eight-dimension-prototype-v3"
 LAND_COVER_GROUPS = {
     "bare_sparse",
     "forest",
@@ -97,7 +97,9 @@ def comparison_measurements(row: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _dimension_inputs(
-    row: dict[str, Any], observations: dict[str, list[dict[str, Any]]]
+    row: dict[str, Any],
+    observations: dict[str, list[dict[str, Any]]],
+    prototype_contexts: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     from twinworld.scientific_observations import dimension_inputs
 
@@ -108,6 +110,28 @@ def _dimension_inputs(
         place_id,
         observations=observations.get(place_id, []),
     )
+    center = row.get("index_center") if isinstance(row.get("index_center"), dict) else {}
+    location = {
+        "body": row.get("index_body"),
+        "latitude_deg": center.get("latitude_deg"),
+    }
+    catalogue_context = (prototype_contexts or {}).get(place_id, {})
+    prototype_context = {
+        key: catalogue_context[key]
+        for key in ("candidate_type", "summary", "source_url")
+        if catalogue_context.get(key) is not None
+    }
+    if isinstance(row.get("land_cover"), dict):
+        prototype_context["land_cover"] = row["land_cover"]
+    result = {
+        dimension_id: {
+            "id": dimension_id,
+            "evidence_items": evidence_rows,
+            "location": location,
+            "prototype_context": prototype_context,
+        }
+        for dimension_id, evidence_rows in result.items()
+    }
     # The indexed terrain is the authoritative footprint-specific observation.
     # Catalogue evidence can add context but cannot replace its support mask.
     result["terrain"] = {
@@ -138,6 +162,11 @@ def _compact_dimensions(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         "score",
         "effective_weight",
         "weight_contribution",
+        "normalized_contribution",
+        "prototype_score",
+        "observed_score",
+        "score_origin",
+        "evidence_backed",
         "methodology",
         "methodology_kind",
         "evidence_status",
@@ -146,15 +175,24 @@ def _compact_dimensions(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         "score_note",
         "scored",
         "sources",
+        "reference_sources",
+        "candidate_sources",
         "observation_coverage",
         "uncertainty",
     }
     summaries = [{key: value for key, value in row.items() if key in fields} for row in rows]
     for summary in summaries:
-        if summary.get("methodology_kind") == "experimental" and summary.get("score") is None:
-            summary["methodology"] = (
-                "Experimental matched-indicator comparison; see the evidence requirements below."
-            )
+        for variable in summary.get("comparison_variables", []):
+            for measurement_key in ("reference_measurements", "candidate_measurements"):
+                variable[measurement_key] = [
+                    {
+                        key: measurement[key]
+                        for key in ("name", "value", "units", "source_url", "dataset_id", "temporal_coverage")
+                        if key in measurement
+                    }
+                    for measurement in variable.get(measurement_key, [])
+                    if isinstance(measurement, dict)
+                ][:8]
         if summary.get("dimension_id") == "mission_operations":
             variables = summary.get("comparison_variables", [])
             summary["shared_comparison_variables"] = [item["name"] for item in variables]
@@ -295,7 +333,11 @@ def rank(
     dimension_weights: dict[str, float] | None = None,
     land_cover_min_fractions: dict[str, float] | None = None,
 ) -> dict[str, Any]:
-    from twinworld.analogue import DIMENSIONS, validate_dimension_weights
+    from twinworld.analogue import (
+        DIMENSIONS,
+        candidate_context_records,
+        validate_dimension_weights,
+    )
     from twinworld.dimension_scoring import compare_dimensions
 
     checked = validate_weights(weights)
@@ -336,7 +378,11 @@ def rank(
     from twinworld.scientific_observations import local_observation_catalogue
 
     observations = local_observation_catalogue(Path(__file__).resolve().parents[2])
-    target_dimensions = _dimension_inputs(target, observations)
+    prototype_contexts = {
+        record["place_id"]: record
+        for record in candidate_context_records(Path(__file__).resolve().parents[2])
+    }
+    target_dimensions = _dimension_inputs(target, observations, prototype_contexts)
     terrain_dimension_weight = max(
         selected_dimension_weights["terrain"], selected_dimension_weights["mission_operations"]
     )
@@ -357,13 +403,11 @@ def rank(
             )
             dimension_comparison = compare_dimensions(
                 target_dimensions,
-                _dimension_inputs(earth, observations),
+                _dimension_inputs(earth, observations, prototype_contexts),
                 selected_dimension_weights,
                 terrain_comparison=comparison,
             )
             count = comparison["matched_variable_count"]
-            if dimension_comparison["score"] is None:
-                continue
             direct = target.get("native_count_crop_fraction")
             retained = target.get("observed_cell_fraction")
             tier = (
@@ -413,13 +457,25 @@ def rank(
                     "evidence_class": tier,
                     "terrain_support_class": tier,
                     **comparison,
-                    "score_interpretation": "Terrain index; not probability or suitability.",
+                    "score_interpretation": (
+                        "Eight-dimension prototype similarity; not a probability, "
+                        "validated geological analogue, or mission suitability."
+                    ),
                     "score": dimension_comparison["score"],
+                    "prototype_similarity": dimension_comparison["prototype_similarity"],
+                    "observed_similarity": dimension_comparison["observed_similarity"],
                     "evidence_coverage": dimension_comparison["evidence_coverage"],
+                    "source_context_coverage": dimension_comparison["source_context_coverage"],
+                    "measured_weight_coverage": dimension_comparison["measured_weight_coverage"],
+                    "estimated_weight_coverage": dimension_comparison["estimated_weight_coverage"],
+                    "simulated_weight_coverage": dimension_comparison["simulated_weight_coverage"],
                     "dimension_scores": _compact_dimensions(
                         dimension_comparison["dimension_scores"]
                     ),
                     "missing_dimensions": dimension_comparison["missing_dimensions"],
+                    "missing_evidence_dimensions": dimension_comparison[
+                        "missing_evidence_dimensions"
+                    ],
                     "dimension_evidence_class": dimension_comparison["evidence_class"],
                     "independent_evidence_group_count": len(
                         dimension_comparison["independent_evidence_groups"]
@@ -433,9 +489,9 @@ def rank(
     results.sort(
         key=lambda r: (
             r["score"] is None,
-            -r["independent_evidence_group_count"],
             -(r["score"] or 0.0),
             -(r["evidence_coverage"] or 0.0),
+            -r["independent_evidence_group_count"],
             r["context"]["observation_id"],
         )
     )
@@ -499,8 +555,9 @@ def rank(
             "explanation": "Terrain similarity does not establish vehicle or site suitability.",
         },
         "limitations": [
-            "Rankings prioritize the number of independent scored evidence groups before "
-            "similarity; terrain and operations count as one shared group.",
+            "Rankings sort by the eight-dimension weighted prototype similarity; source-backed "
+            "evidence coverage is a separate reported quantity. Terrain and operations share "
+            "one effective weight budget to prevent double-counting their shared measurements.",
             "Similarity is a research ranking index, not a probability or validated analogue.",
             "A sparse MOLA elevation range describes observed bins only and can omit "
             "unobserved extremes; it is ranked as limited evidence.",

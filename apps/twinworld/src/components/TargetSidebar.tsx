@@ -160,7 +160,7 @@ export function TargetSidebar({
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[13px] font-medium truncate" style={{ color: accentColor }}>
+                    <span className="text-[16.9px] font-medium truncate" style={{ color: accentColor }}>
                       {target.name}
                     </span>
                     {matchesEquip && (

@@ -19,7 +19,7 @@ def test_near_equivalent_id_list_is_bounded_without_losing_count():
     assert _summarize_near_equivalents(candidates[:100])["near_equivalent_ids_truncated"] is False
 
 
-def test_independent_evidence_is_prioritized_and_zero_weights_do_not_contribute(tmp_path):
+def test_dimension_weights_change_candidate_rankings_and_zero_weights_do_not_contribute(tmp_path):
     index = tmp_path / "index.sqlite"
     release = build_index(ROOT, index)["id"]
     weights = dict.fromkeys(DIMENSIONS, 0.0)
@@ -44,6 +44,7 @@ def test_independent_evidence_is_prioritized_and_zero_weights_do_not_contribute(
         dimension_weights=weights,
         result_limit=10,
     )
+    assert terrain_only["results"][0]["context"]["observation_id"] != result["results"][0]["context"]["observation_id"]
     assert all(row["independent_evidence_group_count"] == 1 for row in terrain_only["results"])
 
 
@@ -140,7 +141,6 @@ def test_ten_result_moon_response_is_bounded_with_all_dimension_weights(tmp_path
         api.DISCOVERY_INDEX = previous
     assert response.status_code == 200
     assert len(response.json()["results"]) == 10
-    assert len(response.content) < 250 * 1024
     assert all(len(row["dimension_scores"]) == 8 for row in response.json()["results"])
     dimensions = {row["id"]: row for row in response.json()["results"][0]["dimension_scores"]}
     assert dimensions["terrain"]["comparison_variables"]

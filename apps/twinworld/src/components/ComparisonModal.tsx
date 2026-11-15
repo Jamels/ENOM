@@ -235,7 +235,7 @@ export function ComparisonModal({
                       <p className="mt-1 text-[var(--text-secondary)]">Checks terrain against provisional limits; it does not establish mission safety.</p>
                     </div>
                   </div>
-                  <p className="text-[11px] leading-relaxed text-[var(--text-muted)]">Missing or incompatible measurements are omitted, not treated as zero.</p>
+                  <p className="text-[14.3px] leading-relaxed text-[var(--text-muted)]">Missing or incompatible measurements are omitted, not treated as zero.</p>
               </section>
 
               {(sc || sr) && (
@@ -287,14 +287,14 @@ export function ComparisonModal({
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 4 }}>
                           <CartesianGrid stroke="rgba(238,240,245,0.08)" horizontal={false} />
-                          <XAxis type="number" domain={[0, 100]} tick={{ fill: "#7a8296", fontSize: 11 }} unit="%" />
-                          <YAxis type="category" dataKey="name" width={96} tick={{ fill: "#a3a9b8", fontSize: 12 }} />
+                          <XAxis type="number" domain={[0, 100]} tick={{ fill: "#7a8296", fontSize: 14.3 }} unit="%" />
+                          <YAxis type="category" dataKey="name" width={96} tick={{ fill: "#a3a9b8", fontSize: 15.6 }} />
                           <Tooltip
                             contentStyle={{
                               backgroundColor: "#11141c",
                               border: "1px solid rgba(238,240,245,0.16)",
                               borderRadius: "8px",
-                              fontSize: "12px",
+                              fontSize: "15.6px",
                               color: "#eef0f5",
                             }}
                             formatter={(_value, _name, props) => {

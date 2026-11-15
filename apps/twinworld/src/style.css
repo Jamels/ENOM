@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@theme {
+  --text-xs: 0.975rem;
+  --text-sm: 1.1375rem;
+  --text-base: 1.3rem;
+  --text-lg: 1.4625rem;
+  --text-xl: 1.625rem;
+  --text-2xl: 1.95rem;
+  --text-3xl: 2.4375rem;
+  --text-4xl: 3.25rem;
+  --text-5xl: 4.225rem;
+  --text-6xl: 5.525rem;
+  --text-7xl: 6.825rem;
+  --text-8xl: 8.45rem;
+  --text-9xl: 11.05rem;
+}
+
 :root {
   --bg-void: #07080d;
   --bg-panel: #0b0d14;
@@ -54,13 +70,13 @@
   input,
   textarea,
   select {
-    font-size: 16px;
+    font-size: 20.8px;
   }
 
   @media (pointer: fine) {
     input.desktop-compact,
     select.desktop-compact {
-      font-size: 13px;
+      font-size: 16.9px;
     }
   }
 
@@ -96,6 +112,48 @@
   border-color: var(--planetary-deep);
   background-color: var(--bg-hover);
   color: var(--planetary-color);
+}
+
+.planet-detail-disclosure {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  min-height: 88px;
+}
+
+.planet-detail-disclosure > summary {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  padding-block: 8px;
+}
+
+.planet-detail-disclosure[open] {
+  z-index: 30;
+}
+
+.planet-detail-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 60;
+  width: min(calc(100vw - 32px), 900px);
+  max-height: min(72vh, 720px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--bg-panel);
+  padding: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
+}
+
+@media (max-width: 639px) {
+  .planet-detail-panel {
+    width: calc(100vw - 32px);
+    max-height: 70vh;
+  }
 }
 
 :where(button, a, input, select, summary, [role="button"]):focus-visible {

@@ -34,6 +34,7 @@ type PlanetaryGlobeProps = {
   onSelectMarker: (id: string) => void;
   onSelectSurface?: (coords: { lat: number; lon: number }) => void;
   footprint?: number[][] | null;
+  coverageFootprints?: (number[][] | null | undefined)[];
   defaultCoords?: { lat: number; lon: number };
   className?: string;
 };
@@ -124,6 +125,7 @@ export function PlanetaryGlobe({
   onSelectMarker,
   onSelectSurface,
   footprint,
+  coverageFootprints = [],
   defaultCoords = { lat: 12, lon: 25 },
   className = "",
 }: PlanetaryGlobeProps) {
@@ -131,6 +133,7 @@ export function PlanetaryGlobe({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const footprintRef = useRef<THREE.Line | null>(null);
+  const coverageGroupRef = useRef<THREE.Group | null>(null);
   const pressRef = useRef<{ x: number; y: number; moved: boolean } | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [showGrid, setShowGrid] = useState(true);
@@ -202,6 +205,59 @@ export function PlanetaryGlobe({
       footprintRef.current = line;
     }
   }, [footprint]);
+
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    const disposeCoverageGroup = () => {
+      const current = coverageGroupRef.current;
+      if (!current) return;
+      scene.remove(current);
+      current.traverse((object) => {
+        if (object instanceof THREE.Mesh || object instanceof THREE.Line) {
+          object.geometry.dispose();
+          const materials = Array.isArray(object.material) ? object.material : [object.material];
+          materials.forEach((material) => material.dispose());
+        }
+      });
+      coverageGroupRef.current = null;
+    };
+    disposeCoverageGroup();
+
+    const group = new THREE.Group();
+    for (const ring of coverageFootprints) {
+      if (!ring || ring.length < 3 || ring.some((point) => point.length < 2 || !Number.isFinite(point[0]) || !Number.isFinite(point[1]))) continue;
+      // Locally unwrap longitude so a footprint crossing 0/360 stays compact.
+      const unwrapped: [number, number][] = [];
+      for (const [longitude, latitude] of ring) {
+        const previous = unwrapped.at(-1)?.[0];
+        const lon = previous == null ? longitude : previous + shortestAngleDelta(previous, longitude);
+        unwrapped.push([lon, latitude]);
+      }
+      const centerLon = unwrapped.reduce((sum, point) => sum + point[0], 0) / unwrapped.length;
+      const centerLat = unwrapped.reduce((sum, point) => sum + point[1], 0) / unwrapped.length;
+      const localRing = unwrapped.map(([lon, lat]) => new THREE.Vector2((lon - centerLon) * Math.cos(centerLat * Math.PI / 180), lat - centerLat));
+      const triangles = THREE.ShapeUtils.triangulateShape(localRing, []);
+      if (triangles.length > 0) {
+        const vertices = unwrapped.map(([lon, lat]) => latLonToVec3(lat, lon, 1.012));
+        const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+        geometry.setIndex(triangles.flat());
+        geometry.computeVertexNormals();
+        group.add(new THREE.Mesh(
+          geometry,
+          new THREE.MeshBasicMaterial({ color: "#2dd4bf", transparent: true, opacity: 0.46, side: THREE.DoubleSide, depthWrite: false }),
+        ));
+      }
+
+      const outlineGeometry = new THREE.BufferGeometry().setFromPoints(
+        [...unwrapped, unwrapped[0]].map(([lon, lat]) => latLonToVec3(lat, lon, 1.014)),
+      );
+      group.add(new THREE.Line(outlineGeometry, new THREE.LineBasicMaterial({ color: "#5eead4", transparent: true, opacity: 0.95 })));
+    }
+    scene.add(group);
+    coverageGroupRef.current = group;
+    return disposeCoverageGroup;
+  }, [coverageFootprints]);
 
   useEffect(() => {
     if (!focusCoords) return;
@@ -734,6 +790,20 @@ export function PlanetaryGlobe({
       >
         <canvas ref={canvasRef} className="block w-full h-full" />
 
+        {coverageFootprints.length > 0 && (
+          <div role="region" aria-label="Terrain coverage legend" className="pointer-events-none absolute bottom-3 left-3 z-20 max-w-[min(19rem,calc(100%-1.5rem))] rounded-lg border border-white/15 bg-[#0c1118]/90 px-3 py-2 text-[14.3px] leading-4 text-slate-100 shadow-lg backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <span aria-hidden="true" className="h-3 w-3 shrink-0 rounded-sm border border-teal-200 bg-teal-400/70" />
+              <span><strong>Teal:</strong> indexed terrain window · click to inspect</span>
+            </div>
+            <div className="mt-1 flex items-center gap-2 text-slate-300">
+              <span aria-hidden="true" className="h-3 w-3 shrink-0 rounded-sm border border-dashed border-slate-400" />
+              <span><strong>No teal:</strong> no indexed terrain here; click for nearest windows</span>
+            </div>
+            {body === "moon" && <p className="mt-1 text-slate-400">Moon outlines use terrain coordinates; alignment with the global basemap is unverified.</p>}
+          </div>
+        )}
+
         {!textureReady && !webglError && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <span className="text-xs font-mono-tabular text-slate-400 bg-black/50 px-2.5 py-1 rounded-md border border-white/10">
@@ -810,7 +880,7 @@ export function PlanetaryGlobe({
                   )}
                   {isTopThree ? (
                     <span
-                      className="flex items-center justify-center min-w-[20px] h-[20px] px-1 rounded-full text-[10px] font-mono-tabular font-semibold shadow-sm transition-transform"
+                      className="flex items-center justify-center min-w-[20px] h-[20px] px-1 rounded-full text-[13px] font-mono-tabular font-semibold shadow-sm transition-transform"
                       style={{
                         backgroundColor: isSelected ? palette.light : palette.accent,
                         color: "#080b10",
@@ -830,17 +900,18 @@ export function PlanetaryGlobe({
                     <span
                       className="block rounded-full border-[4px] border-[#080b10] transition-transform group-hover:scale-105"
                       style={{
-                        backgroundColor: isSelected ? palette.light : palette.accent,
-                        width: isSelected ? "48px" : "42px",
-                        height: isSelected ? "48px" : "42px",
+                        backgroundColor: isSelected ? palette.light : m.kind === "indexed" ? "#2dd4bf" : palette.accent,
+                        boxShadow: m.kind === "indexed" ? "0 0 18px rgba(45, 212, 191, 0.8)" : undefined,
+                        width: m.kind === "indexed" ? (isSelected ? "28px" : "22px") : isSelected ? "48px" : "42px",
+                        height: m.kind === "indexed" ? (isSelected ? "28px" : "22px") : isSelected ? "48px" : "42px",
                       }}
                     />
                   )}
                   {(isSelected || isHovered) && (
-                    <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md border border-white/15 bg-[#0c1118]/92 px-2 py-0.5 text-[11px] font-medium text-slate-100 backdrop-blur-sm shadow-md">
+                    <span className="pointer-events-none absolute left-full ml-2 whitespace-nowrap rounded-md border border-white/15 bg-[#0c1118]/92 px-2 py-0.5 text-[14.3px] font-medium text-slate-100 backdrop-blur-sm shadow-md">
                       {m.label}
                       {m.score != null && (
-                        <span className="ml-1.5 font-mono-tabular text-[10px] text-[var(--text-secondary)]">
+                        <span className="ml-1.5 font-mono-tabular text-[13px] text-[var(--text-secondary)]">
                           {(m.score * 100).toFixed(0)}%
                         </span>
                       )}

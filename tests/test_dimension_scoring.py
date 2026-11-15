@@ -50,8 +50,10 @@ def test_all_dimensions_are_explicit_and_preserve_evidence_and_provenance():
         sum(math.exp(-2 / spec["tolerance"]) for spec in VARIABLES.values()) / len(VARIABLES)
     )
     assert terrain["scored"] is True
-    assert set(result["missing_dimensions"]) == set(DIMENSIONS) - {"terrain"}
-    assert result["evidence_class"] == "limited_evidence"
+    assert all(isinstance(row["score"], float) and 0 <= row["score"] <= 1 for row in result["dimension_scores"])
+    assert result["missing_evidence_dimensions"] == []
+    assert result["evidence_class"] == "prototype_observed_subset"
+    assert sum(row["normalized_contribution"] for row in result["dimension_scores"]) == pytest.approx(result["score"])
 
 
 def test_shared_terrain_operations_budget_does_not_amplify_terrain_evidence():
@@ -113,10 +115,11 @@ def test_incompatible_or_missing_terrain_measurements_do_not_become_zero():
     candidate_terrain["scoring_measurements"] = []
     result = compare_dimensions(target, candidate, _weights(terrain=1.0))
     terrain = result["dimension_scores"][1]
-    assert terrain["score"] is None
-    assert terrain["effective_weight"] == 0.0
-    assert terrain["scored"] is False
-    assert result["score"] is None
+    assert terrain["score"] == 0.5
+    assert terrain["score_origin"] == "simulated"
+    assert terrain["effective_weight"] == 1.0
+    assert terrain["scored"] is True
+    assert result["score"] == 0.5
     assert result["evidence_coverage"] == 0.0
 
 
@@ -131,7 +134,9 @@ def test_mapping_input_retains_linked_evidence_rows_verbatim():
     terrain = result["dimension_scores"][1]
     assert terrain["evidence_items"] == [candidate_row]
     assert all(row["score"] is None for row in terrain["comparison_variables"])
-    assert terrain["score"] is None
+    assert terrain["score"] == 0.5
+    assert terrain["score_origin"] == "simulated"
+    assert result["evidence_coverage"] == 0.0
 
 
 @pytest.mark.parametrize("weight", [True, "1", float("nan"), float("inf"), -1.0])
@@ -194,8 +199,9 @@ def test_experimental_physical_protocols_require_real_comparability_metadata(
     comparison = compare_dimensions(reference, candidate, weights)
     assert comparison["score"] == pytest.approx(expected)
     row = next(row for row in comparison["dimension_scores"] if row["id"] == dimension_id)
-    assert row["methodology_kind"] == "experimental"
-    assert row["evidence_status"] == "experimental_proxy"
+    assert row["methodology_kind"] == "measured"
+    assert row["evidence_status"] == "matched_measurement"
+    assert row["observed_score"] == pytest.approx(expected)
     for bad in (
         {"comparison_basis": "different-depth-or-time"},
         {"spatial_scale_m": 200},
@@ -208,8 +214,11 @@ def test_experimental_physical_protocols_require_real_comparability_metadata(
         {"source_url": None},
     ):
         result = compare_dimensions(reference, {dimension_id: [measure(b) | bad]}, weights)
-        assert result["score"] is None
+        assert result["score"] == 0.5
         assert result["evidence_coverage"] == 0
+        invalid = next(row for row in result["dimension_scores"] if row["id"] == dimension_id)
+        assert invalid["observed_score"] is None
+        assert invalid["score_origin"] == "simulated"
 
 
 def test_real_mapped_materials_support_experimental_geology_without_code_matching():
@@ -225,7 +234,8 @@ def test_real_mapped_materials_support_experimental_geology_without_code_matchin
     assert compare_dimensions(moon, mojave, weights)["score"] == 1.0
     assert compare_dimensions(moon, carbonate, weights)["score"] == 0.0
     missing = compare_dimensions({}, mojave, weights)
-    assert missing["score"] is None
+    assert missing["score"] == 0.5
+    assert missing["dimension_scores"][0]["score_origin"] == "simulated"
 
 
 def test_zero_weight_geology_does_not_change_independent_evidence_class():

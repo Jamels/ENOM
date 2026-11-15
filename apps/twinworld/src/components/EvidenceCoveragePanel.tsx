@@ -62,7 +62,7 @@ export function EvidenceCoveragePanel({
           <h2 className="text-sm font-medium text-[var(--text-primary)]">Coverage at selected location</h2>
           <p className="mt-1 truncate text-xs text-[var(--text-secondary)]">{title}{subtitle ? ` · ${subtitle}` : ""}</p>
         </div>
-        <span className="rounded-full border border-amber-400/25 bg-amber-400/5 px-2 py-1 text-[10px] text-amber-200">
+        <span className="rounded-full border border-amber-400/25 bg-amber-400/5 px-2 py-1 text-[13px] text-amber-200">
           {usableMeasurements.length ? `${usableMeasurements.length}/${measurements.length} terrain measurements usable` : "No usable terrain measurements"}
         </span>
       </header>
@@ -105,7 +105,7 @@ export function EvidenceCoveragePanel({
                         : measurement.availability.replaceAll("_", " ")}
                     </p>
                     {measurement.uncertainty?.description && (
-                      <p className="mt-1 text-[10px] leading-4 text-[var(--text-muted)]">{measurement.uncertainty.description}</p>
+                      <p className="mt-1 text-[13px] leading-4 text-[var(--text-muted)]">{measurement.uncertainty.description}</p>
                     )}
                   </li>
                 );
@@ -140,7 +140,7 @@ export function EvidenceCoveragePanel({
                   <div className="h-full rounded-full bg-amber-300" style={{ width: `${supportPercent}%` }} />
                 </div>
               )}
-              {support.note && <p className="text-[10px] leading-4 text-[var(--text-muted)]">{support.note}</p>}
+              {support.note && <p className="text-[13px] leading-4 text-[var(--text-muted)]">{support.note}</p>}
             </div>
           )}
 
@@ -156,7 +156,7 @@ export function EvidenceCoveragePanel({
       {(limitations.length > 0 || uniqueSources.length > 0) && (
         <footer className="flex flex-wrap items-end justify-between gap-3 border-t border-[var(--border-subtle)] pt-3">
           {limitations.length > 0 && (
-            <ul className="min-w-0 flex-1 space-y-1 text-[10px] leading-4 text-[var(--text-muted)]">
+            <ul className="min-w-0 flex-1 space-y-1 text-[13px] leading-4 text-[var(--text-muted)]">
               {limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
               <li>Coverage describes ENOM’s indexed evidence, not whether a feature exists on the surface.</li>
             </ul>
@@ -173,7 +173,7 @@ export function EvidenceCoveragePanel({
         </footer>
       )}
       {limitations.length === 0 && uniqueSources.length === 0 && (
-        <p className="border-t border-[var(--border-subtle)] pt-3 text-[10px] text-[var(--text-muted)]">
+        <p className="border-t border-[var(--border-subtle)] pt-3 text-[13px] text-[var(--text-muted)]">
           Coverage describes ENOM’s indexed evidence, not whether a feature exists on the surface.
         </p>
       )}
@@ -184,7 +184,7 @@ export function EvidenceCoveragePanel({
 function CoverageTile({ label, detail, available }: { label: string; detail: string; available: boolean }) {
   return (
     <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-void)] px-3 py-2">
-      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{label}</p>
+      <p className="text-[13px] uppercase tracking-wide text-[var(--text-muted)]">{label}</p>
       <p className={`mt-1 text-xs font-medium ${available ? "text-emerald-200" : "text-amber-200"}`}>
         <span aria-hidden="true">{available ? "● " : "○ "}</span>{detail}
       </p>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { motion } from "motion/react";
 import { ArrowLeftRight, ArrowUpRight, Database, HardDrive, Info } from "lucide-react";
@@ -34,12 +34,20 @@ import { EvidenceCoveragePanel } from "./components/EvidenceCoveragePanel";
 import { EarthAnalogueSidebar } from "./components/EarthAnalogueSidebar";
 import { PlanetBaselineBar } from "./components/PlanetBaselineBar";
 import { ComparisonModal } from "./components/ComparisonModal";
+import { DiscoveryScorecardModal, type DiscoveryScorecardRow } from "./components/DiscoveryScorecardModal";
 import { DatasetsDialog } from "./components/DatasetsDialog";
 import { OfflineMapsDialog } from "./components/OfflineMapsDialog";
 
 type IndexedContext = { observation_id: string; dataset_id?: string; name?: string; source_url?: string; source_catalog_url?: string; observed_cell_count?: number; grid_cell_count?: number; observed_cell_fraction?: number; valid_pixel_fraction?: number; measurements?: { name: string; value: number | null; units: string; availability: string; spatial_scale_m?: number | null; uncertainty?: { description?: string | null } | null }[]; land_cover?: { status?: string; valid_fraction?: number; group_fractions?: Record<string, number>; source_url?: string; sample_method?: string }; uncertainty_note?: string; missing_data_semantics?: string; eligible_for_ranking?: boolean; index_center: { latitude_deg: number; longitude_east_deg: number }; index_footprint?: number[][] };
 type IndexedResult = { score?: number | null; evidence_coverage?: number; dimension_scores?: DiscoveryDimensionScore[]; context: IndexedContext; evidence_class: string; similarity_score: number; matched_variable_count: number; variables: { name: string; reference_value: number | null; earth_value: number | null; difference: number | null; units: string; score: number | null; reference_spatial_scale_m?: number; earth_spatial_scale_m?: number }[] };
 const INITIAL_TERRAIN_WEIGHTS: Record<string, number> = { elevation_range: 0.2, mean_slope: 0.28, slope_p90: 0.24, median_local_relief_3x3: 0.16, median_roughness_3x3: 0.12 };
+
+function keepPlanetDisclosureExclusive(event: SyntheticEvent<HTMLDetailsElement>) {
+  if (!event.currentTarget.open) return;
+  document.querySelectorAll<HTMLDetailsElement>(".planet-detail-disclosure[open]").forEach((details) => {
+    if (details !== event.currentTarget) details.open = false;
+  });
+}
 
 function targetCoverage(target: PlanetaryTarget) {
   const region = target.pilotRegion;
@@ -104,6 +112,7 @@ export function App() {
   const [surfaceEarthId, setSurfaceEarthId] = useState<string | null>(null);
   const [surfaceStatus, setSurfaceStatus] = useState("");
   const [coverageContexts, setCoverageContexts] = useState<IndexedContext[]>([]);
+  const coverageFootprints = useMemo(() => coverageContexts.map((context) => context.index_footprint), [coverageContexts]);
   const [outsideCoverage, setOutsideCoverage] = useState(false);
   const [terrainWeights, setTerrainWeights] = useState(INITIAL_TERRAIN_WEIGHTS);
   const [surfaceLandCoverFilters, setSurfaceLandCoverFilters] = useState<Record<string, number>>({});
@@ -164,7 +173,7 @@ export function App() {
         setOutsideCoverage(true);
         const windowCount = coverageContexts.length;
         setSurfaceStatus(windowCount
-          ? `No precomputed terrain window covers this point. The globe basemap is global, but ENOM currently indexes only ${windowCount} localized ${body === "mars" ? "Mars" : "Moon"} terrain windows. Choose a marked window below to compare its coverage.`
+          ? `No indexed terrain window covers this point. Unshaded areas have no precomputed terrain data. Click a teal window or compare one of the nearest ${Math.min(3, windowCount)} indexed windows below.`
           : "No precomputed terrain window covers this point. The terrain coverage list has not loaded yet; try one of the indexed terrain markers when it appears.");
         return;
       }
@@ -258,6 +267,7 @@ export function App() {
   const [scorecard, setScorecard] = useState<ScorecardResult | null>(null);
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null);
   const [analogueDiscovery, setAnalogueDiscovery] = useState<DiscoveryRank | null>(null);
+  const autoFocusedDiscoveryTarget = useRef<string | null>(null);
   const [discoveryProfiles, setDiscoveryProfiles] = useState<AnalogueProfile[]>([]);
   const [discoveryProfileId, setDiscoveryProfileId] = useState("dunes");
   const [discoveryWeights, setDiscoveryWeights] = useState<Record<string, number>>({});
@@ -270,6 +280,7 @@ export function App() {
   const [bootError, setBootError] = useState("");
 
   const [comparisonOpen, setComparisonOpen] = useState(false);
+  const [discoveryScorecardOpen, setDiscoveryScorecardOpen] = useState(false);
   const [datasetsOpen, setDatasetsOpen] = useState(false);
   const [offlineMapsOpen, setOfflineMapsOpen] = useState(false);
   const [mobileGlobeMode, setMobileGlobeMode] = useState<"dual" | "target" | "earth">("dual");
@@ -481,9 +492,11 @@ export function App() {
     if (surfacePoint) return;
     const top = analogueDiscovery?.recommendations[0];
     if (!top) return;
+    if (autoFocusedDiscoveryTarget.current === selectedTargetId) return;
+    autoFocusedDiscoveryTarget.current = selectedTargetId;
     setSelectedEarthId(top.context.observation_id);
     setRightFocus({ lat: top.context.index_center.latitude_deg, lon: top.context.index_center.longitude_east_deg, token: Date.now() });
-  }, [analogueDiscovery, surfacePoint]);
+  }, [analogueDiscovery, surfacePoint, selectedTargetId]);
 
   // Execute backend scorecard & pilot search whenever target, equipment, weights, or retrieval mode change
   useEffect(() => {
@@ -637,6 +650,17 @@ export function App() {
     }
     return null;
   }, [selectedEarthId, earthCandidates, earthCatalogue]);
+
+  const selectedDiscoveryRow = useMemo<DiscoveryScorecardRow | null>(() => {
+    if (surfacePoint) {
+      const index = surfaceResults.findIndex((row) => row.context.observation_id === selectedEarthId);
+      const selectedIndex = index >= 0 ? index : surfaceResults.length ? 0 : -1;
+      const row = surfaceResults[selectedIndex];
+      return row ? { ...row, rank: selectedIndex + 1 } : null;
+    }
+    const recommendations = analogueDiscovery?.recommendations ?? [];
+    return recommendations.find((row) => row.context.observation_id === selectedEarthId) ?? recommendations[0] ?? null;
+  }, [selectedEarthId, surfacePoint, surfaceResults, analogueDiscovery]);
 
   // Load /api/comparisons when opening comparison modal for an indexed Mars-Earth pair
   const loadComparisonFor = useCallback(
@@ -948,26 +972,11 @@ export function App() {
         </div>
       )}
 
-      {/* Main Three-Area Workspace */}
-      <main className="flex-1 min-h-0 p-4 flex flex-col lg:grid lg:grid-cols-[272px_minmax(0,1fr)_280px] xl:grid-cols-[280px_minmax(0,1fr)_304px] gap-4">
-        {/* Left Rail (Desktop) */}
-        <TargetSidebar
-          body={body}
-          targets={targets}
-          selectedTargetId={selectedTargetId}
-          equipmentId={equipmentId}
-          searchMethod={searchMethod}
-          scoreConfig={scoreConfig}
-          weights={weights}
-          onSelectTarget={handleSelectTarget}
-          onSearchMethodChange={setSearchMethod}
-          onWeightChange={(name, value) => setWeights((prev) => ({ ...prev, [name]: value }))}
-          onResetWeights={() => setWeights(activeEquipment.defaultWeights)}
-          className="hidden lg:flex lg:min-h-0"
-        />
+      {/* Planet-first workspace */}
+      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 flex flex-col gap-3">
 
         {/* Centerpiece: Two Side-by-Side Interactive Globes */}
-        <section className="flex flex-col min-w-0 min-h-0 gap-3">
+        <section className="flex flex-col min-w-0 gap-3">
           {/* Active Pair Connection Strip */}
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-panel)] px-4 py-2 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0 text-xs">
@@ -977,8 +986,8 @@ export function App() {
               </span>
               <ArrowLeftRight className="w-4 h-4 text-[var(--text-muted)] shrink-0" strokeWidth={1.5} />
               <PlanetBadgeDot body="earth" />
-              <span className="font-medium truncate" style={{ color: planetaryColor("earth") }}>
-                {surfacePoint ? surfaceResults.find(row => row.context.observation_id === surfaceEarthId)?.context.name ?? surfaceEarthId ?? "No Earth match" : selectedEarthCandidate?.regionLabel ?? "No Earth match"}
+                <span className="font-medium truncate" style={{ color: planetaryColor("earth") }}>
+                  {surfacePoint ? selectedDiscoveryRow?.context.name ?? surfaceEarthId ?? "No Earth match" : selectedDiscoveryRow?.context.name ?? selectedEarthCandidate?.regionLabel ?? "No Earth match"}
               </span>
               {!surfacePoint && selectedEarthCandidate?.scorecardCandidate?.similarity_score != null && (
                 <span className="hidden sm:inline font-mono-tabular text-xs text-[var(--text-secondary)]">
@@ -1006,12 +1015,16 @@ export function App() {
                   </button>
                 ))}
               </div>
-              {!surfacePoint && selectedTarget && selectedEarthCandidate && (
+              {((surfacePoint && selectedDiscoveryRow) || (!surfacePoint && selectedTarget && (selectedEarthCandidate || selectedDiscoveryRow))) && (
                 <button
                   type="button"
                   onClick={() => {
-                    void loadComparisonFor(selectedTarget, selectedEarthCandidate);
-                    setComparisonOpen(true);
+                    if (selectedDiscoveryRow) {
+                      setDiscoveryScorecardOpen(true);
+                    } else if (selectedTarget && selectedEarthCandidate) {
+                      void loadComparisonFor(selectedTarget, selectedEarthCandidate);
+                      setComparisonOpen(true);
+                    }
                   }}
                   className="pressable inline-flex items-center gap-1 rounded-lg bg-[var(--text-primary)] hover:bg-white text-[var(--bg-void)] px-3 py-1 text-xs font-medium"
                 >
@@ -1022,6 +1035,9 @@ export function App() {
             </div>
           </div>
 
+          <details onToggle={keepPlanetDisclosureExclusive} className="planet-detail-disclosure group rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-panel)] px-3 py-2 text-xs">
+            <summary className="cursor-pointer text-[var(--text-secondary)]">Selected location evidence</summary>
+            <div className="planet-detail-panel mt-3">
           {surfacePoint ? (
             surfaceContext ? (
               <EvidenceCoveragePanel
@@ -1060,11 +1076,13 @@ export function App() {
               {...targetCoverage(selectedTarget)}
             />
           ) : null}
+            </div>
+          </details>
 
           {/* Dual Globe Stage */}
           <div
             className={
-              "flex-1 min-h-[320px] grid gap-3 " +
+              "flex-none min-h-[min(68vh,720px)] grid gap-4 " +
               (mobileGlobeMode === "dual" ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1")
             }
           >
@@ -1090,6 +1108,7 @@ export function App() {
                 ]}
                 onSelectSurface={selectSurface}
                 footprint={surfaceContext?.index_footprint}
+                coverageFootprints={coverageFootprints}
                 selectedId={surfacePoint ? "surface-click" : selectedTargetId}
                 focusCoords={leftFocus}
                 defaultCoords={body === "mars" ? { lat: 8, lon: 135 } : { lat: 8, lon: 30 }}
@@ -1141,6 +1160,9 @@ export function App() {
             )}
           </div>
 
+          <details onToggle={keepPlanetDisclosureExclusive} className="planet-detail-disclosure planet-detail-disclosure--above rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-panel)] px-3 py-2 text-xs">
+          <summary className="cursor-pointer text-[var(--text-secondary)]">Coverage, terrain evidence, and ranking controls</summary>
+          <div className="planet-detail-panel mt-3">
           {coverageContexts.length > 0 && <p className="mx-3 mt-3 rounded-lg border border-sky-500/20 bg-sky-500/5 p-3 text-xs text-[var(--text-secondary)]">
             The globe shows global basemap imagery. Terrain comparisons are available only inside {coverageContexts.length} precomputed {body === "mars" ? "Mars" : "Moon"} windows, each roughly 10 km across. Click a marked window or choose one from the list below.
           </p>}
@@ -1163,7 +1185,7 @@ export function App() {
             {body === "moon" && <p className="mt-1 text-[var(--text-secondary)]">Moon coordinates use the LOLA mean-Earth frame; basemap alignment is unverified.</p>}
             <details className="mt-2">
               <summary className="cursor-pointer">Adjust eight dimension weights</summary>
-              <p className="mt-1 text-[var(--text-secondary)]">Missing evidence is unscored. Terrain and operations share an evidence budget.</p>
+              <p className="mt-1 text-[var(--text-secondary)]">Unavailable comparisons may use estimates or simulations. Source evidence is reported separately.</p>
               {Object.entries(discoveryProfiles[0]?.dimensions ?? {}).map(([id, dimension]) => <label key={id} className="mt-2 block">
                 <span className="flex justify-between"><span>{dimension.label}</span><span>{(discoveryWeights[id] ?? 0).toFixed(2)}</span></span>
                 <input type="range" min="0" max="1" step="0.01" value={discoveryWeights[id] ?? 0} aria-label={`${dimension.label} weight`} className="w-full" onChange={(event) => updateDimensionWeights({ ...discoveryWeights, [id]: Number(event.target.value) })} />
@@ -1180,7 +1202,7 @@ export function App() {
             </details>
             <details className="mt-2">
               <summary className="cursor-pointer">Land-cover limits (optional)</summary>
-              <p className="mt-1 text-[var(--text-secondary)]">Set a maximum WorldCover share for a class. No class is excluded by default. Active limits require complete classification; unavailable or partial classification is not treated as zero.</p>
+              <p className="mt-1 text-[var(--text-secondary)]">Set maximum land-cover shares. Missing classifications are excluded when a limit is active.</p>
               {[["bare_sparse", "Bare or sparse"], ["forest", "Forest"], ["cropland", "Cropland"], ["built_up", "Built up"], ["snow_ice", "Snow and ice"], ["water", "Water"], ["grass_shrub_wetland", "Grass, shrub, wetland"]].map(([id, label]) => <label key={id} className="mt-2 flex items-center justify-between gap-3">
                 <span>{label}</span>
                 <span className="flex items-center gap-1"><input type="number" min="0" max="100" step="1" value={surfaceLandCoverFilters[id] == null ? "" : Math.round(surfaceLandCoverFilters[id] * 100)} placeholder="—" aria-label={`${label} maximum percent`} className="w-16 rounded border border-[var(--border-subtle)] bg-transparent px-2 py-1 text-right" onChange={(event) => {
@@ -1197,16 +1219,22 @@ export function App() {
               </label>)}
               <button type="button" className="mt-2 underline" onClick={() => updateSurfaceLandCoverFilters({})}>Clear land-cover limits</button>
             </details>
-            {outsideCoverage && coverageContexts.map((context) => {
-              const rad = Math.PI / 180;
-              const lat1 = surfacePoint.lat * rad, lat2 = context.index_center.latitude_deg * rad;
-              const deltaLon = (context.index_center.longitude_east_deg - surfacePoint.lon) * rad;
-              const h = Math.sin((lat2 - lat1) / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
-              const km = 2 * (body === "mars" ? 3396 : 1737.4) * Math.asin(Math.sqrt(Math.min(1, h)));
-              return { context, km };
-            }).sort((a, b) => a.km - b.km).slice(0, 3).map(({ context, km }) => <button key={context.observation_id} type="button" className="mt-2 mr-3 underline" onClick={() => { const point = { lat: context.index_center.latitude_deg, lon: context.index_center.longitude_east_deg }; setLeftFocus({ ...point, token: Date.now() }); void selectSurface(point); }}>
-              View {context.name ?? context.observation_id} ({Math.round(km)} km away)
-            </button>)}
+            {outsideCoverage && surfacePoint && <section aria-label="Nearest indexed terrain windows" className="mt-3 rounded-lg border border-sky-500/20 bg-sky-500/5 p-3">
+              <h3 className="font-medium text-[var(--text-primary)]">Nearest indexed terrain windows</h3>
+              <p className="mt-1 text-[var(--text-secondary)]">No raster covers this coordinate. Select a nearby window to compare its terrain with Earth.</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {coverageContexts.map((context) => {
+                  const rad = Math.PI / 180;
+                  const lat1 = surfacePoint.lat * rad, lat2 = context.index_center.latitude_deg * rad;
+                  const deltaLon = (context.index_center.longitude_east_deg - surfacePoint.lon) * rad;
+                  const h = Math.sin((lat2 - lat1) / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
+                  const km = 2 * (body === "mars" ? 3396 : 1737.4) * Math.asin(Math.sqrt(Math.min(1, h)));
+                  return { context, km };
+                }).sort((a, b) => a.km - b.km).slice(0, 3).map(({ context, km }) => <button key={context.observation_id} type="button" className="rounded border border-[var(--border-subtle)] px-2.5 py-1.5 text-left text-[var(--text-primary)] hover:bg-[var(--bg-hover)]" onClick={() => { const point = { lat: context.index_center.latitude_deg, lon: context.index_center.longitude_east_deg }; setLeftFocus({ ...point, token: Date.now() }); void selectSurface(point); }}>
+                    Compare near {context.name ?? context.observation_id} · {Math.round(km)} km
+                  </button>)}
+              </div>
+            </section>}
             {surfaceContext && <p className="mt-1 text-[var(--text-secondary)]">
               {surfaceContext.observed_cell_fraction != null ? `${surfaceContext.dataset_id === "mola-meg128" ? "Observed MOLA bins" : "Output cells passing source-support threshold"}: ${surfaceContext.observed_cell_count != null && surfaceContext.grid_cell_count != null ? `${surfaceContext.observed_cell_count}/${surfaceContext.grid_cell_count} · ` : ""}${(surfaceContext.observed_cell_fraction * 100).toFixed(1)}% · ` : "Direct observation support not quantified · "}
               {surfaceContext.missing_data_semantics ?? surfaceContext.uncertainty_note}
@@ -1219,13 +1247,13 @@ export function App() {
                   {measurement.name.replaceAll("_", " ")}: {available ? `${measurement.value} ${measurement.units}${measurement.spatial_scale_m ? ` · ${Math.round(measurement.spatial_scale_m)} m scale` : ""}` : `unavailable (${measurement.availability.replaceAll("_", " ")})`}
                 </p>;
               })}
-            </div> : surfaceContext && <p className="mt-2 text-[10px] text-amber-200">No terrain measurements are available for this indexed context.</p>}
+            </div> : surfaceContext && <p className="mt-2 text-[13px] text-amber-200">No terrain measurements are available for this indexed context.</p>}
             {surfaceContext?.dataset_id === "mola-meg128" && <p className="mt-1 text-[var(--text-secondary)]">The MOLA elevation range is calculated from observed bins only. Unobserved bins may contain larger extremes; any ranking is exploratory and limited evidence.</p>}
             {surfaceResults.slice(0, 10).map((row, index) => <details key={row.context.observation_id} className="mt-2 border-t border-[var(--border-subtle)] pt-2">
               <summary className="cursor-pointer" onClick={() => { setSurfaceEarthId(row.context.observation_id); setRightFocus({ lat: row.context.index_center.latitude_deg, lon: row.context.index_center.longitude_east_deg, token: Date.now() }); }}>
                 {index + 1}. {row.context.name ?? row.context.observation_id} · similarity index {(row.score ?? row.similarity_score).toFixed(3)} · {row.matched_variable_count}/5 features · {row.evidence_class.replaceAll("_", " ")}
               </summary>
-              <p className="mt-1 text-[var(--text-secondary)]">Partial observed similarity · {Math.round((row.evidence_coverage ?? 0) * 100)}% weighted evidence completeness. Results prioritize the number of independent evidence groups, then similarity. Terrain and operations share one group. This experimental index is not a probability or mission-suitability result.</p>
+              <p className="mt-1 text-[var(--text-secondary)]">{Math.round((row.evidence_coverage ?? 0) * 100)}% evidence coverage · experimental score, not a probability or mission-suitability result.</p>
               {(row.dimension_scores ?? []).map((dimension) => <DimensionLine key={dimension.id} dimension={dimension} label={discoveryProfiles[0]?.dimensions[dimension.id]?.label ?? dimension.id} />)}
               <a className="mt-1 block underline" href={`/api/discovery/contexts/${encodeURIComponent(row.context.observation_id)}`} target="_blank" rel="noreferrer">Full context evidence and provenance</a>
               {row.context.land_cover && <p className="mt-1 text-[var(--text-secondary)]">WorldCover 2021 · {row.context.land_cover.status ?? "unavailable"}{row.context.land_cover.group_fractions && ` · ${Object.entries(row.context.land_cover.group_fractions).map(([name, fraction]) => `${name.replaceAll("_", " ")} ${(fraction * 100).toFixed(0)}%`).join(" · ")}`}{row.context.land_cover.source_url && <> · <a className="underline" href={row.context.land_cover.source_url} target="_blank" rel="noreferrer">classification source</a></>}</p>}
@@ -1235,11 +1263,28 @@ export function App() {
             </details>)}
           </section>}
 
-          {/* Planet-to-Planet Baseline Strip */}
           <PlanetBaselineBar body={body} />
+          </div>
+          </details>
         </section>
 
-        {/* Right Rail (Desktop) */}
+        <details onToggle={keepPlanetDisclosureExclusive} className="planet-detail-disclosure planet-detail-disclosure--above hidden lg:block rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-panel)] px-3 py-2 text-xs">
+          <summary className="cursor-pointer text-[var(--text-secondary)]">Target and Earth analogue controls</summary>
+          <div className="planet-detail-panel mt-3 grid grid-cols-2 gap-4 items-stretch">
+        <TargetSidebar
+          body={body}
+          targets={targets}
+          selectedTargetId={selectedTargetId}
+          equipmentId={equipmentId}
+          searchMethod={searchMethod}
+          scoreConfig={scoreConfig}
+          weights={weights}
+          onSelectTarget={handleSelectTarget}
+          onSearchMethodChange={setSearchMethod}
+          onWeightChange={(name, value) => setWeights((prev) => ({ ...prev, [name]: value }))}
+          onResetWeights={() => setWeights(activeEquipment.defaultWeights)}
+          className="min-h-[480px]"
+        />
         {!surfacePoint && <EarthAnalogueSidebar
           selectedTarget={selectedTarget}
           equipmentId={equipmentId}
@@ -1265,8 +1310,10 @@ export function App() {
             if (profile) setDiscoveryWeights(profile.weights);
           }}
           onSelectDiscoveredPlace={handleSelectDiscoveredPlace}
-          className="hidden lg:flex lg:min-h-0"
+          className="min-h-[480px]"
         />}
+          </div>
+        </details>
 
         {/* Mobile Tabbed Targets / Analogues Workspace (< lg) */}
         <section className="lg:hidden flex flex-col gap-3 pb-[env(safe-area-inset-bottom)]">
@@ -1348,6 +1395,25 @@ export function App() {
         comparison={comparison}
         comparisonBusy={comparisonBusy}
         equipmentId={equipmentId}
+      />
+
+      <DiscoveryScorecardModal
+        open={discoveryScorecardOpen}
+        onOpenChange={setDiscoveryScorecardOpen}
+        targetName={surfacePoint ? surfaceContext?.name ?? "Selected point" : selectedTarget?.name ?? "Selected point"}
+        targetLocation={{
+          body: surfacePoint ? body : selectedTarget?.body,
+          latitude_deg: surfacePoint?.lat ?? selectedTarget?.latitude_deg ?? surfaceContext?.index_center.latitude_deg,
+          longitude_east_deg: surfacePoint?.lon ?? selectedTarget?.longitude_east_deg ?? surfaceContext?.index_center.longitude_east_deg,
+        }}
+        targetImageUrl={surfacePoint ? null : selectedTarget?.pilotRegion?.image_url ?? null}
+        earthImageUrl={surfacePoint ? null : selectedEarthCandidate?.pilotRegion?.image_url ?? selectedEarthCandidate?.searchResult?.image_url ?? null}
+        row={selectedDiscoveryRow}
+        rankedRows={surfacePoint
+          ? surfaceResults.map((candidate, index) => ({ ...candidate, rank: index + 1 }))
+          : analogueDiscovery?.recommendations ?? []}
+        dimensionLabels={discoveryProfiles[0]?.dimensions ?? {}}
+        limitations={analogueDiscovery?.limitations ?? []}
       />
 
       <DatasetsDialog

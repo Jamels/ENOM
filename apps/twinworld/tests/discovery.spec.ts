@@ -61,7 +61,21 @@ test("surface clicks outside indexed coverage do not create a ranking", async ({
   const bounds = await canvas.boundingBox();
   if (!bounds) throw new Error("Mars globe canvas unavailable");
   await canvas.click({ position: { x: bounds.width * 0.42, y: bounds.height * 0.4 } });
-  await expect(page.getByRole("status").filter({ hasText: /No precomputed terrain window covers this point/ })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: /No indexed terrain window covers this point/ })).toBeVisible();
+});
+
+test("planetary globe explains indexed and unindexed terrain colors", async ({ page }) => {
+  await page.goto("/");
+  let legend = page.getByRole("region", { name: "Terrain coverage legend" });
+  await expect(legend).toBeVisible();
+  await expect(legend.getByText(/Teal: indexed terrain window · click to inspect/)).toBeVisible();
+  await expect(legend.getByText(/No teal: no indexed terrain here; click for nearest windows/)).toBeVisible();
+  const indexedMarker = page.getByRole("button", { name: /Indexed terrain: mars_aeolis_nondune-01/ });
+  await expect(indexedMarker.locator("span.relative > span")).toHaveCSS("background-color", "rgb(45, 212, 191)");
+
+  await page.getByRole("tab", { name: "Moon", exact: true }).click();
+  legend = page.getByRole("region", { name: "Terrain coverage legend" });
+  await expect(legend.getByText(/alignment with the global basemap is unverified/)).toBeVisible();
 });
 
 test("selecting an indexed marker on the globe starts discovery", async ({ page }) => {
@@ -113,4 +127,46 @@ test("optional land-cover limits filter the Earth candidates", async ({ page }) 
   }
   await expect(page.getByText("No eligible Earth contexts satisfy the selected land-cover limits and evidence requirements.")).toBeVisible();
   await expect(page.getByText(/contexts lack complete land-cover evidence; \d+ fail the selected limits/)).toBeVisible();
+});
+
+test("Moon indexed discovery keeps its scorecard action after Earth recommendations load", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Moon", exact: true }).click();
+  await page.getByRole("button", { name: /Find terrain near LOLA south-polar terrain · Shackleton/ }).click();
+  await expect(page.getByText("Multi-feature terrain comparison · experimental")).toBeVisible();
+  const scorecard = page.getByRole("button", { name: "Scorecard", exact: true });
+  await expect(scorecard).toBeVisible();
+  await scorecard.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Evidence dimensions" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Terrain comparison measurements" })).toBeVisible();
+  await expect(page.getByText(/not a probability, geological validation, or mission-suitability result/)).toBeVisible();
+});
+
+test("out-of-coverage Moon click offers a direct route to the nearest indexed window", async ({ page }) => {
+  let firstResolve = true;
+  await page.route("**/api/discovery/resolve", async (route) => {
+    const click = route.request().postDataJSON();
+    if (firstResolve && click.body === "moon") {
+      firstResolve = false;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ index_id: "fixture", click, status: "out_of_coverage", coordinate_frame: "lola_mean_earth", contexts: [] }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Moon", exact: true }).click();
+  const globe = page.locator("canvas").first();
+  const bounds = await globe.boundingBox();
+  if (!bounds) throw new Error("Moon globe canvas unavailable");
+  await globe.click({ position: { x: bounds.width * 0.5, y: bounds.height * 0.5 } });
+  await expect(page.getByRole("heading", { name: "Nearest indexed terrain windows" })).toBeVisible();
+  const nearest = page.getByRole("button", { name: /^Compare near .+ · \d+ km$/ }).first();
+  await expect(nearest).toBeVisible();
+  await nearest.click();
+  await expect(page.getByText(/analysed lola_polar_moon_/)).toBeVisible();
 });

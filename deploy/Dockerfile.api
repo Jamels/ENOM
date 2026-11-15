@@ -1,0 +1,28 @@
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app/src \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libexpat1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml uv.lock README.md ./
+COPY src ./src
+RUN uv sync --locked --no-dev
+
+COPY configs ./configs
+
+RUN groupadd --gid 1000 enom \
+    && useradd --uid 1000 --gid 1000 --create-home --shell /usr/sbin/nologin enom \
+    && chown -R enom:enom /app
+
+USER 1000:1000
+
+EXPOSE 8000
+CMD ["/app/.venv/bin/uvicorn", "twinworld.api:app", "--host", "0.0.0.0", "--port", "8000"]

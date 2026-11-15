@@ -172,7 +172,7 @@ export function EarthAnalogueSidebar({
 
         {!busy && earthCandidates.length > 0 && (
           <details className="mx-3 mb-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
-            <summary className="cursor-pointer px-3 py-2 text-[10px] text-[var(--text-muted)]">Indexed results</summary>
+            <summary className="cursor-pointer px-3 py-2 text-[13px] text-[var(--text-muted)]">Indexed results</summary>
             <div className="divide-y divide-[var(--border-subtle)]">
             {earthCandidates.map((candidate, idx) => {
               const isSelected = candidate.id === selectedEarthId;
@@ -222,7 +222,7 @@ export function EarthAnalogueSidebar({
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[13px] font-medium truncate" style={{ color: planetaryColor("earth") }}>
+                        <span className="text-[16.9px] font-medium truncate" style={{ color: planetaryColor("earth") }}>
                           #{candidate.rank ?? idx + 1} {candidate.regionLabel}
                         </span>
                         {scoreVal !== null && (

@@ -1842,6 +1842,15 @@ def _dimension_evidence(place: dict[str, Any], root: Path | None = None) -> list
                 ],
                 "scoring_measurements": scoring_measurements,
                 "scoring_exclusions": scoring_exclusions,
+                "location": {
+                    "body": place.get("body"),
+                    "latitude_deg": place.get("latitude_deg"),
+                },
+                "prototype_context": {
+                    key: place.get(key)
+                    for key in ("candidate_type", "basis", "source_url")
+                    if place.get(key) is not None
+                },
                 "source_guides": SOURCE_GUIDES[key],
                 "source_connections": [
                     {
@@ -2130,10 +2139,16 @@ def discover(
                 "layers": _place_layers(root, candidate),
                 "score": score,
                 "score_interpretation": (
-                    "Weighted evidence similarity index; not a probability, "
-                    "validated analogue label, or mission suitability."
+                    "Eight-dimension prototype similarity; not a probability, "
+                    "validated geological analogue, or mission suitability."
                 ),
                 "evidence_coverage": dimension_comparison["evidence_coverage"],
+                "prototype_similarity": dimension_comparison["prototype_similarity"],
+                "observed_similarity": dimension_comparison["observed_similarity"],
+                "source_context_coverage": dimension_comparison["source_context_coverage"],
+                "measured_weight_coverage": dimension_comparison["measured_weight_coverage"],
+                "estimated_weight_coverage": dimension_comparison["estimated_weight_coverage"],
+                "simulated_weight_coverage": dimension_comparison["simulated_weight_coverage"],
                 "dimension_scores": dimension_rows,
                 "missing_dimensions": dimension_comparison["missing_dimensions"],
                 "evidence_class": dimension_comparison["evidence_class"],
@@ -2173,15 +2188,14 @@ def discover(
         "unique_place_count": len({item["place"]["id"] for item in results[:limit]}),
         "limitations": [
             (
-                "Only compatible, measured data contribute to numeric "
-                "similarity. Missing evidence is not scored as zero."
+                "Every dimension contributes a measured score, an explicitly "
+                "labelled estimate, or a neutral simulation to the prototype. "
+                "Only source-backed comparable evidence contributes to evidence coverage."
             ),
             (
-                "Terrain and experimental mapped-material comparisons contribute "
-                "where supported. Other physical-indicator comparators require "
-                "matched observations; current incompatible environmental "
-                "records remain context only. Terrain and operations share one "
-                "evidence budget."
+                "Environmental proxies do not replace matched surface-temperature, "
+                "water-resource, dust-transport, biological, or cave-geometry "
+                "measurements. Terrain and operations share one evidence budget."
             ),
             (
                 "Uncertainty notes are displayed, but terrain scores do not yet "

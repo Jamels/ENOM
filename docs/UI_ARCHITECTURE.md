@@ -34,7 +34,7 @@ Search outputs separate visual scores, terrain scores, and evidence availability
 
 ## Mapping and accessibility status
 
-The current locator uses global equirectangular longitude/latitude placement for indexed Earth and Mars patches. It communicates longitude convention and source attribution, but provides no real basemap, lunar polar projection view, or planetary tiled imagery. Basemap integration must respect each body's native datum, projection, product frame, and provider attribution; lunar south-polar LOLA products are especially frame-sensitive. Keyboard operation, narrow viewport layouts, loading/error states, and visible unimplemented-profile status are implemented. Broader automated browser accessibility checks have not been added.
+The planetary globes shade the indexed terrain footprints in teal and leave areas without indexed terrain unshaded; the legend explains that clicks outside coverage can still return nearby windows. These outlines follow the indexed raster footprints. Moon footprint alignment with the global basemap has not been validated, so the globe labels that limitation explicitly. Lunar south-polar LOLA products are especially frame-sensitive; preserve each source's datum, projection, and product frame. Keyboard operation, narrow viewport layouts, loading/error states, and visible unimplemented-profile status are implemented. Broader automated browser accessibility checks have not been added.
 
 ## Run locally
 
